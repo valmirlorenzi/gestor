@@ -1,0 +1,295 @@
+/* ============================================================
+   MENU POR ATOR + NUMERAÇÃO + "IR PARA" + EXPANDIR/RECOLHER
+   ============================================================ */
+
+/* ---------- Campo "Ir para" ---------- */
+.goto-wrap {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.goto-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.goto-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.goto-input:focus {
+  border-color: #4a9eff;
+  background: rgba(74, 158, 255, 0.08);
+}
+
+.goto-feedback {
+  font-size: 12px;
+  margin-top: 4px;
+  min-height: 16px;
+  color: #ff6b6b;
+}
+
+.goto-feedback.ok {
+  color: #51cf66;
+}
+
+/* ---------- Bloco do menu ---------- */
+.menu-bloco {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.menu-section {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.menu-section:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-section .section-toggle {
+  font-size: 9px;
+  width: 10px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s;
+}
+
+.menu-section .section-icon {
+  font-size: 14px;
+}
+
+.menu-section .section-name {
+  flex: 1;
+}
+
+/* Bloco recolhido: esconder itens */
+.menu-bloco.recolhido .menu-itens {
+  display: none;
+}
+
+/* ---------- Itens do menu ---------- */
+.menu-itens {
+  /* container dos itens; visível por padrão */
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 18px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  border-left: 3px solid transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.menu-item.active {
+  background: rgba(74, 158, 255, 0.15);
+  border-left-color: #4a9eff;
+  color: #fff;
+}
+
+.menu-item .menu-code {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.4);
+  min-width: 32px;
+  text-align: right;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.menu-item:hover .menu-code,
+.menu-item.active .menu-code {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.menu-item .icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.menu-item .label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Badge ---------- */
+.menu-item .badge {
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.menu-item .badge.urgent {
+  background: #ff922b;
+  animation: pulse-badge 1.5s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+/* ---------- Fase 2 ---------- */
+.menu-item.fase2 {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.menu-item.fase2:hover {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-item .fase2-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  margin-left: 4px;
+}
+
+/* ---------- Sidebar recolhida ---------- */
+.sidebar.collapsed .menu-code,
+.sidebar.collapsed .label,
+.sidebar.collapsed .badge,
+.sidebar.collapsed .fase2-label,
+.sidebar.collapsed .section-name,
+.sidebar.collapsed .section-toggle {
+  display: none;
+}
+
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .menu-section {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.sidebar.collapsed .goto-wrap {
+  display: none;
+}
+
+/* ---------- Ações globais (expandir/recolher todos) ---------- */
+.menu-acoes {
+  display: flex;
+  gap: 6px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.menu-acoes button {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.menu-acoes button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ---------- Tema clássico ---------- */
+body.theme-classic .goto-input {
+  background: #fff;
+  color: #333;
+  border-color: #ccc;
+}
+
+body.theme-classic .menu-section {
+  color: #555;
+  border-bottom: 1px solid #e9ecef;
+}
+
+body.theme-classic .menu-item {
+  color: #333;
+}
+
+body.theme-classic .menu-item:hover {
+  background: #e9ecef;
+}
+
+body.theme-classic .menu-code {
+  color: #999;
+}
+
+body.theme-classic .menu-acoes button {
+  background: #f1f3f5;
+  color: #333;
+  border-color: #ccc;
+}
+
+body.theme-classic .menu-acoes button:hover {
+  background: #dee2e6;
+}
+
+/* ---------- Tema retro ---------- */
+body.theme-retro .menu-item {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  font-size: 12px;
+}
+
+body.theme-retro .menu-code {
+  font-family: 'Courier New', monospace;
+  color: #808080;
+}
+
+body.theme-retro .menu-section {
+  background: #c0c0c0;
+  color: #000;
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+}
+
+body.theme-retro .menu-acoes button {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  background: #c0c0c0;
+  color: #000;
+  border: 1px outset #fff;
+}
+
+body.theme-retro .menu-acoes button:active {
+  border-style: inset;
+}

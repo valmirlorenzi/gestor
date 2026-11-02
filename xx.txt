@@ -1,0 +1,12 @@
+resources/views/auth/login.blade.php
+resources/views/layouts/app.blade.php
+resources/views/partials/scripts.blade.php
+resources/views/partials/sidebar.blade.php
+resources/views/partials/styles.blade.php
+resources/views/partials/topbar.blade.php
+resources/views/telas/empresa/form.blade.php
+resources/views/telas/empresa/index.blade.php
+resources/views/telas/filial/form.blade.php
+resources/views/telas/filial/index.blade.php
+resources/views/telas/tela-inicial.blade.php
+resources/views/welcome.blade.php

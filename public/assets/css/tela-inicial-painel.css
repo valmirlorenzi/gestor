@@ -1,0 +1,91 @@
+/* ============================================================
+   TELA INICIAL — RESUMO DO PAINEL EXECUTIVO (FA do 13)
+   Adicionado na v1.1 do wireframe (merge do 13)
+   ============================================================ */
+
+.ti-resumo-painel {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.ti-resumo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ti-resumo-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ti-kpi-grid-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.ti-kpi-mini {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ti-kpi-mini:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ti-kpi-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ti-kpi-mini-nome {
+  font-size: 11px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ti-kpi-mini-semaforo { font-size: 11px; }
+
+.ti-kpi-mini-valor {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ti-kpi-mini-variacao {
+  font-size: 11px;
+}
+
+.ti-resumo-alertas {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ti-resumo-alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ti-resumo-alerta-vermelho { color: #e74c3c; }
+.ti-resumo-alerta-amarelo  { color: #f39c12; }
+.ti-resumo-alerta-verde    { color: #27ae60; }

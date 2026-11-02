@@ -1,0 +1,282 @@
+/* ============================================================
+   ADMINISTRADOR — DRE, resumo, fluxo, análise, posição, simulação
+   ============================================================ */
+
+/* Estrutura do DRE */
+.dre-estrutura {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+}
+
+.dre-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dre-linha:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dre-linha.titulo {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(74, 158, 255, 0.08);
+  border-left: 3px solid #4a9eff;
+}
+
+.dre-linha.subtotal {
+  font-weight: 600;
+  color: #4a9eff;
+  background: rgba(74, 158, 255, 0.04);
+  border-top: 1px solid rgba(74, 158, 255, 0.15);
+}
+
+.dre-linha.total {
+  font-weight: 700;
+  font-size: 15px;
+  color: #51cf66;
+  background: rgba(81, 207, 102, 0.08);
+  border-top: 2px solid #51cf66;
+  margin-top: 4px;
+}
+
+.dre-linha.negativo .valor { color: #ff6b6b; }
+
+.dre-linha .label { flex: 1; }
+.dre-linha .valor {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 120px;
+}
+.dre-linha .percentual {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 60px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+}
+.dre-linha .variacao {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 70px;
+  font-size: 11px;
+}
+.dre-linha .variacao.positiva { color: #51cf66; }
+.dre-linha .variacao.negativa { color: #ff6b6b; }
+
+/* KPIs do resumo */
+.resumo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.resumo-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumo-card .rc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resumo-card .rc-icone { font-size: 24px; }
+.resumo-card .rc-area { font-size: 15px; font-weight: 700; color: #fff; }
+.resumo-card .rc-variacao {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.resumo-card .rc-variacao.positiva { color: #51cf66; background: rgba(81, 207, 102, 0.15); }
+.resumo-card .rc-variacao.negativa { color: #ff6b6b; background: rgba(255, 107, 107, 0.15); }
+
+.resumo-card .rc-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: #4a9eff;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo-card .rc-detalhes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.resumo-card .rc-detalhes .rc-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Gráfico simples (barras horizontais) */
+.grafico-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.grafico-barras .barra-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.grafico-barras .barra-label {
+  width: 160px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.grafico-barras .barra-track {
+  flex: 1;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.grafico-barras .barra-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4a9eff, #74b9ff);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.grafico-barras .barra-fill.positiva { background: linear-gradient(90deg, #51cf66, #8ce99a); }
+.grafico-barras .barra-fill.negativa { background: linear-gradient(90deg, #ff6b6b, #ff9b9b); }
+
+.grafico-barras .barra-valor {
+  width: 120px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Posição de caixa — cards grandes */
+.caixa-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.caixa-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.caixa-card .cc-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.caixa-card .cc-valor {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.caixa-card.cc-disponivel .cc-valor { color: #4a9eff; }
+.caixa-card.cc-pagar     .cc-valor { color: #ff922b; }
+.caixa-card.cc-receber   .cc-valor { color: #51cf66; }
+.caixa-card.cc-projetado .cc-valor { color: #a78bfa; }
+
+/* Simulação (placeholder) */
+.simulacao-placeholder {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.simulacao-placeholder .sp-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.simulacao-placeholder h2 {
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.simulacao-placeholder p {
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto 20px;
+}
+
+/* ---------- Tema clássico ---------- */
+body.theme-classic .dre-linha { border-bottom-color: #e9ecef; }
+body.theme-classic .dre-linha.titulo { background: #e7f1ff; color: #0d6efd; border-left-color: #0d6efd; }
+body.theme-classic .dre-linha.subtotal { color: #0d6efd; background: #f0f7ff; border-top-color: #b6d4fe; }
+body.theme-classic .dre-linha.total { background: #d4edda; color: #155724; border-top-color: #28a745; }
+body.theme-classic .dre-linha .label { color: #333; }
+body.theme-classic .dre-linha .valor { color: #333; }
+body.theme-classic .dre-linha .percentual { color: #999; }
+
+body.theme-classic .resumo-card,
+body.theme-classic .caixa-card { background: #fff; border-color: #dee2e6; }
+body.theme-classic .resumo-card .rc-area { color: #333; }
+body.theme-classic .resumo-card .rc-valor { color: #0d6efd; }
+body.theme-classic .resumo-card .rc-detalhes { color: #666; }
+body.theme-classic .caixa-card .cc-label { color: #666; }
+body.theme-classic .caixa-card .cc-valor { color: #333; }
+
+body.theme-classic .grafico-barras .barra-track { background: #e9ecef; }
+body.theme-classic .grafico-barras .barra-label { color: #666; }
+body.theme-classic .grafico-barras .barra-valor { color: #333; }
+
+body.theme-classic .simulacao-placeholder h2 { color: #333; }
+body.theme-classic .simulacao-placeholder p { color: #666; }
+
+/* ---------- Tema retro ---------- */
+body.theme-retro .dre-estrutura { font-family: 'Courier New', monospace; }
+body.theme-retro .dre-linha { border-bottom-color: #808080; }
+body.theme-retro .dre-linha.titulo { background: #000080; color: #fff; border-left: 3px solid #000; }
+body.theme-retro .dre-linha.subtotal { background: #d4d0c8; color: #000080; border-top: 2px solid #808080; }
+body.theme-retro .dre-linha.total { background: #008000; color: #fff; border-top: 2px solid #000; }
+body.theme-retro .dre-linha .label { color: #000; }
+body.theme-retro .dre-linha .valor { color: #000; }
+
+body.theme-retro .resumo-card,
+body.theme-retro .caixa-card { background: #c0c0c0; border: 1px outset #fff; border-radius: 0; }
+body.theme-retro .resumo-card .rc-area { color: #000; }
+body.theme-retro .resumo-card .rc-valor { color: #000080; }
+body.theme-retro .resumo-card .rc-detalhes { color: #404040; }
+body.theme-retro .caixa-card .cc-label { color: #000; }
+body.theme-retro .caixa-card .cc-valor { color: #000080; }
+
+body.theme-retro .grafico-barras .barra-track { background: #c0c0c0; border: 1px inset #808080; }
+body.theme-retro .grafico-barras .barra-label { color: #000; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+body.theme-retro .grafico-barras .barra-valor { color: #000; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+body.theme-retro .grafico-barras .barra-fill { background: #000080; }

@@ -1,0 +1,273 @@
+/* ============================================================
+   IMPORTAÇÃO DE XML
+   ============================================================ */
+
+/* Área de upload (drag & drop) */
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.upload-area:hover {
+  border-color: #4a9eff;
+  background: rgba(74, 158, 255, 0.04);
+}
+
+.upload-area .ua-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.upload-area .ua-titulo {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.upload-area .ua-descricao {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.upload-area .ua-tipos {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Pastas sugeridas */
+.pastas-sugeridas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pasta-chip {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pasta-chip:hover {
+  background: rgba(74, 158, 255, 0.1);
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+.pasta-chip.ativa {
+  background: rgba(74, 158, 255, 0.15);
+  border-color: #4a9eff;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Resumo da pré-validação */
+.resumo-pre-validacao {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.rpv-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+.rpv-card .rpv-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+}
+
+.rpv-card .rpv-valor {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rpv-card.rpv-aceitos      .rpv-valor { color: #51cf66; }
+.rpv-card.rpv-aceitos-aviso .rpv-valor { color: #ff922b; }
+.rpv-card.rpv-cancelados   .rpv-valor { color: #a78bfa; }
+.rpv-card.rpv-rejeitados   .rpv-valor { color: #ff6b6b; }
+
+/* Tabela de XMLs */
+.xml-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 120px 120px 100px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 6px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.xml-item.status-aceito            { border-left-color: #51cf66; }
+.xml-item.status-aceito_com_aviso  { border-left-color: #ff922b; background: rgba(255, 146, 43, 0.04); }
+.xml-item.status-cancelado         { border-left-color: #a78bfa; opacity: 0.7; }
+.xml-item.status-rejeitado         { border-left-color: #ff6b6b; background: rgba(255, 107, 107, 0.04); }
+
+.xml-item .xml-checkbox { text-align: center; }
+.xml-item .xml-info { min-width: 0; }
+.xml-item .xml-arquivo {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xml-item .xml-meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xml-item .xml-motivo {
+  font-size: 11px;
+  color: #ff922b;
+  margin-top: 2px;
+}
+
+.xml-item .xml-valor {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #fff;
+}
+
+.xml-item .xml-badge {
+  text-align: right;
+}
+
+/* Detalhes do documento (expandir) */
+.xml-detalhes {
+  margin: 6px 0 12px 40px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.xml-detalhes .detalhe-linha {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.xml-detalhes .detalhe-linha .label { color: rgba(255, 255, 255, 0.5); }
+.xml-detalhes .detalhe-linha .valor { font-family: monospace; }
+
+/* ---------- Tema clássico ---------- */
+body.theme-classic .upload-area {
+  border-color: #ccc;
+  background: #f8f9fa;
+}
+body.theme-classic .upload-area:hover {
+  border-color: #0d6efd;
+  background: #f0f7ff;
+}
+body.theme-classic .upload-area .ua-titulo { color: #333; }
+body.theme-classic .upload-area .ua-descricao { color: #666; }
+body.theme-classic .upload-area .ua-tipos { color: #999; }
+
+body.theme-classic .pasta-chip {
+  background: #f1f3f5;
+  border-color: #ccc;
+  color: #333;
+}
+body.theme-classic .pasta-chip:hover,
+body.theme-classic .pasta-chip.ativa {
+  background: #cfe2ff;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+body.theme-classic .rpv-card {
+  background: #fff;
+  border-color: #dee2e6;
+}
+body.theme-classic .rpv-card .rpv-label { color: #666; }
+
+body.theme-classic .xml-item {
+  background: #fff;
+  border-color: #dee2e6;
+}
+body.theme-classic .xml-item .xml-arquivo { color: #333; }
+body.theme-classic .xml-item .xml-meta { color: #666; }
+body.theme-classic .xml-item .xml-valor { color: #333; }
+
+body.theme-classic .xml-detalhes {
+  background: #f8f9fa;
+  color: #555;
+}
+body.theme-classic .xml-detalhes .detalhe-linha .label { color: #888; }
+
+/* ---------- Tema retro ---------- */
+body.theme-retro .upload-area {
+  border: 2px dashed #808080;
+  background: #c0c0c0;
+  border-radius: 0;
+}
+body.theme-retro .upload-area:hover {
+  border-color: #000080;
+  background: #d4d0c8;
+}
+body.theme-retro .upload-area .ua-titulo { color: #000; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+body.theme-retro .upload-area .ua-descricao { color: #404040; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+
+body.theme-retro .pasta-chip {
+  background: #c0c0c0;
+  border: 1px outset #fff;
+  color: #000;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+}
+body.theme-retro .pasta-chip.ativa {
+  background: #d4d0c8;
+  border-style: inset;
+  color: #000080;
+}
+
+body.theme-retro .rpv-card {
+  background: #c0c0c0;
+  border: 1px outset #fff;
+  border-radius: 0;
+}
+body.theme-retro .rpv-card .rpv-label { color: #000; }
+
+body.theme-retro .xml-item {
+  background: #c0c0c0;
+  border: 1px outset #fff;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+}
+body.theme-retro .xml-item .xml-arquivo { color: #000; }
+body.theme-retro .xml-item .xml-meta { color: #404040; }
+body.theme-retro .xml-item .xml-valor { color: #000080; }

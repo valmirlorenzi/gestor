@@ -1,0 +1,80 @@
+/* ============================================================
+   ACESSIBILIDADE — tamanho de fonte customizável
+   Usa zoom no body (wireframe). Em produção, migrar para rem.
+   ============================================================ */
+
+body.fonte-pequena { zoom: 0.9; }
+body.fonte-media   { zoom: 1.0; }
+body.fonte-grande  { zoom: 1.1; }
+body.fonte-extra   { zoom: 1.2; }
+
+/* Seletor no topbar */
+.font-switcher {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 12px;
+  padding: 2px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.font-switcher button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.font-switcher button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.font-switcher button.active {
+  background: rgba(74, 158, 255, 0.2);
+  color: #4a9eff;
+}
+
+/* Tema clássico */
+body.theme-classic .font-switcher {
+  background: #f1f3f5;
+  border-color: #ccc;
+}
+
+body.theme-classic .font-switcher button {
+  color: #666;
+}
+
+body.theme-classic .font-switcher button:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+body.theme-classic .font-switcher button.active {
+  background: #cfe2ff;
+  color: #0d6efd;
+}
+
+/* Tema retro */
+body.theme-retro .font-switcher {
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  border-radius: 0;
+}
+
+body.theme-retro .font-switcher button {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  color: #000;
+  border-radius: 0;
+}
+
+body.theme-retro .font-switcher button.active {
+  background: #000080;
+  color: #fff;
+}

@@ -1,0 +1,51 @@
+/* ============================================================
+   TEMA MODERNO — Light
+   Herda geral.css e apenas sobrescreve as variáveis + ajustes.
+   ============================================================ */
+
+body.theme-modern {
+  --cor-fundo: #f5f7fa;
+  --cor-fundo-card: #ffffff;
+  --cor-fundo-sidebar: #ffffff;
+  --cor-fundo-topbar: #ffffff;
+  --cor-fundo-menu-item-hover: #f1f5f9;
+  --cor-fundo-menu-item-ativo: #eff6ff;
+  --cor-fundo-step: #f1f5f9;
+  --cor-fundo-step-ativo: #eff6ff;
+  --cor-fundo-step-concluido: #dcfce7;
+  --cor-fundo-th: #f8fafc;
+  --cor-fundo-tr-hover: #f8fafc;
+  --cor-fundo-chip: #f1f5f9;
+  --cor-fundo-chip-ativo: #2563eb;
+
+  --cor-texto: #1e293b;
+  --cor-texto-secundario: #64748b;
+  --cor-texto-menu: #475569;
+  --cor-texto-menu-ativo: #2563eb;
+  --cor-texto-muted: #94a3b8;
+  --cor-texto-step: #94a3b8;
+  --cor-texto-step-ativo: #2563eb;
+  --cor-texto-step-concluido: #16a34a;
+  --cor-texto-chip: #475569;
+  --cor-texto-chip-ativo: #ffffff;
+
+  --cor-borda: #e2e8f0;
+  --cor-borda-campo: #cbd5e1;
+  --cor-borda-menu-ativo: #2563eb;
+  --cor-borda-topbar: #e2e8f0;
+  --cor-borda-sidebar: #e2e8f0;
+
+  --cor-primaria: #2563eb;
+  --cor-primaria-hover: #1d4ed8;
+  --cor-foco: rgba(37, 99, 235, 0.15);
+
+  --cor-badge-ok-fundo: #dcfce7;
+  --cor-badge-ok-texto: #16a34a;
+  --cor-badge-warn-fundo: #fef3c7;
+  --cor-badge-warn-texto: #d97706;
+  --cor-badge-err-fundo: #fee2e2;
+  --cor-badge-err-texto: #dc2626;
+
+  --sombra-card: 0 1px 2px rgba(0,0,0,0.03);
+  --sombra-topbar: 0 1px 3px rgba(0,0,0,0.04);
+}

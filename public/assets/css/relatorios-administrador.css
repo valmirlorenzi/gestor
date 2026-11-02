@@ -1,0 +1,932 @@
+/* ============================================================
+   RELATÓRIOS DO ADMINISTRADOR (G8–G15)
+   Adicionado na v1.1 do wireframe (merge do 13)
+   ============================================================ */
+
+/* --- Genéricos de tela --- */
+.screen {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.screen-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.screen-subtitulo {
+  font-size: 13px;
+  color: #95a5a6;
+}
+
+.screen-rodape,
+.painel-rodape,
+.balanco-rodape,
+.aging-rodape,
+.imposto-rodape,
+.pessoal-rodape,
+.ativos-rodape,
+.pe-rodape,
+.resumo-rodape {
+  margin-top: 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- Botões (se já existem no geral, mantém) --- */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-secundario {
+  background: transparent;
+}
+
+.btn-link {
+  background: transparent;
+  border: none;
+  color: #4a9eff;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   SEMÁFORO (compartilhado por G9, G12, G15)
+   ============================================================ */
+
+.semaforo-verde    { border-left: 4px solid #27ae60; }
+.semaforo-amarelo  { border-left: 4px solid #f39c12; }
+.semaforo-vermelho { border-left: 4px solid #e74c3c; }
+.semaforo-cinza    { border-left: 4px solid #7f8c8d; }
+
+.variacao-positiva { color: #27ae60; }
+.variacao-negativa { color: #e74c3c; }
+.variacao-neutra   { color: #95a5a6; }
+.alerta-medio      { color: #f39c12; }
+
+.saldo-devedor { color: #e74c3c; }
+.saldo-credor  { color: #27ae60; }
+.saldo-zerado  { color: #95a5a6; }
+
+/* ============================================================
+   G9 — PAINEL EXECUTIVO
+   ============================================================ */
+
+.painel-executivo {
+  padding: 24px;
+}
+
+.painel-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.painel-alerta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+}
+
+.painel-alerta:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.painel-alerta-vermelho { border-left: 4px solid #e74c3c; }
+.painel-alerta-amarelo  { border-left: 4px solid #f39c12; }
+.painel-alerta-verde    { border-left: 4px solid #27ae60; }
+
+.painel-blocos {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.painel-bloco-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #ecf0f1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.kpi-card {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.kpi-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.kpi-nome {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpi-semaforo {
+  font-size: 12px;
+}
+
+.kpi-valor {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.kpi-variacao {
+  font-size: 12px;
+}
+
+/* ============================================================
+   G8 — BALANÇO
+   ============================================================ */
+
+.balanco-alerta {
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: rgba(231, 76, 60, 0.15);
+  border-left: 4px solid #e74c3c;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.balanco-ok {
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: rgba(39, 174, 96, 0.15);
+  border-left: 4px solid #27ae60;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.balanco-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.balanco-tabela th {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #95a5a6;
+}
+
+.balanco-tabela td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.balanco-secao td {
+  font-weight: 600;
+  font-size: 13px;
+  padding-top: 20px;
+  color: #ecf0f1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balanco-grupo-titulo td {
+  font-weight: 600;
+  color: #bdc3c7;
+  font-size: 12px;
+  padding-top: 12px;
+}
+
+.balanco-subtotal td {
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.balanco-total td {
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 14px;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.balanco-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.balanco-av { text-align: right; color: #95a5a6; font-size: 12px; }
+.balanco-conta { font-family: monospace; color: #7f8c8d; width: 80px; }
+
+/* ============================================================
+   G10 — AGING
+   ============================================================ */
+
+.aging-blocos {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.aging-bloco {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.aging-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.aging-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.aging-tabela th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+.aging-tabela td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.aging-total td {
+  font-weight: 700;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.aging-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.aging-pct { text-align: right; color: #95a5a6; }
+.aging-barra { width: 30%; }
+
+.aging-indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.aging-indicador {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}
+
+.aging-indicador-label {
+  font-size: 11px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.aging-indicador-valor {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   G11 — POSIÇÃO DE IMPOSTOS
+   ============================================================ */
+
+.imposto-alerta-gerencial {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(243, 156, 18, 0.15);
+  border-left: 4px solid #f39c12;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.imposto-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.imposto-kpi {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.imposto-kpi-label {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.imposto-kpi-valor {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.imposto-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.imposto-tabela th {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+.imposto-tabela td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.imposto-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.imposto-natureza { text-align: center; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+.imposto-total td {
+  font-weight: 700;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.imposto-evolucao {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.imposto-evolucao-titulo {
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.imposto-grafico {
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+.imposto-evolucao-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #95a5a6;
+}
+
+/* ============================================================
+   G12 — POSIÇÃO DE PESSOAL
+   ============================================================ */
+
+.pessoal-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pessoal-kpi {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pessoal-kpi-destaque {
+  border-left: 4px solid #f39c12;
+  background: rgba(243, 156, 18, 0.08);
+}
+
+.pessoal-kpi-label {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pessoal-kpi-valor {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.pessoal-areas {
+  margin-bottom: 24px;
+}
+
+.pessoal-areas-titulo {
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.pessoal-area-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pessoal-area-tabela th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+.pessoal-area-tabela td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pessoal-area-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.pessoal-area-barra { width: 40%; }
+.pessoal-area-total td { font-weight: 700; border-top: 2px solid rgba(255, 255, 255, 0.15); }
+
+.pessoal-evolucao {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.pessoal-evolucao-titulo { font-size: 14px; margin: 0 0 12px 0; }
+.pessoal-grafico { width: 100%; height: 160px; display: block; }
+.pessoal-evolucao-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #95a5a6; }
+
+/* ============================================================
+   G13 — POSIÇÃO DE ATIVOS
+   ============================================================ */
+
+.ativos-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.ativos-kpi {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ativos-kpi-label {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ativos-kpi-valor { font-size: 22px; font-weight: 600; }
+
+.ativos-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.ativos-tabela th {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+.ativos-tabela td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ativos-valor,
+.ativo-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.ativo-vida { text-align: right; color: #95a5a6; }
+
+.ativo-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.status-uso     { background: rgba(39, 174, 96, 0.2); color: #27ae60; }
+.status-ocioso  { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+.status-alienado { background: rgba(127, 140, 141, 0.2); color: #95a5a6; }
+
+.ativo-total td {
+  font-weight: 700;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ativos-projecao {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.ativos-projecao-titulo {
+  font-size: 14px;
+  margin: 0 0 16px 0;
+}
+
+.ativos-projecao-barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4px;
+  height: 120px;
+  margin-bottom: 8px;
+}
+
+.ativos-projecao-barra-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+.ativos-projecao-barra {
+  width: 100%;
+  background: linear-gradient(180deg, #3498db, #2980b9);
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+  transition: height 0.2s;
+}
+
+.ativos-projecao-mes {
+  font-size: 10px;
+  color: #95a5a6;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.ativos-projecao-valor {
+  font-size: 9px;
+  color: #7f8c8d;
+  display: none;
+}
+
+.ativos-projecao-barra-wrap:hover .ativos-projecao-valor {
+  display: block;
+  position: absolute;
+  bottom: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.ativos-projecao-total {
+  margin: 12px 0 0 0;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* ============================================================
+   G14 — PONTO DE EQUILÍBRIO
+   ============================================================ */
+
+.pe-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pe-kpis-destaque {
+  background: rgba(243, 156, 18, 0.05);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.pe-kpi {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pe-kpi-destaque { background: rgba(243, 156, 18, 0.12); border-left: 4px solid #f39c12; }
+.pe-kpi-ok      { border-left: 4px solid #27ae60; }
+.pe-kpi-alerta  { border-left: 4px solid #f39c12; }
+
+.pe-kpi-label {
+  font-size: 12px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pe-kpi-valor { font-size: 20px; font-weight: 600; }
+
+.pe-alerta {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.pe-alerta-erro {
+  background: rgba(231, 76, 60, 0.15);
+  border-left: 4px solid #e74c3c;
+}
+
+.pe-grafico-wrap {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.pe-grafico-titulo { font-size: 14px; margin: 0 0 12px 0; }
+.pe-grafico { width: 100%; height: 260px; display: block; }
+
+.pe-grafico-legenda {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #95a5a6;
+}
+
+.pe-legenda { display: inline-flex; align-items: center; gap: 6px; }
+.pe-legenda::before { content: ''; width: 14px; height: 2px; background: currentColor; display: inline-block; }
+.pe-legenda-receita { color: #27ae60; }
+.pe-legenda-custo { color: #e74c3c; }
+.pe-legenda-fixo { color: #95a5a6; }
+.pe-legenda-pe { color: #f39c12; }
+.pe-legenda-pe::before { height: 8px; width: 8px; border-radius: 50%; }
+
+.pe-tabela-wrap {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.pe-tabela-titulo { font-size: 14px; margin: 0 0 12px 0; }
+
+.pe-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pe-tabela td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pe-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.pe-subtotal td { font-weight: 600; background: rgba(255, 255, 255, 0.03); }
+.pe-total td { font-weight: 700; font-size: 14px; border-top: 2px solid rgba(255, 255, 255, 0.15); }
+
+/* ============================================================
+   G15 — RESUMO EXECUTIVO
+   ============================================================ */
+
+.resumo-executivo { padding: 24px; }
+
+.resumo-header {
+  align-items: flex-start;
+}
+
+.resumo-header-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.resumo-pagina {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.resumo-secao {
+  margin-bottom: 24px;
+  page-break-inside: avoid;
+}
+
+.resumo-secao:last-child { margin-bottom: 0; }
+
+.resumo-secao-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resumo-destaques {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resumo-destaque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(39, 174, 96, 0.08);
+  border-left: 3px solid #27ae60;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.resumo-destaque-icone { font-size: 16px; }
+.resumo-destaque-texto { flex: 1; }
+.resumo-destaque-variacao { font-weight: 600; font-size: 12px; }
+
+.resumo-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resumo-risco,
+.resumo-oportunidade,
+.resumo-acao {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.resumo-risco-alto   { background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; }
+.resumo-risco-medio  { background: rgba(243, 156, 18, 0.1); border-left: 3px solid #f39c12; }
+.resumo-risco-baixo  { background: rgba(149, 165, 166, 0.1); border-left: 3px solid #95a5a6; }
+.resumo-oportunidade { background: rgba(52, 152, 219, 0.08); border-left: 3px solid #3498db; }
+.resumo-acao        { background: rgba(155, 89, 182, 0.08); border-left: 3px solid #9b59b6; }
+
+/* ============================================================
+   BARRA (compartilhada por aging, pessoal, etc.)
+   ============================================================ */
+
+.barra-container {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barra-preenchimento {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.barra-info { background: #3498db; }
+.barra-ok   { background: #27ae60; }
+.barra-aviso { background: #f39c12; }
+.barra-erro { background: #e74c3c; }
+
+/* ============================================================
+   IMPRESSÃO (Resumo Executivo → PDF)
+   ============================================================ */
+
+@media print {
+  .screen-header-acoes,
+  .painel-rodape,
+  .balanco-rodape,
+  .aging-rodape,
+  .imposto-rodape,
+  .pessoal-rodape,
+  .ativos-rodape,
+  .pe-rodape,
+  .resumo-rodape,
+  .btn { display: none !important; }
+
+  .resumo-pagina { background: white; color: black; }
+
+  body { background: white; color: black; }
+}
+
+/* Modal de drill-down */
+.modal-drilldown-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-drilldown {
+  background: #1e2228; color: #ecf0f1;
+  border-radius: 8px; max-width: 800px; width: 100%;
+  max-height: 80vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.modal-drilldown-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.modal-drilldown-header h3 { margin: 0; font-size: 16px; }
+.modal-drilldown-fechar {
+  background: none; border: none; color: #ecf0f1;
+  font-size: 18px; cursor: pointer; padding: 4px 8px;
+}
+.modal-drilldown-fechar:hover { color: #e74c3c; }
+.modal-drilldown-body { padding: 16px 20px; overflow-y: auto; }
+.modal-drilldown-tabela { width: 100%; border-collapse: collapse; font-size: 13px; }
+.modal-drilldown-tabela th {
+  text-align: left; padding: 8px; font-size: 11px;
+  text-transform: uppercase; color: #95a5a6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.modal-drilldown-tabela td {
+  padding: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.drill-valor { text-align: right; font-variant-numeric: tabular-nums; }

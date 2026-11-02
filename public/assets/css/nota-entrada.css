@@ -1,0 +1,344 @@
+/* ============================================================
+   NOTA DE ENTRADA — wizard, tabela editável, validação
+   ============================================================ */
+
+/* ---------- Wizard progress ---------- */
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 22px;
+}
+
+.wizard-progress .step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  border: 2px solid transparent;
+}
+
+.wizard-progress .step.done {
+  background: rgba(81, 207, 102, 0.15);
+  color: #51cf66;
+  border-color: rgba(81, 207, 102, 0.4);
+}
+
+.wizard-progress .step.current {
+  background: rgba(74, 158, 255, 0.15);
+  color: #4a9eff;
+  border-color: #4a9eff;
+  animation: pulse-step 1.6s infinite;
+}
+
+.wizard-progress .step + .step::before {
+  content: '';
+  display: inline-block;
+  width: 40px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-right: 8px;
+}
+
+@keyframes pulse-step {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 158, 255, 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(74, 158, 255, 0); }
+}
+
+/* ---------- Tabela editável ---------- */
+.data-editavel {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-editavel th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-editavel td {
+  padding: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.data-editavel input[type="number"],
+.data-editavel input[type="text"],
+.data-editavel input[type="date"],
+.data-editavel select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.data-editavel input:focus,
+.data-editavel select:focus {
+  border-color: #4a9eff;
+  background: rgba(74, 158, 255, 0.06);
+}
+
+.data-editavel input[readonly] {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: not-allowed;
+}
+
+/* Linha divergente */
+.data-editavel tr.linha-divergente {
+  background: rgba(255, 146, 43, 0.06);
+}
+
+.data-editavel tr.linha-divergente td {
+  border-top: 1px solid rgba(255, 146, 43, 0.25);
+}
+
+/* ---------- Badges de status ---------- */
+.badge-ok      { background: rgba(81, 207, 102, 0.15); color: #51cf66; }
+.badge-warn    { background: rgba(255, 146, 43, 0.15); color: #ff922b; }
+.badge-err     { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+.badge-info    { background: rgba(74, 158, 255, 0.15); color: #4a9eff; }
+.badge         { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+/* ---------- Alertas ---------- */
+.alert {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.alert-warn {
+  background: rgba(255, 146, 43, 0.1);
+  border-left: 3px solid #ff922b;
+  color: #ffb366;
+}
+
+.alert-warn strong {
+  color: #ff922b;
+}
+
+.alert-warn ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.alert-warn li {
+  margin-bottom: 8px;
+}
+
+.alert-warn .btn-sm {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.alert-success {
+  background: rgba(81, 207, 102, 0.1);
+  border-left: 3px solid #51cf66;
+  color: #51cf66;
+}
+
+.alert-info {
+  background: rgba(74, 158, 255, 0.08);
+  border-left: 3px solid #4a9eff;
+  color: #74b9ff;
+}
+
+/* ---------- Botões pequenos ---------- */
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-sm:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Totalizadores ---------- */
+.totalizadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+}
+
+.totalizadores .total-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.totalizadores .total-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.totalizadores .total-valor {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.totalizadores .total-valor.destaque {
+  color: #4a9eff;
+  font-size: 17px;
+}
+
+/* ---------- Preview de partidas ---------- */
+.preview-partidas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.preview-partidas th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-partidas td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.preview-partidas .debito  { color: #74b9ff; }
+.preview-partidas .credito { color: #ffb366; }
+.preview-partidas .valor   { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- Cabeçalho da tela ---------- */
+.nota-entrada-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.nota-entrada-header h1 {
+  margin: 0;
+}
+
+.nota-entrada-header .etapa-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- Tema clássico ---------- */
+body.theme-classic .data-editavel input,
+body.theme-classic .data-editavel select {
+  background: #fff;
+  color: #333;
+  border-color: #ccc;
+}
+
+body.theme-classic .data-editavel th {
+  color: #666;
+  border-bottom-color: #e9ecef;
+}
+
+body.theme-classic .data-editavel td {
+  border-bottom-color: #e9ecef;
+}
+
+body.theme-classic .alert-warn {
+  background: #fff3cd;
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+body.theme-classic .alert-warn strong {
+  color: #856404;
+}
+
+body.theme-classic .alert-success {
+  background: #d4edda;
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+body.theme-classic .totalizadores {
+  background: #f8f9fa;
+}
+
+body.theme-classic .totalizadores .total-valor {
+  color: #333;
+}
+
+/* ---------- Tema retro ---------- */
+body.theme-retro .data-editavel input,
+body.theme-retro .data-editavel select {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  background: #fff;
+  color: #000;
+  border: 1px inset #808080;
+}
+
+body.theme-retro .wizard-progress .step {
+  border-radius: 0;
+  background: #c0c0c0;
+  color: #000;
+  border: 1px outset #fff;
+}
+
+body.theme-retro .wizard-progress .step.done {
+  background: #008000;
+  color: #fff;
+}
+
+body.theme-retro .wizard-progress .step.current {
+  background: #000080;
+  color: #fff;
+}
+
+body.theme-retro .alert-warn {
+  background: #ffffcc;
+  border-left: 3px solid #808000;
+  color: #000;
+}
+
+body.theme-retro .btn-sm {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  background: #c0c0c0;
+  color: #000;
+  border: 1px outset #fff;
+}
+
+body.theme-retro .btn-sm:active {
+  border-style: inset;
+}

@@ -1,0 +1,88 @@
+/* ============================================================
+   TEMA CLÁSSICO / VINTAGE
+   Herda geral.css e sobrescreve variáveis + adiciona detalhes.
+   ============================================================ */
+
+body.theme-classic {
+  --cor-fundo: #f4ecd8;
+  --cor-fundo-card: #faf5e8;
+  --cor-fundo-sidebar: #efe2c6;
+  --cor-fundo-topbar: #efe2c6;
+  --cor-fundo-menu-item-hover: #e6d9b8;
+  --cor-fundo-menu-item-ativo: #faf5e8;
+  --cor-fundo-step: #efe2c6;
+  --cor-fundo-step-ativo: #faf5e8;
+  --cor-fundo-step-concluido: #e6d9b8;
+  --cor-fundo-th: #efe2c6;
+  --cor-fundo-tr-hover: #faf5e8;
+  --cor-fundo-chip: #efe2c6;
+  --cor-fundo-chip-ativo: #8b5a2b;
+
+  --cor-texto: #3a2e1f;
+  --cor-texto-secundario: #6b4a2a;
+  --cor-texto-menu: #5a3a1a;
+  --cor-texto-menu-ativo: #5a3a1a;
+  --cor-texto-muted: #8b5a2b;
+  --cor-texto-step: #8b5a2b;
+  --cor-texto-step-ativo: #5a3a1a;
+  --cor-texto-step-concluido: #5a3a1a;
+  --cor-texto-chip: #5a3a1a;
+  --cor-texto-chip-ativo: #ffffff;
+
+  --cor-borda: #c9a97a;
+  --cor-borda-campo: #c9a97a;
+  --cor-borda-menu-ativo: #8b5a2b;
+  --cor-borda-topbar: #8b5a2b;
+  --cor-borda-sidebar: #8b5a2b;
+
+  --cor-primaria: #8b5a2b;
+  --cor-primaria-hover: #6b4a2a;
+  --cor-foco: rgba(139, 90, 43, 0.2);
+
+  --cor-badge-ok-fundo: #e6d9b8;
+  --cor-badge-ok-texto: #2d6a2d;
+  --cor-badge-warn-fundo: #f0e0b0;
+  --cor-badge-warn-texto: #8b5a2b;
+  --cor-badge-err-fundo: #f0d0c0;
+  --cor-badge-err-texto: #9b2c2c;
+
+  --sombra-card: 3px 3px 0 rgba(139,90,43,0.15);
+  --sombra-topbar: none;
+  --raio-card: 0;
+  --raio-campo: 4px;
+
+  --fonte-base: Georgia, 'Times New Roman', serif;
+  --fonte-titulo: system-ui, sans-serif;
+}
+
+/* Ajustes específicos do tema (não cobertos por variáveis) */
+body.theme-classic .card h2,
+body.theme-classic .card h3 {
+  color: var(--cor-texto-menu);
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--cor-borda);
+  padding-bottom: 6px;
+  font-family: var(--fonte-titulo);
+}
+body.theme-classic .form-row label {
+  color: var(--cor-texto-menu);
+  font-family: var(--fonte-titulo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+body.theme-classic .btn-secondary {
+  background: var(--cor-fundo-card);
+  color: var(--cor-texto-menu);
+  border: 1px solid var(--cor-borda);
+  font-family: var(--fonte-titulo);
+}
+body.theme-classic .topbar { border-bottom: 2px double var(--cor-borda-topbar); }
+body.theme-classic .sidebar { border-right: 2px double var(--cor-borda-sidebar); }
+body.theme-classic .topbar .brand { font-variant: small-caps; letter-spacing: 1px; }
+body.theme-classic .sidebar .menu-item.active { font-style: italic; }
+body.theme-classic table.data th {
+  font-family: var(--fonte-titulo);
+  letter-spacing: 1px;
+}
+body.theme-classic table.data td { border-bottom: 1px dotted var(--cor-borda); }
+body.theme-classic .step { border: 1px solid var(--cor-borda); font-family: var(--fonte-titulo); }

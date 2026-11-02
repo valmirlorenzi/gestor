@@ -1,0 +1,257 @@
+/* ============================================================
+   AUDITOR — estilos específicos
+   ============================================================ */
+
+/* Abas (reutiliza o padrão do tabelas-basais.css, mas com destaque) */
+.auditor-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+  overflow-x: auto;
+}
+
+.auditor-tabs .tab {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+  margin-bottom: -2px;
+}
+
+.auditor-tabs .tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.auditor-tabs .tab.active {
+  color: #4a9eff;
+  border-bottom-color: #4a9eff;
+}
+
+/* Evento de auditoria (linha) */
+.evento-auditoria {
+  display: grid;
+  grid-template-columns: 140px 100px 1fr 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 8px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.evento-auditoria.acao-criacao     { border-left-color: #51cf66; }
+.evento-auditoria.acao-edicao      { border-left-color: #4a9eff; }
+.evento-auditoria.acao-override    { border-left-color: #ff922b; }
+.evento-auditoria.acao-fechamento  { border-left-color: #ff6b6b; }
+.evento-auditoria.acao-importacao  { border-left-color: #a78bfa; }
+.evento-auditoria.acao-reclassificacao { border-left-color: #f59f00; }
+.evento-auditoria.acao-aprovacao   { border-left-color: #51cf66; }
+.evento-auditoria.acao-desativacao { border-left-color: #ff6b6b; }
+
+.evento-auditoria .ev-data { font-size: 12px; color: rgba(255, 255, 255, 0.5); font-family: monospace; }
+.evento-auditoria .ev-usuario { font-weight: 600; color: #fff; }
+.evento-auditoria .ev-acao { font-weight: 600; }
+.evento-auditoria .ev-detalhes { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+.evento-auditoria .ev-detalhes strong { color: #fff; }
+.evento-auditoria .ev-diff {
+  font-size: 11px;
+  font-family: monospace;
+  margin-top: 4px;
+}
+.evento-auditoria .ev-diff .antes  { color: #ff922b; }
+.evento-auditoria .ev-diff .depois { color: #51cf66; }
+
+/* Transição de handoff */
+.transicao-handoff {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #4a9eff;
+  margin-bottom: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.transicao-handoff .th-ordem {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 600;
+  color: #4a9eff;
+  background: rgba(74, 158, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.transicao-handoff .th-arrow { color: rgba(255, 255, 255, 0.4); }
+.transicao-handoff .th-ator { font-weight: 600; color: #fff; }
+.transicao-handoff .th-estado {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.transicao-handoff .th-data { font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-left: auto; }
+
+/* Formulário de apontamento/solicitação */
+.form-auditor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-auditor .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-auditor .form-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 6px;
+}
+
+.form-auditor .form-row input,
+.form-auditor .form-row select,
+.form-auditor .form-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-auditor .form-row textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-auditor .form-row input:focus,
+.form-auditor .form-row select:focus,
+.form-auditor .form-row textarea:focus {
+  border-color: #4a9eff;
+}
+
+/* Linha do tempo do fechamento (11.8) */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 16px 0;
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timeline-item {
+  position: relative;
+  padding: 10px 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4a9eff;
+  border: 2px solid #1e293b;
+}
+
+.timeline-item.concluida::before { background: #51cf66; }
+.timeline-item.pendente::before  { background: #ff922b; }
+.timeline-item.bloqueada::before { background: #ff6b6b; }
+
+.timeline-item .ti-data { font-size: 11px; color: rgba(255, 255, 255, 0.5); font-family: monospace; }
+.timeline-item .ti-titulo { font-size: 14px; font-weight: 600; color: #fff; margin: 2px 0; }
+.timeline-item .ti-descricao { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+
+/* ---------- Tema clássico ---------- */
+body.theme-classic .auditor-tabs { border-bottom-color: #dee2e6; }
+body.theme-classic .auditor-tabs .tab { color: #666; }
+body.theme-classic .auditor-tabs .tab:hover { color: #333; background: #f1f3f5; }
+body.theme-classic .auditor-tabs .tab.active { color: #0d6efd; border-bottom-color: #0d6efd; }
+
+body.theme-classic .evento-auditoria { background: #fff; border-color: #dee2e6; }
+body.theme-classic .evento-auditoria .ev-usuario { color: #333; }
+body.theme-classic .evento-auditoria .ev-detalhes strong { color: #333; }
+body.theme-classic .evento-auditoria .ev-data { color: #888; }
+
+body.theme-classic .transicao-handoff { background: #fff; }
+body.theme-classic .transicao-handoff .th-ator { color: #333; }
+
+body.theme-classic .form-auditor .form-row label { color: #666; }
+body.theme-classic .form-auditor .form-row input,
+body.theme-classic .form-auditor .form-row select,
+body.theme-classic .form-auditor .form-row textarea { background: #fff; color: #333; border-color: #ccc; }
+
+body.theme-classic .timeline::before { background: #dee2e6; }
+body.theme-classic .timeline-item .ti-titulo { color: #333; }
+body.theme-classic .timeline-item .ti-descricao { color: #666; }
+
+/* ---------- Tema retro ---------- */
+body.theme-retro .auditor-tabs { border-bottom: 2px solid #808080; gap: 0; }
+body.theme-retro .auditor-tabs .tab {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  color: #000;
+  background: #c0c0c0;
+  border: 1px outset #fff;
+  border-radius: 0;
+  margin-bottom: 0;
+  padding: 6px 12px;
+}
+body.theme-retro .auditor-tabs .tab.active {
+  background: #d4d0c8;
+  border-style: inset;
+  color: #000080;
+  font-weight: 700;
+}
+
+body.theme-retro .evento-auditoria { background: #c0c0c0; border: 1px outset #fff; border-radius: 0; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+body.theme-retro .evento-auditoria .ev-usuario { color: #000; }
+body.theme-retro .evento-auditoria .ev-detalhes strong { color: #000; }
+
+body.theme-retro .transicao-handoff { background: #c0c0c0; border: 1px outset #fff; border-radius: 0; font-family: 'MS Sans Serif', Tahoma, sans-serif; }
+
+body.theme-retro .form-auditor .form-row input,
+body.theme-retro .form-auditor .form-row select,
+body.theme-retro .form-auditor .form-row textarea {
+  font-family: 'MS Sans Serif', Tahoma, sans-serif;
+  background: #fff;
+  color: #000;
+  border: 1px inset #808080;
+}
+
+body.theme-retro .timeline::before { background: #808080; }
+body.theme-retro .timeline-item .ti-titulo { color: #000; }
+body.theme-retro .timeline-item .ti-descricao { color: #404040; }

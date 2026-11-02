@@ -1,0 +1,108 @@
+/* ============================================================
+   TEMA DESKTOP ANTIGO (Windows 95/98)
+   Herda geral.css e sobrescreve variáveis + adiciona detalhes.
+   ============================================================ */
+
+body.theme-retro {
+  --cor-fundo: #008080;
+  --cor-fundo-card: #c0c0c0;
+  --cor-fundo-sidebar: #c0c0c0;
+  --cor-fundo-topbar: #c0c0c0;
+  --cor-fundo-menu-item-hover: #000080;
+  --cor-fundo-menu-item-ativo: #000080;
+  --cor-fundo-step: #ffffff;
+  --cor-fundo-step-ativo: #000080;
+  --cor-fundo-step-concluido: #008000;
+  --cor-fundo-th: #c0c0c0;
+  --cor-fundo-tr-hover: #ffffcc;
+  --cor-fundo-chip: #c0c0c0;
+  --cor-fundo-chip-ativo: #000080;
+
+  --cor-texto: #000000;
+  --cor-texto-secundario: #000000;
+  --cor-texto-menu: #000000;
+  --cor-texto-menu-ativo: #ffffff;
+  --cor-texto-muted: #000080;
+  --cor-texto-step: #000000;
+  --cor-texto-step-ativo: #ffffff;
+  --cor-texto-step-concluido: #ffffff;
+  --cor-texto-chip: #000000;
+  --cor-texto-chip-ativo: #ffffff;
+
+  --cor-borda: #808080;
+  --cor-borda-campo: #808080;
+  --cor-borda-menu-ativo: #ffff00;
+  --cor-borda-topbar: #808080;
+  --cor-borda-sidebar: #808080;
+
+  --cor-primaria: #000080;
+  --cor-primaria-hover: #0000a0;
+  --cor-foco: rgba(0, 0, 128, 0.25);
+
+  --cor-badge-ok-fundo: #008000;
+  --cor-badge-ok-texto: #ffffff;
+  --cor-badge-warn-fundo: #808000;
+  --cor-badge-warn-texto: #ffffff;
+  --cor-badge-err-fundo: #800000;
+  --cor-badge-err-texto: #ffffff;
+
+  --sombra-card: none;
+  --sombra-topbar: none;
+  --raio-card: 0;
+  --raio-campo: 0;
+
+  --fonte-base: 'MS Sans Serif', Tahoma, Verdana, sans-serif;
+  --fonte-titulo: 'MS Sans Serif', Tahoma, Verdana, sans-serif;
+  --fonte-mono: 'Courier New', monospace;
+
+  font-size: 12px;
+}
+
+/* Bordas 3D */
+body.theme-retro .topbar,
+body.theme-retro .sidebar,
+body.theme-retro .card,
+body.theme-retro .btn {
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+}
+body.theme-retro .card h2,
+body.theme-retro .card h3 {
+  background: var(--cor-primaria);
+  color: #fff;
+  padding: 2px 6px;
+  margin: -20px -20px 14px -20px;
+  font-size: 11px;
+  font-weight: 700;
+  border-bottom: none;
+}
+body.theme-retro .form-row label {
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
+body.theme-retro .form-row input,
+body.theme-retro .form-row select,
+body.theme-retro .form-row textarea {
+  background: #ffffff;
+  border: 2px inset #808080;
+  color: #000;
+  font-family: var(--fonte-mono);
+  font-size: 12px;
+}
+body.theme-retro .btn-primary { background: #c0c0c0; color: #000; font-weight: 700; }
+body.theme-retro .btn-primary:active { border-color: #808080 #ffffff #ffffff #808080; }
+body.theme-retro .btn-secondary { background: #c0c0c0; color: #000; }
+body.theme-retro .step { background: #ffffff; border: 2px inset #808080; color: #000; font-weight: 700; }
+body.theme-retro .step.active { background: var(--cor-primaria); color: #fff; }
+body.theme-retro .step.done { background: #008000; color: #fff; }
+body.theme-retro table.data { border: 2px inset #808080; background: #fff; }
+body.theme-retro table.data th { background: #c0c0c0; color: var(--cor-primaria); border: 1px solid #808080; font-size: 11px; }
+body.theme-retro table.data td { border: 1px solid #e0e0e0; }
+body.theme-retro .sidebar .menu-item:hover { color: #fff; }
+body.theme-retro .sidebar .menu-item.active { color: #fff; border-left-color: #ffff00; }
+body.theme-retro .sidebar .menu-section { color: var(--cor-primaria); font-weight: 700; }
+body.theme-retro .sidebar .toggle-btn { background: #c0c0c0; border: 1px solid; border-color: #ffffff #808080 #808080 #ffffff; }
+body.theme-retro .theme-switcher button { background: #c0c0c0; color: #000; border: 1px solid; border-color: #ffffff #808080 #808080 #ffffff; font-size: 11px; }
+body.theme-retro .theme-switcher button.active { background: var(--cor-primaria); color: #fff; }
+body.theme-retro .topbar .brand { color: var(--cor-primaria); }
+body.theme-retro .topbar .brand span { color: #000; }
