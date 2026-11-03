@@ -2,11 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\AtorFuncional;
+
 class TenantContext
 {
     private ?int $empresaId = null;
+
     private ?int $filialId = null;
+
     private ?int $usuarioId = null;
+
     private ?int $atorFuncionalId = null;
 
     public function set(
@@ -60,7 +65,7 @@ class TenantContext
             return false;
         }
 
-        return \App\Models\AtorFuncional::whereKey($this->atorFuncionalId)
+        return AtorFuncional::whereKey($this->atorFuncionalId)
             ->where('codigo', 'configurador')
             ->exists();
     }

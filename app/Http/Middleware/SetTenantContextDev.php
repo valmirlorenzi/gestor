@@ -11,14 +11,18 @@ class SetTenantContextDev
 {
     public function handle(Request $request, Closure $next)
     {
+        // P96: só roda em local/testing. Em produção, é no-op.
+        if (! app()->environment('local', 'testing')) {
+            return $next($request);
+        }
+
         $context = app(TenantContext::class);
 
         if (! $context->hasId()) {
-            // Até termos login: empresa logada = ID 1.
-            // Em desenvolvimento, permite ?empresa=ID para testar isolamento.
+            // Em dev, permite ?empresa=ID para testar isolamento.
             $id = $request->query('empresa');
 
-            if (app()->environment('local') && $id && Empresa::whereKey($id)->exists()) {
+            if ($id && Empresa::whereKey($id)->exists()) {
                 $context->setId((int) $id);
             } else {
                 $empresa = Empresa::find(1) ?? Empresa::first();

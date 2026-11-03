@@ -23,6 +23,6 @@ class TipoDocumentoSeeder extends Seeder
             );
         }
 
-        $this->command->info('Tipos de documento importados: ' . count($tipos));
+        $this->command->info('Tipos de documento importados: '.count($tipos));
     }
 }

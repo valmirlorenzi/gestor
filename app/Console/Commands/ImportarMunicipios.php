@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportarMunicipios extends Command
 {
     protected $signature = 'importar:municipios {--forcar : Re-importa mesmo se já houver municípios}';
+
     protected $description = 'Importa municípios do relatório BET do IBGE (.xls)';
 
     private const ARQUIVO = 'municipios.xls';
@@ -27,13 +28,14 @@ class ImportarMunicipios extends Command
 
     public function handle(): int
     {
-        $path = database_path('data/' . self::ARQUIVO);
+        $path = database_path('data/'.self::ARQUIVO);
 
         if (! file_exists($path)) {
-            $this->error("Arquivo não encontrado: database/data/" . self::ARQUIVO);
-            $this->warn("Baixe o relatório BET do IBGE:");
-            $this->warn("https://www.ibge.gov.br/geociencias/organizacao-do-territorio/estrutura-territorial/23701-divisao-territorial-brasileira.html");
-            $this->warn("Salve como database/data/" . self::ARQUIVO);
+            $this->error('Arquivo não encontrado: database/data/'.self::ARQUIVO);
+            $this->warn('Baixe o relatório BET do IBGE:');
+            $this->warn('https://www.ibge.gov.br/geociencias/organizacao-do-territorio/estrutura-territorial/23701-divisao-territorial-brasileira.html');
+            $this->warn('Salve como database/data/'.self::ARQUIVO);
+
             return self::FAILURE;
         }
 
@@ -41,10 +43,11 @@ class ImportarMunicipios extends Command
         $ufIds = DB::table('ufs')->pluck('id', 'sigla')->toArray();
         if (empty($ufIds)) {
             $this->error('Tabela ufs está vazia. Rode: php artisan db:seed --class=UfSeeder');
+
             return self::FAILURE;
         }
 
-        $this->info('Lendo ' . self::ARQUIVO . '...');
+        $this->info('Lendo '.self::ARQUIVO.'...');
         $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
@@ -67,6 +70,7 @@ class ImportarMunicipios extends Command
             // Validações
             if ($codigoUf === 0 || strlen($codigoIbge) !== 7 || $nomeMunicipio === '') {
                 $ignorados++;
+
                 continue;
             }
 
@@ -74,6 +78,7 @@ class ImportarMunicipios extends Command
             if (! $sigla || ! isset($ufIds[$sigla])) {
                 $ufsDesconhecidas[$codigoUf] = true;
                 $ignorados++;
+
                 continue;
             }
 
@@ -90,7 +95,7 @@ class ImportarMunicipios extends Command
         $this->info("Municípios importados: {$inseridos} (ignorados: {$ignorados})");
 
         if (! empty($ufsDesconhecidas)) {
-            $this->warn('Códigos de UF desconhecidos: ' . implode(', ', array_keys($ufsDesconhecidas)));
+            $this->warn('Códigos de UF desconhecidos: '.implode(', ', array_keys($ufsDesconhecidas)));
         }
 
         return self::SUCCESS;

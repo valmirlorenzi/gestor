@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Repositories\GrupoF\FilialRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Collection;
 
 class Usuario extends Authenticatable
 {
@@ -43,17 +46,13 @@ class Usuario extends Authenticatable
         return 'id';
     }
 
-    public function atores(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function atores(): HasMany
     {
-        return $this->hasMany(\App\Models\UsuarioAtor::class, 'id_usuario');
+        return $this->hasMany(UsuarioAtor::class, 'id_usuario');
     }
 
-    public function filiaisPermitidas(): \Illuminate\Support\Collection
+    public function filiaisPermitidas(): Collection
     {
-        return \App\Models\Filial::query()
-            ->whereIn('id', $this->atores()->select('id_filial'))
-            ->where('ativo', true)
-            ->whereNull('deleted_at')
-            ->get();
+        return app(FilialRepository::class)->permitidasParaUsuario((int) $this->id);
     }
 }

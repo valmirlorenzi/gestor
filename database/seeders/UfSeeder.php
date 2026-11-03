@@ -26,6 +26,6 @@ class UfSeeder extends Seeder
             );
         }
 
-        $this->command->info('UFs importadas: ' . count($ufs));
+        $this->command->info('UFs importadas: '.count($ufs));
     }
 }

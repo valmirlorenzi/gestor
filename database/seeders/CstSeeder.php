@@ -108,7 +108,7 @@ class CstSeeder extends Seeder
             ['COFINS', '75', 'Operação de aquisição por substituição tributária'],
             ['COFINS', '98', 'Outras operações de entrada'],
             ['COFINS', '99', 'Outras operações'],
-            
+
             // IBS/CBS (LC 214/2025)
             ['IBS/CBS', '000', 'Tributação Integral'],
             ['IBS/CBS', '200', 'Alíquota Reduzida (inclusive zero)'],
@@ -119,7 +119,7 @@ class CstSeeder extends Seeder
             ['IBS/CBS', '620', 'Tributação Monofásica'],
             ['IBS/CBS', '800', 'Transferência de Crédito'],
             ['IBS/CBS', '810', 'Ajustes'],
-            ['IBS/CBS', '900', 'Outros'],            
+            ['IBS/CBS', '900', 'Outros'],
         ];
 
         foreach ($csts as [$tipo, $codigo, $descricao]) {
@@ -129,6 +129,6 @@ class CstSeeder extends Seeder
             );
         }
 
-        $this->command->info('CSTs importados: ' . count($csts));
+        $this->command->info('CSTs importados: '.count($csts));
     }
 }

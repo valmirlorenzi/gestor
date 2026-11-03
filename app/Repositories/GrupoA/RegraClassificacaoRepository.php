@@ -41,7 +41,7 @@ class RegraClassificacaoRepository extends BaseRepository
             ->where('ativo', true)
             ->where(function ($q) use ($idTipoDocumento) {
                 $q->whereNull('id_tipo_documento')
-                  ->orWhere('id_tipo_documento', $idTipoDocumento);
+                    ->orWhere('id_tipo_documento', $idTipoDocumento);
             })
             ->where(function ($q) use ($idCfop) {
                 $q->whereNull('id_cfop')->orWhere('id_cfop', $idCfop);
@@ -60,7 +60,7 @@ class RegraClassificacaoRepository extends BaseRepository
             })
             ->where(function ($q) use ($historicoPalavraChave) {
                 $q->whereNull('historico_palavra_chave')
-                  ->orWhere('historico_palavra_chave', 'like', "%{$historicoPalavraChave}%");
+                    ->orWhere('historico_palavra_chave', 'like', "%{$historicoPalavraChave}%");
             })
             ->orderBy('prioridade')
             ->get();

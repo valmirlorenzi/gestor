@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Periodo extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
     use SoftDeletes;
-    use BelongsToTenant;
 
     protected $table = 'periodos';
 

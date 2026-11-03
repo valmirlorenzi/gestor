@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Repositories\GrupoA\AtorFuncionalRepository;
 use App\Repositories\GrupoA\CenarioSimulacaoRepository;
 use App\Repositories\GrupoA\CentroCustoRepository;
 use App\Repositories\GrupoA\CondicaoPagamentoRepository;
+use App\Repositories\GrupoA\DashboardRepository;
 use App\Repositories\GrupoA\FormaPagamentoRepository;
+use App\Repositories\GrupoA\MenuItemRepository;
 use App\Repositories\GrupoA\PessoaRepository;
 use App\Repositories\GrupoA\PlanoContaRepository;
 use App\Repositories\GrupoA\ProdutoServicoRepository;
@@ -47,10 +50,13 @@ class RepositoryServiceProvider extends ServiceProvider
         ProdutoServicoRepository::class,
         FormaPagamentoRepository::class,
         CondicaoPagamentoRepository::class,
+        DashboardRepository::class,
         ProventoDescontoRepository::class,
         RegraClassificacaoRepository::class,
         UsuarioRepository::class,
         CenarioSimulacaoRepository::class,
+        AtorFuncionalRepository::class,
+        MenuItemRepository::class,
         // Grupo F
         FilialRepository::class,
         PeriodoRepository::class,

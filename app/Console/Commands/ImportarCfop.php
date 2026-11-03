@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportarCfop extends Command
 {
     protected $signature = 'importar:cfop {--arquivo= : Caminho do .xlsx (padrão: database/data/cfop.xlsx)}';
+
     protected $description = 'Importa CFOP do arquivo .xlsx (CFOP + Descrição)';
 
     private const ARQUIVO_PADRAO = 'cfop.xlsx';
@@ -16,15 +17,16 @@ class ImportarCfop extends Command
     public function handle(): int
     {
         $path = $this->option('arquivo')
-            ?: database_path('data/' . self::ARQUIVO_PADRAO);
+            ?: database_path('data/'.self::ARQUIVO_PADRAO);
 
         if (! file_exists($path)) {
             $this->error("Arquivo não encontrado: {$path}");
-            $this->warn("Coloque o arquivo CFOP (.xlsx) em: database/data/" . self::ARQUIVO_PADRAO);
+            $this->warn('Coloque o arquivo CFOP (.xlsx) em: database/data/'.self::ARQUIVO_PADRAO);
+
             return self::FAILURE;
         }
 
-        $this->info('Lendo ' . basename($path) . '...');
+        $this->info('Lendo '.basename($path).'...');
         $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
@@ -46,6 +48,7 @@ class ImportarCfop extends Command
             // CFOP tem 4 dígitos
             if (! preg_match('/^\d{4}$/', $cfop) || $descricao === '') {
                 $ignorados++;
+
                 continue;
             }
 
@@ -61,6 +64,7 @@ class ImportarCfop extends Command
         }
 
         $this->info("CFOPs importados: {$inseridos} (ignorados: {$ignorados})");
+
         return self::SUCCESS;
     }
 }

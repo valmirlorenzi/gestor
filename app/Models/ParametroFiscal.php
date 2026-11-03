@@ -44,12 +44,13 @@ class ParametroFiscal extends Model
 
             if (! $context->hasId()) {
                 $builder->whereNull('parametros_fiscais.id_empresa');
+
                 return;
             }
 
             $builder->where(function (Builder $q) use ($context) {
                 $q->where('parametros_fiscais.id_empresa', $context->getId())
-                  ->orWhereNull('parametros_fiscais.id_empresa');
+                    ->orWhereNull('parametros_fiscais.id_empresa');
             });
         });
     }
@@ -62,7 +63,7 @@ class ParametroFiscal extends Model
         return $query->withoutGlobalScope('tenant_hibrido')
             ->where(function (Builder $q) use ($idEmpresa) {
                 $q->where('parametros_fiscais.id_empresa', $idEmpresa)
-                  ->orWhereNull('parametros_fiscais.id_empresa');
+                    ->orWhereNull('parametros_fiscais.id_empresa');
             });
     }
 

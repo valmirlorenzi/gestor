@@ -19,6 +19,7 @@ class SetTenantContext
         if ($user === null) {
             // Sem login: limpa e segue. O BelongsToTenant filtra tudo (whereRaw 1=0).
             $this->context->clear();
+
             return $next($request);
         }
 

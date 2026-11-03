@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class ImportarLc116 extends Command
 {
     protected $signature = 'importar:lc116 {--arquivo= : Caminho do .txt (padrão: database/data/lc116.txt)}';
+
     protected $description = 'Importa a Lista de Serviços da LC 116 do arquivo .txt';
 
     private const ARQUIVO_PADRAO = 'lc116.txt';
@@ -15,15 +16,16 @@ class ImportarLc116 extends Command
     public function handle(): int
     {
         $path = $this->option('arquivo')
-            ?: database_path('data/' . self::ARQUIVO_PADRAO);
+            ?: database_path('data/'.self::ARQUIVO_PADRAO);
 
         if (! file_exists($path)) {
             $this->error("Arquivo não encontrado: {$path}");
-            $this->warn("Coloque o arquivo LC 116 (.txt) em: database/data/" . self::ARQUIVO_PADRAO);
+            $this->warn('Coloque o arquivo LC 116 (.txt) em: database/data/'.self::ARQUIVO_PADRAO);
+
             return self::FAILURE;
         }
 
-        $this->info('Lendo ' . basename($path) . '...');
+        $this->info('Lendo '.basename($path).'...');
 
         $linhas = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $inseridos = 0;
@@ -40,6 +42,7 @@ class ImportarLc116 extends Command
             // Formato esperado: "1.01 – Análise e desenvolvimento de sistemas."
             if (! preg_match('/^(\d{1,2}\.\d{1,2})\s*[–\-—]\s*(.+)$/u', $linha, $m)) {
                 $ignorados++;
+
                 continue;
             }
 
@@ -55,13 +58,14 @@ class ImportarLc116 extends Command
 
             if ($descricao === '') {
                 $ignorados++;
+
                 continue;
             }
 
             // Normaliza o código para 5 caracteres com zero à esquerda: "1.01" -> "01.01"
             // A tabela servicos_lc116.codigo é varchar(10); o formato oficial é "01.01", "17.05", etc.
             if (preg_match('/^(\d)\.(\d{2})$/', $codigo, $mc)) {
-                $codigo = '0' . $mc[1] . '.' . $mc[2];
+                $codigo = '0'.$mc[1].'.'.$mc[2];
             }
 
             // Guarda a última redação (sobrescreve a anterior)
@@ -78,6 +82,7 @@ class ImportarLc116 extends Command
         }
 
         $this->info("Serviços LC 116 importados: {$inseridos} (linhas ignoradas: {$ignorados})");
+
         return self::SUCCESS;
     }
 }

@@ -28,7 +28,7 @@ class LancamentoRepository extends BaseRepository
         return $this->query()
             ->where(function ($q) use ($idConta) {
                 $q->where('id_conta_debito', $idConta)
-                  ->orWhere('id_conta_credito', $idConta);
+                    ->orWhere('id_conta_credito', $idConta);
             })
             ->orderBy('data_competencia')
             ->get();

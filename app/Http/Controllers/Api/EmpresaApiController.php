@@ -40,7 +40,7 @@ class EmpresaApiController extends Controller
     public function update(Request $request, Empresa $empresa)
     {
         $data = $request->validate([
-            'cnpj' => 'required|string|size:14|unique:empresas,cnpj,' . $empresa->id,
+            'cnpj' => 'required|string|size:14|unique:empresas,cnpj,'.$empresa->id,
             'razao_social' => 'required|string|max:200',
             'nome_fantasia' => 'nullable|string|max:200',
             'regime_fiscal' => 'required|in:Simples,Presumido,Real',

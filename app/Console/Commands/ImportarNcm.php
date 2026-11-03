@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportarNcm extends Command
 {
     protected $signature = 'importar:ncm {--arquivo= : Caminho do .xlsx (padrão: database/data/ncm.xlsx)}';
+
     protected $description = 'Importa NCM hierárquico do arquivo .xlsx (todos os níveis)';
 
     private const ARQUIVO_PADRAO = 'ncm.xlsx';
@@ -16,15 +17,16 @@ class ImportarNcm extends Command
     public function handle(): int
     {
         $path = $this->option('arquivo')
-            ?: database_path('data/' . self::ARQUIVO_PADRAO);
+            ?: database_path('data/'.self::ARQUIVO_PADRAO);
 
         if (! file_exists($path)) {
             $this->error("Arquivo não encontrado: {$path}");
-            $this->warn("Coloque o arquivo NCM (.xlsx) em: database/data/" . self::ARQUIVO_PADRAO);
+            $this->warn('Coloque o arquivo NCM (.xlsx) em: database/data/'.self::ARQUIVO_PADRAO);
+
             return self::FAILURE;
         }
 
-        $this->info('Lendo ' . basename($path) . '...');
+        $this->info('Lendo '.basename($path).'...');
         $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
@@ -57,6 +59,7 @@ class ImportarNcm extends Command
 
             if ($codigo === '' || $descricao === '') {
                 $ignorados++;
+
                 continue;
             }
 
@@ -65,6 +68,7 @@ class ImportarNcm extends Command
 
             if ($nivel === 0) {
                 $ignorados++;
+
                 continue;
             }
 
@@ -73,7 +77,7 @@ class ImportarNcm extends Command
             $descricao = trim($descricao);
 
             if ($descricao === '') {
-                $descricao = 'NCM ' . $codigo;
+                $descricao = 'NCM '.$codigo;
             }
 
             // Resolve o pai: último ancestral de nível menor cujo código é prefixo do atual
@@ -89,8 +93,8 @@ class ImportarNcm extends Command
                     $idPai = $candidato;
                     break;
                 }
-            }            
-            
+            }
+
             // Só aceita lançamento se for subitem (8 dígitos)
             $aceitaLancamento = $nivel === 5;
 
@@ -120,6 +124,7 @@ class ImportarNcm extends Command
         }
 
         $this->info("NCMs importados: {$inseridos} (ignorados: {$ignorados})");
+
         return self::SUCCESS;
     }
 

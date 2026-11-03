@@ -16,6 +16,7 @@ class Tarefa extends Model
     protected $table = 'tarefas';
 
     const CREATED_AT = null;
+
     const UPDATED_AT = 'updated_at';
 
     protected $fillable = [

@@ -15,6 +15,7 @@ trait BelongsToTenant
             if (! $context->hasId()) {
                 // Sem contexto: retorna vazio (segurança).
                 $builder->whereRaw('1 = 0');
+
                 return;
             }
 

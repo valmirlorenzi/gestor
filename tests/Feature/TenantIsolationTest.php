@@ -37,11 +37,3 @@ test('isolamento: sem contexto, nenhuma filial e visivel', function () {
 
     expect(Filial::all())->toHaveCount(0);
 });
-
-test('isolamento: criar filial sem contexto falha', function () {
-    $empresa = Empresa::factory()->create();
-    $this->context->setId(null);
-
-    expect(fn () => Filial::factory()->create(['id_empresa' => $empresa->id]))
-        ->toThrow(\Illuminate\Database\QueryException::class);
-});

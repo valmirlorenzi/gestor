@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FormaPagamento extends Model
 {
-    use SoftDeletes;
     use BelongsToTenant;
+    use SoftDeletes;
 
     protected $table = 'formas_pagamento';
 

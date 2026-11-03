@@ -62,6 +62,6 @@ class BancoSeeder extends Seeder
             );
         }
 
-        $this->command->info('Bancos importados: ' . count($bancos));
+        $this->command->info('Bancos importados: '.count($bancos));
     }
 }

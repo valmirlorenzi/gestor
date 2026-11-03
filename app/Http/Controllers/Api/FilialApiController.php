@@ -55,7 +55,7 @@ class FilialApiController extends Controller
     public function update(Request $request, Filial $filial)
     {
         $data = $request->validate([
-            'cnpj' => 'required|string|size:14|unique:filiais,cnpj,' . $filial->id,
+            'cnpj' => 'required|string|size:14|unique:filiais,cnpj,'.$filial->id,
             'razao_social' => 'required|string|max:200',
             'nome_fantasia' => 'nullable|string|max:200',
             'inscricao_estadual' => 'nullable|string|max:20',

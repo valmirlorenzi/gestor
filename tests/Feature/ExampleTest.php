@@ -1,19 +1,9 @@
 <?php
 
-namespace Tests\Feature;
+test('a raiz redireciona para o login quando não autenticado', function () {
+    $this->get('/')->assertRedirect('/login');
+});
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-
-class ExampleTest extends TestCase
-{
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
-    {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-    }
-}
+test('a rota de saúde responde 200', function () {
+    $this->get('/up')->assertStatus(200);
+});

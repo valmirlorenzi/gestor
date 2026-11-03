@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ContaBancaria extends Model
 {
-    use SoftDeletes;
     use BelongsToTenant;
+    use SoftDeletes;
 
     protected $table = 'contas_bancarias';
 

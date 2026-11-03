@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProdutoServico extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
     use SoftDeletes;
-    use BelongsToTenant;
 
     protected $table = 'produtos_servicos';
 

@@ -1,6 +1,6 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <span class="muted user-name" id="user-label">Visitante</span>
+    <span class="muted user-name" id="user-label">{{ $usuarioJson['nome'] ?? 'Visitante' }}</span>
     <div class="toggle-btn" onclick="toggleSidebar()">☰</div>
   </div>
 
@@ -24,4 +24,12 @@
   <nav class="menu" id="menu">
     {{-- preenchido via JS (menu.js) --}}
   </nav>
+
+  @if ($menuJson !== null)
+    <script>
+      window.__MENU__    = @json($menuJson);
+      window.__USUARIO__ = @json($usuarioJson);
+      window.__BLOCOS__  = @json($blocosJson);
+    </script>
+  @endif
 </aside>

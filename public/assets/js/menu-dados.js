@@ -1,9 +1,10 @@
 /* ============================================================
-   DADOS DO MENU — itens, atores e permissões
+   DADOS DO MENU — fallback (quando window.__MENU__ não existe)
    Fonte: 09_menu_numeracao.md
+   Em produção, o MenuService envia window.__MENU__ na sidebar.
    ============================================================ */
 
-const MENU_ITENS = [
+const MENU_ITENS_MOCK = [
   // Bloco 1 — Meu Trabalho (todos)
   { codigo: '1.0', nome: 'Tela Inicial',     rota: 'tela-inicial',   icone: '🏠', bloco: 1, atores: ['*'] },  
   { codigo: '1.1', nome: 'Caixa de Entrada',  rota: 'caixa-entrada', icone: '📥', bloco: 1, atores: ['*'], badge: true },
@@ -21,24 +22,24 @@ const MENU_ITENS = [
   { codigo: '2.8', nome: 'Handoff',                       rota: 'handoff',        icone: '🔄', bloco: 2, atores: ['configurador'] },
 
   // Bloco 3 — Administrador
-{ codigo: '3.11', nome: 'Painel Executivo',      rota: 'painel-executivo',  icone: '📊', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.1',  nome: 'DRE Gerencial',         rota: 'dre',     icone: '📈', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.10', nome: 'Balanço Patrimonial',   rota: 'balanco',           icone: '⚖️', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.4',  nome: 'Fluxo de Caixa Projetado', rota: 'fluxo-caixa',    icone: '💵', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.12', nome: 'Aging de Contas',       rota: 'aging-contas',      icone: '⏳', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.13', nome: 'Posição de Impostos',   rota: 'posicao-impostos',  icone: '🧾', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.14', nome: 'Posição de Pessoal',    rota: 'posicao-pessoal',   icone: '👥', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.15', nome: 'Posição de Ativos',     rota: 'posicao-ativos',    icone: '🏢', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.8',  nome: 'Posição de Caixa',      rota: 'posicao-caixa',     icone: '💰', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.2',  nome: 'DRE por Centro de Custo', rota: 'dre-centro',      icone: '📊', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.3',  nome: 'Resumo por Área',       rota: 'resumo-area',       icone: '🗂️', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.5',  nome: 'Análise de Custos',     rota: 'analise-custos',    icone: '🔍', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.6',  nome: 'Margem por Cliente/Produto', rota: 'margem',       icone: '📐', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.16', nome: 'Ponto de Equilíbrio',   rota: 'ponto-equilibrio',  icone: '⚖️', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.17', nome: 'Resumo Executivo',      rota: 'resumo-executivo',  icone: '📄', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.7',  nome: 'Exportação',            rota: 'exportacao',        icone: '📤', bloco: 3, atores: ['administrador'], fase: 1 },
-{ codigo: '3.9',  nome: 'Simulações',            rota: 'simulacoes',        icone: '🔮', bloco: 3, atores: ['administrador'], fase: 2 },
-{ codigo: '3.18', nome: 'Conselheiro', rota: 'conselheiro', icone: '💡', bloco: 3, atores: ['administrador'] },
+  { codigo: '3.11', nome: 'Painel Executivo',      rota: 'painel-executivo',  icone: '📊', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.1',  nome: 'DRE Gerencial',         rota: 'dre',     icone: '📈', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.10', nome: 'Balanço Patrimonial',   rota: 'balanco',           icone: '⚖️', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.4',  nome: 'Fluxo de Caixa Projetado', rota: 'fluxo-caixa',    icone: '💵', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.12', nome: 'Aging de Contas',       rota: 'aging-contas',      icone: '⏳', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.13', nome: 'Posição de Impostos',   rota: 'posicao-impostos',  icone: '🧾', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.14', nome: 'Posição de Pessoal',    rota: 'posicao-pessoal',   icone: '👥', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.15', nome: 'Posição de Ativos',     rota: 'posicao-ativos',    icone: '🏢', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.8',  nome: 'Posição de Caixa',      rota: 'posicao-caixa',     icone: '💰', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.2',  nome: 'DRE por Centro de Custo', rota: 'dre-centro',      icone: '📊', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.3',  nome: 'Resumo por Área',       rota: 'resumo-area',       icone: '🗂️', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.5',  nome: 'Análise de Custos',     rota: 'analise-custos',    icone: '🔍', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.6',  nome: 'Margem por Cliente/Produto', rota: 'margem',       icone: '📐', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.16', nome: 'Ponto de Equilíbrio',   rota: 'ponto-equilibrio',  icone: '⚖️', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.17', nome: 'Resumo Executivo',      rota: 'resumo-executivo',  icone: '📄', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.7',  nome: 'Exportação',            rota: 'exportacao',        icone: '📤', bloco: 3, atores: ['administrador'], fase: 1 },
+  { codigo: '3.9',  nome: 'Simulações',            rota: 'simulacoes',        icone: '🔮', bloco: 3, atores: ['administrador'], fase: 2 },
+  { codigo: '3.18', nome: 'Conselheiro', rota: 'conselheiro', icone: '💡', bloco: 3, atores: ['administrador'] },
 
   // Bloco 4 — Contador
   { codigo: '4.1',  nome: 'Tabelas basais (fiscais)',     rota: 'tabelas-fiscais', icone: '📋', bloco: 4, atores: ['contador'] },

@@ -1,23 +1,28 @@
 /* ============================================================
    MENU — montagem por ator, numeração, campo "Ir para",
            expandir/recolher blocos, badge, reset
-   Depende de: menu-dados.js
+   Depende de: menu-dados.js (fallback) OU window.__MENU__ (server)
    ============================================================ */
 
 // ============================================================
-// ESTADO DO USUÁRIO (mock — wireframe)
+// FONTE DE DADOS — servidor (window.__MENU__) com fallback mock
 // ============================================================
-const USUARIO_LOGADO = {
-  nome: 'Configurador (Maria)',
-  // No wireframe, o Configurador vê tudo. Por isso só tem a tag dele.
-  atores_por_filial: {
-    1: ['configurador'],   // filial 1 (Matriz)
-  },
-  filial_atual: 1,
+const USUARIO_LOGADO = (typeof window !== 'undefined' && window.__USUARIO__) || {
+  nome: 'Visitante',
+  ator: null,
+  filial: null,
 };
 
+const ITENS_MENU = (typeof window !== 'undefined' && window.__MENU__)
+  ? window.__MENU__
+  : (typeof MENU_ITENS_MOCK !== 'undefined' ? MENU_ITENS_MOCK : []);
+
+const MAPA_BLOCOS = (typeof window !== 'undefined' && window.__BLOCOS__)
+  ? window.__BLOCOS__
+  : (typeof MENU_BLOCOS !== 'undefined' ? MENU_BLOCOS : {});
+
 // ============================================================
-// ESTADO DAS ORDENS (mock — wireframe)
+// ESTADO DAS ORDENS (mock — wireframe, P50 → Bloco 8)
 // ============================================================
 const ORDENS_PENDENTES = {
   total: 3,
@@ -26,23 +31,20 @@ const ORDENS_PENDENTES = {
 
 // ============================================================
 // ESTADO DOS BLOCOS (expandido/recolhido)
-// Persistido em localStorage.
-// Na 1ª vez: apenas o bloco 1 (Meu Trabalho) aberto; os demais fechados.
 // ============================================================
 const STORAGE_KEY_BLOCOS = 'menu_blocos_recolhidos';
 
 function getBlocosRecolhidos() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_BLOCOS);
-    // Se nunca foi salvo, inicia com todos fechados EXCETO o bloco 1
     if (raw === null) {
-      return Object.keys(MENU_BLOCOS)
+      return Object.keys(MAPA_BLOCOS)
         .map(Number)
         .filter(id => id !== 1);   // 1 = Meu Trabalho
     }
     return JSON.parse(raw);
   } catch {
-    return Object.keys(MENU_BLOCOS)
+    return Object.keys(MAPA_BLOCOS)
       .map(Number)
       .filter(id => id !== 1);
   }
@@ -51,9 +53,7 @@ function getBlocosRecolhidos() {
 function setBlocosRecolhidos(ids) {
   try {
     localStorage.setItem(STORAGE_KEY_BLOCOS, JSON.stringify(ids));
-  } catch {
-    /* ignore */
-  }
+  } catch { /* ignore */ }
 }
 
 function blocoEstaRecolhido(blocoId) {
@@ -64,28 +64,19 @@ function toggleBloco(blocoId) {
   const recolhidos = getBlocosRecolhidos();
   const id = Number(blocoId);
   const idx = recolhidos.indexOf(id);
-  if (idx >= 0) {
-    recolhidos.splice(idx, 1);   // estava recolhido → expande
-  } else {
-    recolhidos.push(id);          // estava expandido → recolhe
-  }
+  if (idx >= 0) recolhidos.splice(idx, 1);
+  else recolhidos.push(id);
   setBlocosRecolhidos(recolhidos);
-  montarMenu(); // re-renderiza
+  montarMenu();
 }
 
 // ============================================================
 // PERMISSÕES
+// Já vêm resolvidas do servidor (MenuService). Não há mais filtro
+// client-side — o servidor devolve SÓ o que o ator pode ver (P86/P92).
 // ============================================================
-function getAtoresDoUsuario() {
-  const filial = USUARIO_LOGADO.filial_atual;
-  return USUARIO_LOGADO.atores_por_filial[filial] || [];
-}
-
-function usuarioTemAcesso(item) {
-  const atores = getAtoresDoUsuario();
-  if (atores.includes('configurador')) return true; // configurador vê tudo
-  if (item.atores.includes('*')) return true;       // itens de "todos"
-  return item.atores.some(a => atores.includes(a));
+function usuarioTemAcesso(_item) {
+  return true;
 }
 
 // ============================================================
@@ -97,30 +88,25 @@ function montarMenu() {
 
   nav.innerHTML = '';
 
-  // Agrupar itens por bloco (respeitando permissões)
   const porBloco = {};
-  MENU_ITENS.forEach(item => {
-    if (!usuarioTemAcesso(item)) return;
+  ITENS_MENU.forEach(item => {
     if (!porBloco[item.bloco]) porBloco[item.bloco] = [];
     porBloco[item.bloco].push(item);
   });
 
-  // Renderizar na ordem dos blocos
   Object.keys(porBloco)
     .map(Number)
     .sort((a, b) => a - b)
     .forEach(blocoId => {
-      const bloco = MENU_BLOCOS[blocoId];
+      const bloco = MAPA_BLOCOS[blocoId];
       if (!bloco) return;
 
       const recolhido = blocoEstaRecolhido(blocoId);
 
-      // Wrapper do bloco
       const wrapper = document.createElement('div');
       wrapper.className = 'menu-bloco' + (recolhido ? ' recolhido' : '');
       wrapper.dataset.bloco = blocoId;
 
-      // Cabeçalho do bloco (clicável para expandir/recolher)
       const section = document.createElement('div');
       section.className = 'menu-section';
       section.innerHTML = `
@@ -131,7 +117,6 @@ function montarMenu() {
       section.addEventListener('click', () => toggleBloco(blocoId));
       wrapper.appendChild(section);
 
-      // Itens do bloco (escondidos se recolhido)
       const itensWrap = document.createElement('div');
       itensWrap.className = 'menu-itens';
 
@@ -178,36 +163,30 @@ function montarMenu() {
     });
 
   // Restaurar item ativo
-  const rotaAtual = window.__rotaAtual || null;
+  const rotaAtual = window.__rotaAtual || window.location.pathname;
   if (rotaAtual) {
     const ativo = nav.querySelector(`.menu-item[data-rota="${rotaAtual}"]`);
     if (ativo) ativo.classList.add('active');
   }
 }
 
-// Rotas que já são Blade (backend real). As demais continuam mock (showScreen).
-const ROTAS_BLADE = {
-  'empresa': '/empresa',
-  'filial':  '/filial',
-};
-
+// ============================================================
+// NAVEGAÇÃO — sempre window.location.href (rotas reais do banco)
+// ============================================================
 function selecionarItemMenu(el, item) {
   document.querySelectorAll('.menu-item.active').forEach(x => x.classList.remove('active'));
   el.classList.add('active');
   window.__rotaAtual = item.rota;
 
-  // Se a rota é Blade, navega de verdade (recarrega a página).
-  if (ROTAS_BLADE[item.rota]) {
-    window.location.href = ROTAS_BLADE[item.rota];
+  // Rotas reais do banco (MenuService → seeder). O web.php tem
+  // /tela/{codigo} como fallback 404 — mas para telas ainda não
+  // implementadas, mostramos alerta (P15 melhorado).
+  if (item.rota && item.rota.startsWith('/')) {
+    window.location.href = item.rota;
     return;
   }
 
-  // Senão, mantém o comportamento SPA do wireframe — mas só se a tela existir.
-  if (typeof showScreen === 'function' && typeof screens !== 'undefined' && screens[item.rota]) {
-    showScreen(item.rota);
-  } else {
-    alert('Tela ainda não implementada. Disponível no Bloco 6/7.');
-  }
+  alert('Tela ainda não implementada. Disponível em blocos futuros.');
 }
 
 // ============================================================
@@ -226,9 +205,7 @@ function configurarGoto() {
       return;
     }
 
-    const matches = MENU_ITENS.filter(i =>
-      i.codigo.startsWith(val) && usuarioTemAcesso(i)
-    );
+    const matches = ITENS_MENU.filter(i => i.codigo.startsWith(val));
 
     if (matches.length === 0) {
       feedback.textContent = 'Código não encontrado';
@@ -247,15 +224,9 @@ function configurarGoto() {
     const val = input.value.trim();
     if (!val) return;
 
-    const item = MENU_ITENS.find(i => i.codigo === val);
+    const item = ITENS_MENU.find(i => i.codigo === val);
     if (!item) {
       feedback.textContent = 'Código não encontrado';
-      feedback.classList.remove('ok');
-      return;
-    }
-
-    if (!usuarioTemAcesso(item)) {
-      feedback.textContent = 'Você não tem permissão para acessar esta tela.';
       feedback.classList.remove('ok');
       return;
     }
@@ -266,12 +237,10 @@ function configurarGoto() {
       return;
     }
 
-    // Se o bloco estiver recolhido, expandir
     if (blocoEstaRecolhido(item.bloco)) {
       toggleBloco(item.bloco);
     }
 
-    // Aguardar o re-render e navegar
     setTimeout(() => {
       const el = document.querySelector(`.menu-item[data-codigo="${item.codigo}"]`);
       if (el) {
@@ -294,7 +263,7 @@ function configurarGoto() {
 }
 
 // ============================================================
-// AÇÕES GLOBAIS (expandir/recolher todos, reset)
+// AÇÕES GLOBAIS
 // ============================================================
 function expandirTodos() {
   setBlocosRecolhidos([]);
@@ -302,19 +271,12 @@ function expandirTodos() {
 }
 
 function recolherTodos() {
-  const todos = Object.keys(MENU_BLOCOS).map(Number);
-  setBlocosRecolhidos(todos);
+  setBlocosRecolhidos(Object.keys(MAPA_BLOCOS).map(Number));
   montarMenu();
 }
 
 function resetarPreferenciaMenu() {
-  // Remove a preferência salva → volta ao estado inicial
-  // (opção C: bloco 1 aberto, demais fechados)
-  try {
-    localStorage.removeItem(STORAGE_KEY_BLOCOS);
-  } catch {
-    /* ignore */
-  }
+  try { localStorage.removeItem(STORAGE_KEY_BLOCOS); } catch { /* ignore */ }
   montarMenu();
 }
 
@@ -327,7 +289,8 @@ function initMenu() {
 
   const periodLabel = document.getElementById('period-label');
   if (periodLabel) {
-    periodLabel.textContent = `Período: 10/2026 (Aberto) · Filial: Matriz`;
+    const filial = USUARIO_LOGADO.filial || '—';
+    periodLabel.textContent = `Filial: ${filial}`;
   }
 
   montarMenu();

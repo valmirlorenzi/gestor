@@ -1,19 +1,23 @@
 <?php
 
+use App\Models\AtorFuncional;
 use App\Models\CentroCusto;
 use App\Models\Empresa;
 use App\Models\Filial;
 use App\Models\ParametroFiscal;
 use App\Models\PlanoConta;
 use App\Models\Usuario;
+use App\Models\UsuarioAtor;
 use App\Repositories\GrupoA\CentroCustoRepository;
 use App\Repositories\GrupoA\PlanoContaRepository;
-use App\Repositories\GrupoA\UsuarioRepository;
 use App\Repositories\GrupoF\AtivoRepository;
 use App\Repositories\GrupoF\FilialRepository;
 use App\Repositories\GrupoF\UsuarioAtorRepository;
 use App\Repositories\GrupoH\ParametroFiscalRepository;
+use App\Services\MenuService;
 use App\Services\TenantContext;
+use Database\Seeders\AtorFuncionalSeeder;
+use Database\Seeders\MenuItemSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 
@@ -22,9 +26,9 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     app(TenantContext::class)->clear();
     // Atores funcionais (FK de usuarios_atores)
-    \App\Models\AtorFuncional::create(['codigo' => 'configurador', 'descricao' => 'Configurador', 'ativo' => true]);
-    \App\Models\AtorFuncional::create(['codigo' => 'administrador', 'descricao' => 'Administrador', 'ativo' => true]);
-    
+    AtorFuncional::create(['codigo' => 'configurador', 'descricao' => 'Configurador', 'ativo' => true]);
+    AtorFuncional::create(['codigo' => 'administrador', 'descricao' => 'Administrador', 'ativo' => true]);
+
     // Empresa 1
     $this->empresa1 = Empresa::factory()->create(['id' => 1]);
     $this->filial1 = Filial::factory()->create(['id' => 1, 'id_empresa' => 1]);
@@ -121,13 +125,7 @@ it('Grupo H: globais aparecem para todas as empresas', function () {
         'data_inicio_validade' => now()->toDateString(),
     ]);
 
-    dump('ID criado:', $p->id);
-    dump('Sem escopo (todos):', ParametroFiscal::withoutGlobalScope('tenant_hibrido')->count());
-    dump('Com escopo, sem contexto:', ParametroFiscal::count());
-
     app(TenantContext::class)->setId(1);
-    dump('Com escopo, contexto 1:', ParametroFiscal::count());
-    dump('vigentes(1):', app(ParametroFiscalRepository::class)->vigentes('ICMS')->toArray());
 
     expect(app(ParametroFiscalRepository::class)->vigentes('ICMS'))->toHaveCount(1);
 });
@@ -219,4 +217,93 @@ it('P45: aceita usuário e filial da mesma empresa', function () {
     ]);
 
     expect($ua)->not->toBeNull();
+});
+
+// =================================================================
+// Bloco 7 parte 3 — contexto 4-tupla (P83/P86/P94/P100)
+// =================================================================
+
+it('BelongsToTenant continua filtrando por id_empresa com contexto 4-tupla', function () {
+    $empresaA = Empresa::factory()->create();
+    $empresaB = Empresa::factory()->create();
+
+    $filialA = Filial::factory()->create(['id_empresa' => $empresaA->id]);
+    $filialB = Filial::factory()->create(['id_empresa' => $empresaB->id]);
+
+    $usuario = Usuario::factory()->create(['id_empresa' => $empresaA->id]);
+    $ator = AtorFuncional::firstOrCreate(
+        ['codigo' => 'contador'],
+        ['descricao' => 'Contador', 'ativo' => true]
+    );
+    $context = app(TenantContext::class);
+    $context->set(
+        empresaId: $empresaA->id,
+        filialId: $filialA->id,
+        usuarioId: $usuario->id,
+        atorFuncionalId: $ator->id,
+    );
+
+    $centroA = CentroCusto::factory()->create(['id_empresa' => $empresaA->id]);
+    $centroB = CentroCusto::factory()->create(['id_empresa' => $empresaB->id]);
+
+    $visiveis = CentroCusto::pluck('id')->all();
+
+    expect($visiveis)->toContain($centroA->id)
+        ->and($visiveis)->not->toContain($centroB->id);
+});
+
+it('MenuService devolve menu por ator (configurador vê tudo; contador vê só os seus)', function () {
+    // Seed dos itens de menu (uma vez por teste; idempotente via updateOrCreate).
+
+    $this->seed(AtorFuncionalSeeder::class);
+    $this->seed(MenuItemSeeder::class);
+
+    $empresa = Empresa::factory()->create();
+    $filial = Filial::factory()->create(['id_empresa' => $empresa->id]);
+
+    $atorContador = AtorFuncional::where('codigo', 'contador')->firstOrFail();
+    $atorConfigurador = AtorFuncional::where('codigo', 'configurador')->firstOrFail();
+
+    // Usuário contador
+    $userContador = Usuario::factory()->create(['id_empresa' => $empresa->id]);
+    UsuarioAtor::create([
+        'id_usuario' => $userContador->id,
+        'id_filial' => $filial->id,
+        'id_ator_funcional' => $atorContador->id,
+        'ativo' => true,
+    ]);
+
+    // Usuário configurador
+    $userConfig = Usuario::factory()->create(['id_empresa' => $empresa->id]);
+    UsuarioAtor::create([
+        'id_usuario' => $userConfig->id,
+        'id_filial' => $filial->id,
+        'id_ator_funcional' => $atorConfigurador->id,
+        'ativo' => true,
+    ]);
+
+    $service = app(MenuService::class);
+
+    $menuContador = $service->paraUsuario($userContador->id, $empresa->id, $filial->id);
+    $menuConfig = $service->paraUsuario($userConfig->id, $empresa->id, $filial->id);
+
+    $codigosContador = array_column($menuContador['itens'], 'codigo');
+    $codigosConfig = array_column($menuConfig['itens'], 'codigo');
+
+    // Contador: tem 4.x, não tem 2.x (só configurador) — mas tem 1.x sempre.
+    expect($codigosContador)->toContain('1.0')
+        ->and($codigosContador)->toContain('4.1')
+        ->and($codigosContador)->not->toContain('2.1'); // Empresa é só configurador
+
+    // Configurador: vê tudo.
+    expect($codigosConfig)->toContain('1.0')
+        ->and($codigosConfig)->toContain('2.1')
+        ->and($codigosConfig)->toContain('4.1')
+        ->and(count($codigosConfig))->toBeGreaterThan(count($codigosContador));
+
+    // Universais do Bloco 1 sempre presentes.
+    foreach (['1.0', '1.1', '1.2', '1.3'] as $c) {
+        expect($codigosContador)->toContain($c)
+            ->and($codigosConfig)->toContain($c);
+    }
 });

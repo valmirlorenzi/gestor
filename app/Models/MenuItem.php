@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use app\Models\AtorFuncional;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use app\Models\AtorFuncional;
 
 class MenuItem extends Model
 {

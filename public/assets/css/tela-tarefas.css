@@ -1,0 +1,10 @@
+.tela-tarefas { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.tela-tarefas-header h1 { margin: 0 0 4px; font-size: 22px; }
+.tela-tarefas-header p { margin: 0 0 20px; }
+
+.tabela-tarefas { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.tabela-tarefas th, .tabela-tarefas td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.tabela-tarefas th { background: #f9fafb; font-size: 13px; color: #6b7280; font-weight: 600; }
+.tabela-tarefas tr.urgente td { background: #fef2f2; }
+.tabela-tarefas .link { color: #2563eb; text-decoration: none; }
+.tabela-tarefas .link:hover { text-decoration: underline; }

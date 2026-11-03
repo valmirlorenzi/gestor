@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CentroCusto extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
     use SoftDeletes;
-    use BelongsToTenant;
 
     protected $table = 'centros_custo';
 

@@ -5,11 +5,13 @@ namespace App\Repositories\GrupoC;
 use App\Models\ContaPagar;
 use App\Models\ContaReceber;
 use App\Models\DocumentoEncadeado;
+use App\Models\Filial;
 use App\Models\Lancamento;
 use App\Models\NotaFiscal;
 use App\Repositories\BaseRepository;
 use App\Services\TenantContext;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -22,13 +24,13 @@ class DocumentoEncadeadoRepository extends BaseRepository
 {
     /** Mapa: prefixo do tipo_relacao → model de origem/destino. */
     private const MAPA_DOCUMENTO = [
-        'NF-e'           => NotaFiscal::class,
-        'CT-e'           => NotaFiscal::class,
-        'NFS-e'          => NotaFiscal::class,
-        'RPA'            => NotaFiscal::class,
-        'conta_pagar'    => ContaPagar::class,
-        'conta_receber'  => ContaReceber::class,
-        'lancamento'     => Lancamento::class,
+        'NF-e' => NotaFiscal::class,
+        'CT-e' => NotaFiscal::class,
+        'NFS-e' => NotaFiscal::class,
+        'RPA' => NotaFiscal::class,
+        'conta_pagar' => ContaPagar::class,
+        'conta_receber' => ContaReceber::class,
+        'lancamento' => Lancamento::class,
     ];
 
     public function __construct(
@@ -94,7 +96,7 @@ class DocumentoEncadeadoRepository extends BaseRepository
     {
         $modelClass = $this->resolverModel($tipoRelacao, $lado);
 
-        /** @var \Illuminate\Database\Eloquent\Model|null $doc */
+        /** @var Model|null $doc */
         $doc = $modelClass::withoutGlobalScope('tenant')->find($id);
 
         if ($doc === null) {
@@ -113,7 +115,7 @@ class DocumentoEncadeadoRepository extends BaseRepository
             ]);
         }
 
-        $idEmpresa = \App\Models\Filial::withoutGlobalScope('tenant')
+        $idEmpresa = Filial::withoutGlobalScope('tenant')
             ->where('id', $idFilial)
             ->value('id_empresa');
 

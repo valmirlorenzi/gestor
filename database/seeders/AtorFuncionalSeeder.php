@@ -29,6 +29,6 @@ class AtorFuncionalSeeder extends Seeder
             );
         }
 
-        $this->command->info('Atores funcionais importados: ' . count($atores));
+        $this->command->info('Atores funcionais importados: '.count($atores));
     }
 }

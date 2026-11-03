@@ -24,7 +24,7 @@ class AtorFuncional extends Model
     ];
 
     public $timestamps = false;
-    
+
     public function usuariosAtores(): HasMany
     {
         return $this->hasMany(UsuarioAtor::class, 'id_ator_funcional');

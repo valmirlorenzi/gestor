@@ -1,4 +1,4 @@
-{{-- Scripts essenciais (não dependem de dados-simulados.js) --}}
+{{-- Scripts essenciais --}}
 <script src="{{ asset('assets/js/geral.js') }}"></script>
 <script src="{{ asset('assets/js/menu-dados.js') }}"></script>
 <script src="{{ asset('assets/js/menu.js') }}"></script>

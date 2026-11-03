@@ -36,4 +36,16 @@ class PeriodoRepository extends BaseRepository
             ->orderByDesc('mes_ano')
             ->get();
     }
+
+    /**
+     * Período aberto mais recente da filial (formato 'MM/AAAA').
+     */
+    public function abertoDaFilial(int $filialId): ?string
+    {
+        return $this->query()
+            ->where('id_filial', $filialId)
+            ->where('status', 'Aberto')
+            ->orderByDesc('mes_ano')
+            ->value('mes_ano');
+    }
 }

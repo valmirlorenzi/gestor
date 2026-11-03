@@ -32,7 +32,7 @@ class ParametroFiscalRepository extends BaseRepository
             ->whereDate('data_inicio_validade', '<=', $hoje)
             ->where(function ($q) use ($hoje) {
                 $q->whereNull('data_fim_validade')
-                ->orWhereDate('data_fim_validade', '>=', $hoje);
+                    ->orWhereDate('data_fim_validade', '>=', $hoje);
             });
 
         if ($tipoImposto !== null) {
@@ -41,6 +41,7 @@ class ParametroFiscalRepository extends BaseRepository
 
         return $query->orderBy('tipo_imposto')->orderByDesc('data_inicio_validade')->get();
     }
+
     /**
      * Só os globais (ignora overrides de empresa). Útil para seeders
      * e para o "valor de fallback".

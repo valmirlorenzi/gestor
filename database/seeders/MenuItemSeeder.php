@@ -21,9 +21,9 @@ class MenuItemSeeder extends Seeder
         // BLOCO 1 — Meu Trabalho (todos os atores)
         // =====================================================================
         ['1.0',  'Tela Inicial',                    '/tela-inicial',                 1, ['*']],
-        ['1.1',  'Caixa de Entrada',                '/caixa-entrada',                1, ['*']],
-        ['1.2',  'Caixa de Saída',                  '/caixa-saida',                  1, ['*']],
-        ['1.3',  'Histórico',                       '/historico',                    1, ['*']],
+        ['1.1',  'Caixa de Entrada',  '/tarefas/entrada',   1, ['*']],
+        ['1.2',  'Caixa de Saída',    '/tarefas/saida',     1, ['*']],
+        ['1.3',  'Histórico',         '/tarefas/historico', 1, ['*']],
 
         // =====================================================================
         // BLOCO 2 — Configurador
@@ -181,7 +181,7 @@ class MenuItemSeeder extends Seeder
         }
 
         $this->command->info(
-            'Menu: ' . count($this->itens) . ' itens criados/atualizados (' . count($todosOsCodigos) . ' atores disponíveis).'
+            'Menu: '.count($this->itens).' itens criados/atualizados ('.count($todosOsCodigos).' atores disponíveis).'
         );
     }
 }

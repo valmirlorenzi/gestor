@@ -13,3 +13,4 @@
 <link rel="stylesheet" href="{{ asset('assets/css/relatorios-administrador.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/tela-inicial-painel.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/conselheiro.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/tela-tarefas.css') }}">

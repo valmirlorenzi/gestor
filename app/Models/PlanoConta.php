@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlanoConta extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
     use SoftDeletes;
-    use BelongsToTenant;
 
     protected $table = 'planos_contas';
 

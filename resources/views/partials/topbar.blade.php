@@ -1,8 +1,22 @@
 <header class="topbar">
   <div class="brand">Gestor<span> Gerencial</span></div>
   <div class="actions">
-    <span class="muted" id="period-label">Período: 10/2026 (Aberto) · Filial: Matriz</span>
-
+    <span class="muted" id="period-label">Período: 10/2026 (Aberto) · Filial: </span>
+    @if (! empty($filiaisDisponiveis) && count($filiaisDisponiveis) > 1)
+      <form method="POST" action="{{ route('contexto.filial') }}" class="filial-switcher">
+        @csrf
+        <label for="filial-select" class="sr-only">Filial</label>
+        <select name="filial_id" id="filial-select" onchange="this.form.submit()">
+          @foreach ($filiaisDisponiveis as $f)
+            <option value="{{ $f['id'] }}" @selected($f['id'] === $filialAtualId)>
+              {{ $f['nome'] }}
+            </option>
+          @endforeach
+        </select>
+      </form>
+    @elseif (! empty($filiaisDisponiveis) && count($filiaisDisponiveis) === 1)
+      <span class="filial-label">{{ $filiaisDisponiveis[0]['nome'] }}</span>
+    @endif
     <div id="seletor-ator-container"></div>
 
     <div class="theme-switcher">

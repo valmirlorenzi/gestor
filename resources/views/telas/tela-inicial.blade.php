@@ -3,12 +3,29 @@
 @section('title', 'Tela Inicial')
 
 @section('content')
-  <h1>Tela Inicial</h1>
-  <p class="subtitle">Bem-vindo ao Gestor Gerencial.</p>
+<div class="tela-inicial">
 
-  <div class="card">
-    <h2>Em construção</h2>
-    <p>Esta tela será implementada no Bloco 7 (auth + telas).</p>
-    <p>Por enquanto, o menu do wireframe está montado e navegável (as telas ainda são mock).</p>
-  </div>
+  {{-- ========== SAUDAÇÃO ========== --}}
+  <header class="ti-saudacao">
+    <h1>👋 Olá, {{ $usuario?->nome ?? 'Usuário' }}</h1>
+    <p class="muted">
+      {{ now()->format('d/m/Y') }}
+      @if ($periodo) · Período {{ $periodo }} @endif
+      @if ($filial) · Filial: {{ $filial }} @endif
+      @if ($ator) · Ator: {{ ucfirst(str_replace('_', ' ', $ator)) }} @endif
+    </p>
+  </header>
+
+  {{-- ========== CONTEÚDO POR ATOR ========== --}}
+  @php
+    $partial = 'partials.tela-inicial.' . $variante;
+  @endphp
+
+  @if (view()->exists($partial))
+    @include($partial)
+  @else
+    @include('partials.tela-inicial.universal')
+  @endif
+
+</div>
 @endsection
