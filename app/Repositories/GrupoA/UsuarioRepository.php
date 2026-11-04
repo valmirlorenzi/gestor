@@ -60,10 +60,10 @@ class UsuarioRepository extends BaseRepository
         /** @var Usuario $u */
         $u = parent::create([
             'id_empresa' => $idEmpresa,
-            'nome'       => $data['nome'],
-            'email'      => $data['email'],
+            'nome' => $data['nome'],
+            'email' => $data['email'],
             'senha_hash' => Hash::make($data['senha']),
-            'ativo'      => $data['ativo'] ?? true,
+            'ativo' => $data['ativo'] ?? true,
         ]);
 
         return $u;
@@ -72,7 +72,7 @@ class UsuarioRepository extends BaseRepository
     public function atualizarComSenha(int $id, array $data): Usuario
     {
         $payload = array_filter([
-            'nome'  => $data['nome']  ?? null,
+            'nome' => $data['nome'] ?? null,
             'email' => $data['email'] ?? null,
             'ativo' => $data['ativo'] ?? null,
         ], fn ($v) => $v !== null);

@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\CentroCusto;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CentroCustoApiController extends Controller
 {
     public function index()
     {
-        // O trait BelongsToTenant aplica WHERE id_empresa = contexto.
         return response()->json(
             CentroCusto::orderBy('nome')->get()
         );
@@ -25,7 +25,6 @@ class CentroCustoApiController extends Controller
             'ativo' => 'boolean',
         ]);
 
-        // R2: id_empresa vem SEMPRE do contexto, nunca do cliente.
         $data['id_empresa'] = app(TenantContext::class)->getId();
 
         if (! $data['id_empresa']) {
@@ -39,20 +38,23 @@ class CentroCustoApiController extends Controller
         return response()->json($centro, 201);
     }
 
-    public function show(CentroCusto $centroCusto)
+    public function show(int $id)
     {
+        $centroCusto = CentroCusto::findOrFail($id);
+
         return response()->json($centroCusto);
     }
 
-    public function update(Request $request, CentroCusto $centroCusto)
+    public function update(Request $request, int $id)
     {
+        $centroCusto = CentroCusto::findOrFail($id);
+
         $data = $request->validate([
             'nome' => 'required|string|max:200',
             'responsavel' => 'nullable|string|max:200',
             'ativo' => 'boolean',
         ]);
 
-        // R2: id_empresa NÃO é alterável pelo cliente.
         unset($data['id_empresa']);
 
         $centroCusto->update($data);
@@ -60,10 +62,17 @@ class CentroCustoApiController extends Controller
         return response()->json($centroCusto);
     }
 
-    public function destroy(CentroCusto $centroCusto)
+    public function destroy(int $id)
     {
-        $centroCusto->update(['ativo' => false]);
-        $centroCusto->delete();
+        $centroCusto = CentroCusto::query()->findOrFail($id);
+
+        DB::transaction(function () use ($centroCusto) {
+            $centroCusto->update([
+                'ativo' => false,
+                'deleted_by' => app(TenantContext::class)->getUsuarioId(),
+            ]);
+            $centroCusto->delete();
+        });
 
         return response()->noContent();
     }

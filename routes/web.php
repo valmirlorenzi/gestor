@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Web\CentroCustoController;
 use App\Http\Controllers\Web\EmpresaWebController;
 use App\Http\Controllers\Web\FilialContextController;
 use App\Http\Controllers\Web\FilialWebController;
 use App\Http\Controllers\Web\TarefaController;
 use App\Http\Controllers\Web\TelaInicialController;
+use App\Http\Controllers\Web\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 // Login/logout (público)
@@ -16,6 +18,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Rotas autenticadas + contexto
 Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/', [TelaInicialController::class, 'index'])->name('tela-inicial');
+    Route::get('/tela-inicial', [TelaInicialController::class, 'index'])->name('tela-inicial.alias');
 
     Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::get('/', [EmpresaWebController::class, 'index'])->name('index');
@@ -44,16 +47,38 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     });
 
     Route::prefix('centros-custo')->name('centros-custo.')->group(function () {
-        Route::get('/',          [\App\Http\Controllers\Web\CentroCustoController::class, 'index'])->name('index');
-        Route::get('/create',    [\App\Http\Controllers\Web\CentroCustoController::class, 'create'])->name('create');
-        Route::get('/{id}/edit', [\App\Http\Controllers\Web\CentroCustoController::class, 'edit'])->name('edit');
+        Route::get('/', [CentroCustoController::class, 'index'])->name('index');
+        Route::get('/create', [CentroCustoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [CentroCustoController::class, 'edit'])->name('edit');
     });
 
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
-        Route::get('/',           [\App\Http\Controllers\Web\UsuarioController::class, 'index'])->name('index');
-        Route::get('/create',     [\App\Http\Controllers\Web\UsuarioController::class, 'create'])->name('create');
-        Route::get('/{id}/edit',  [\App\Http\Controllers\Web\UsuarioController::class, 'edit'])->name('edit');
-        Route::get('/{id}/atores',[\App\Http\Controllers\Web\UsuarioController::class, 'atores'])->name('atores');
-    });    
-    
+        Route::get('/', [UsuarioController::class, 'index'])->name('index');
+        Route::get('/create', [UsuarioController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [UsuarioController::class, 'edit'])->name('edit');
+        Route::get('/{id}/atores', [UsuarioController::class, 'atores'])->name('atores');
+    });
+
+    // routes/web.php (dentro do grupo auth+tenant)
+    Route::prefix('produtos')->name('produtos.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Web\ProdutoController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Web\ProdutoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [App\Http\Controllers\Web\ProdutoController::class, 'edit'])->name('edit');
+    });
+
+    // routes/web.php
+    Route::prefix('servicos')->name('servicos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Web\ServicoController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Web\ServicoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Web\ServicoController::class, 'edit'])->name('edit');
+    });
+
+    Route::prefix('ativos')->name('ativos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Web\AtivoController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Web\AtivoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Web\AtivoController::class, 'edit'])->name('edit');
+    });
+
+    Route::get('/osi', [\App\Http\Controllers\Web\OsiController::class, 'index'])->name('osi.index');    
+
 });

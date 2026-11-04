@@ -8,6 +8,7 @@ use App\Services\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UsuarioApiController extends Controller
 {
@@ -55,13 +56,21 @@ class UsuarioApiController extends Controller
         return response()->json($usuario, 201);
     }
 
-    public function show(Usuario $usuario)
+    public function show(int $id)
     {
+        $usuario = Usuario::withoutGlobalScopes()
+            ->where('id_empresa', app(TenantContext::class)->getId())
+            ->findOrFail($id);
+
         return response()->json($usuario);
     }
 
-    public function update(Request $request, Usuario $usuario)
+    public function update(Request $request, int $id)
     {
+        $usuario = Usuario::withoutGlobalScopes()
+            ->where('id_empresa', app(TenantContext::class)->getId())
+            ->findOrFail($id);
+
         $data = $request->validate([
             'nome' => 'required|string|max:200',
             'email' => [
@@ -87,10 +96,19 @@ class UsuarioApiController extends Controller
         return response()->json($usuario);
     }
 
-    public function destroy(Usuario $usuario)
+    public function destroy(int $id)
     {
-        $usuario->update(['ativo' => false]);
-        $usuario->delete();
+        $usuario = Usuario::withoutGlobalScopes()
+            ->where('id_empresa', app(TenantContext::class)->getId())
+            ->findOrFail($id);
+
+        DB::transaction(function () use ($usuario) {
+            $usuario->update([
+                'ativo' => false,
+                'deleted_by' => app(TenantContext::class)->getUsuarioId(),
+            ]);
+            $usuario->delete();
+        });
 
         return response()->noContent();
     }

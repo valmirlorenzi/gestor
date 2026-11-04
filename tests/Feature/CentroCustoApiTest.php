@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\CentroCusto;
-use App\Models\Empresa;
-use App\Models\Filial;
 use App\Models\Usuario;
 use App\Services\TenantContext;
 use Database\Seeders\AtorFuncionalSeeder;
@@ -14,7 +12,9 @@ beforeEach(function () {
     $this->seed(AtorFuncionalSeeder::class);
     $this->seed(UsuarioSeeder::class);
 
-    $this->usuario = Usuario::withoutGlobalScopes()->where('email', 'admin@gestor.local')->firstOrFail();
+    $this->usuario = Usuario::withoutGlobalScopes()
+        ->where('email', 'admin@gestor.local')
+        ->firstOrFail();
 
     $ctx = app(TenantContext::class);
     $ctx->set(1, 1, $this->usuario->id, null);
@@ -37,10 +37,13 @@ test('cria centro de custo com id_empresa do contexto', function () {
     $this->postJson('/api/centros-custo', [
         'nome' => 'Novo CC',
         'responsavel' => 'Fulano',
-    ])->assertCreated()
-      ->assertJsonFragment(['nome' => 'Novo CC']);
+    ])->assertCreated();
 
-    expect(CentroCusto::withoutGlobalScopes()->where('nome', 'Novo CC')->first()->id_empresa)->toBe(1);
+    $this->assertDatabaseHas('centros_custo', [
+        'id_empresa' => 1,
+        'nome' => 'Novo CC',
+        'responsavel' => 'Fulano',
+    ]);
 });
 
 test('não deixa o cliente definir id_empresa', function () {
@@ -49,15 +52,25 @@ test('não deixa o cliente definir id_empresa', function () {
         'id_empresa' => 2,
     ])->assertCreated();
 
-    expect(CentroCusto::withoutGlobalScopes()->where('nome', 'Invasor')->first()->id_empresa)->toBe(1);
+    $this->assertDatabaseHas('centros_custo', [
+        'id_empresa' => 1,
+        'nome' => 'Invasor',
+    ]);
 });
 
 test('atualiza centro de custo', function () {
     $cc = CentroCusto::create(['id_empresa' => 1, 'nome' => 'Antigo', 'ativo' => true]);
 
-    $this->putJson("/api/centros-custo/{$cc->id}", ['nome' => 'Novo'])
-        ->assertOk()
-        ->assertJsonFragment(['nome' => 'Novo']);
+    $this->putJson("/api/centros-custo/{$cc->id}", [
+        'nome' => 'Novo',
+        'responsavel' => 'Fulano',
+    ])->assertOk();
+
+    $this->assertDatabaseHas('centros_custo', [
+        'id' => $cc->id,
+        'nome' => 'Novo',
+        'responsavel' => 'Fulano',
+    ]);
 });
 
 test('destroy faz soft delete e desativa', function () {
@@ -65,7 +78,14 @@ test('destroy faz soft delete e desativa', function () {
 
     $this->deleteJson("/api/centros-custo/{$cc->id}")->assertNoContent();
 
+    // 1) O banco tem ativo=false?
+    $this->assertDatabaseHas('centros_custo', [
+        'id' => $cc->id,
+        'ativo' => false,
+    ]);
+
+    // 2) O soft delete foi feito? (deleted_at preenchido)
     $cc->refresh();
-    expect($cc->ativo)->toBeFalse();
     expect($cc->deleted_at)->not->toBeNull();
+    expect($cc->ativo)->toBeFalse();
 });

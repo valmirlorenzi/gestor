@@ -14,7 +14,7 @@ class CentroCustoController extends Controller
 
     public function create()
     {
-        return view('telas.centros-custo.form');
+        return view('telas.centros-custo.form', ['centro' => null]);
     }
 
     public function edit(int $id)

@@ -8,7 +8,6 @@ use App\Repositories\GrupoA\UsuarioRepository;
 use App\Repositories\GrupoF\FilialRepository;
 use App\Repositories\GrupoF\UsuarioAtorRepository;
 use App\Services\TenantContext;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
@@ -24,8 +23,8 @@ class UsuarioController extends Controller
     public function index(Request $request)
     {
         $idEmpresa = (int) $this->context->getId();
-        $busca     = $request->string('q')->toString() ?: null;
-        $ativo     = $request->has('ativo')
+        $busca = $request->string('q')->toString() ?: null;
+        $ativo = $request->has('ativo')
             ? filter_var($request->input('ativo'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
             : null;
 
@@ -39,56 +38,11 @@ class UsuarioController extends Controller
         return view('telas.usuarios.form', ['usuario' => null]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'nome'  => ['required', 'string', 'max:200'],
-            'email' => ['required', 'email', 'max:200', 'unique:usuarios,email'],
-            'senha' => ['required', 'string', 'min:8', 'max:72'],
-            'ativo' => ['sometimes', 'boolean'],
-        ], [
-            'nome.required'  => 'O nome do usuário é obrigatório.',
-            'email.required' => 'O e-mail é obrigatório.',
-            'email.unique'   => 'Já existe um usuário com este e-mail.',
-            'senha.required' => 'A senha é obrigatória.',
-            'senha.min'      => 'A senha deve ter no mínimo 8 caracteres.',
-        ]);
-
-        $this->usuarios->criarComSenha($data, (int) $this->context->getId());
-
-        return redirect()->route('usuarios.index');
-    }
-
     public function edit(int $id)
     {
         $usuario = $this->usuarios->findOrFail($id);
 
         return view('telas.usuarios.form', compact('usuario'));
-    }
-
-    public function update(Request $request, int $id): RedirectResponse
-    {
-        $this->usuarios->findOrFail($id);
-
-        $data = $request->validate([
-            'nome'  => ['required', 'string', 'max:200'],
-            'email' => ['required', 'email', 'max:200', 'unique:usuarios,email,'.$id],
-            'senha' => ['nullable', 'string', 'min:8', 'max:72'],
-            'ativo' => ['sometimes', 'boolean'],
-        ]);
-
-        $this->usuarios->atualizarComSenha($id, $data);
-
-        return redirect()->route('usuarios.index');
-    }
-
-    public function destroy(int $id): RedirectResponse
-    {
-        $usuario = $this->usuarios->findOrFail($id);
-        $usuario->update(['ativo' => false]);
-        $usuario->delete();
-
-        return redirect()->route('usuarios.index');
     }
 
     public function atores(Request $request, int $id)
@@ -108,7 +62,7 @@ class UsuarioController extends Controller
             : collect();
 
         $idsAtorSelecionados = $vinculos->pluck('id_ator_funcional')->all();
-        $atoresFuncionais    = $this->atoresFuncionais->all();
+        $atoresFuncionais = $this->atoresFuncionais->todos();
 
         return view('telas.usuarios.atores', compact(
             'usuario',
@@ -117,28 +71,5 @@ class UsuarioController extends Controller
             'atoresFuncionais',
             'idsAtorSelecionados',
         ));
-    }
-
-    public function sincronizarAtores(Request $request, int $id): RedirectResponse
-    {
-        $usuario = $this->usuarios->porId($id);
-        abort_if($usuario === null, 404);
-
-        $data = $request->validate([
-            'id_filial'   => ['required', 'integer', 'exists:filiais,id'],
-            'id_atores'   => ['required', 'array', 'min:1'],
-            'id_atores.*' => ['integer', 'exists:atores_funcionais,id'],
-        ]);
-
-        $this->atores->sincronizarAtores(
-            (int) $usuario->id,
-            (int) $data['id_filial'],
-            (array) $data['id_atores'],
-        );
-
-        return redirect()->route('usuarios.atores', [
-            'id'        => $id,
-            'id_filial' => $data['id_filial'],
-        ]);
     }
 }

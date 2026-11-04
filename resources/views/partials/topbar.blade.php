@@ -1,7 +1,7 @@
 <header class="topbar">
   <div class="brand">Gestor<span> Gerencial</span></div>
   <div class="actions">
-    <span class="muted" id="period-label">Período: 10/2026 (Aberto) · Filial: </span>
+    <span class="muted" id="period-label">Período: 10/2026 (Aberto)</span>
     @if (! empty($filiaisDisponiveis) && count($filiaisDisponiveis) > 1)
       <form method="POST" action="{{ route('contexto.filial') }}" class="filial-switcher">
         @csrf

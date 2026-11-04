@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AtorFuncional;
 use App\Models\Usuario;
 use App\Services\TenantContext;
 use Database\Seeders\AtorFuncionalSeeder;
@@ -20,7 +21,7 @@ beforeEach(function () {
 });
 
 test('sincroniza atores do usuário na filial', function () {
-    $atorContador = \App\Models\AtorFuncional::where('codigo', 'contador')->firstOrFail();
+    $atorContador = AtorFuncional::where('codigo', 'contador')->firstOrFail();
 
     $this->postJson("/api/usuarios/{$this->admin->id}/atores", [
         'id_filial' => 1,
@@ -36,11 +37,11 @@ test('sincroniza atores do usuário na filial', function () {
 });
 
 test('rejeita filial de outra empresa (P45)', function () {
-    $atorContador = \App\Models\AtorFuncional::where('codigo', 'contador')->firstOrFail();
+    $atorContador = AtorFuncional::where('codigo', 'contador')->firstOrFail();
 
     $this->postJson("/api/usuarios/{$this->admin->id}/atores", [
         'id_filial' => 3, // filial da empresa 2
         'id_atores' => [$atorContador->id],
     ])->assertStatus(422)
-      ->assertJsonValidationErrors(['id_filial']);
+        ->assertJsonValidationErrors(['id_filial']);
 });

@@ -185,7 +185,8 @@ body {
 .btn-primary:hover { background: var(--cor-primaria-hover); }
 .btn-secondary { background: transparent; color: var(--cor-texto-secundario); border: 1px solid var(--cor-borda); }
 .btn-secondary:hover { background: var(--cor-fundo-menu-item-hover); }
-
+.btn-danger { background: var(--cor-badge-err-texto); color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
 .muted { opacity: 0.7; font-size: 12px; }
 
 /* ---------- Steps ---------- */

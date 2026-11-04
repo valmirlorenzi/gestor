@@ -32,10 +32,45 @@
         <td>${f.ativo ? 'Sim' : 'Não'}</td>
         <td>
           <a href="/filial/${f.id}/edit" class="btn btn-sm btn-secondary">Editar</a>
+          <button type="button" class="btn btn-danger" data-id="${f.id}" data-acao="excluir">Excluir</button>          
         </td>
       </tr>
     `).join('');
+    tbody.querySelectorAll('button[data-acao="excluir"]').forEach(btn => {
+      btn.addEventListener('click', () => excluir(parseInt(btn.dataset.id, 10)));
+    });    
   }
+
+  async function excluir(id) {
+    if (!confirm('Excluir esta filial? Ela sairá da lista e não poderá ser recuperada pela interface.')) return;
+
+    try {
+      const resp = await fetch('/api/filiais/' + id, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'X-XSRF-TOKEN': getCsrfToken(),
+        },
+        credentials: 'same-origin',
+      });
+
+      if (resp.status === 204) {
+        carregarFiliais();
+        return;
+      }
+
+      const err = await resp.json();
+      alert('Erro ao excluir: ' + JSON.stringify(err.errors || err.message || err));
+    } catch (e) {
+      alert('Erro ao excluir: ' + e.message);
+    }
+  }
+
+  function getCsrfToken() {
+    const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
 
   function init() {
     carregarFiliais();

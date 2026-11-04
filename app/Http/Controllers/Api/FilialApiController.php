@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Filial;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FilialApiController extends Controller
 {
@@ -47,13 +48,15 @@ class FilialApiController extends Controller
         return response()->json($filial, 201);
     }
 
-    public function show(Filial $filial)
+    public function show(int $id)
     {
+        $filial = Filial::query()->findOrFail($id);
         return response()->json($filial);
     }
 
-    public function update(Request $request, Filial $filial)
+    public function update(Request $request, int $id)
     {
+        $filial = Filial::query()->findOrFail($id);
         $data = $request->validate([
             'cnpj' => 'required|string|size:14|unique:filiais,cnpj,'.$filial->id,
             'razao_social' => 'required|string|max:200',
@@ -76,9 +79,17 @@ class FilialApiController extends Controller
         return response()->json($filial);
     }
 
-    public function destroy(Filial $filial)
+    public function destroy(int $id)
     {
-        $filial->delete();
+        $filial = Filial::query()->findOrFail($id);
+
+        DB::transaction(function () use ($filial) {
+            $filial->update([
+                'ativo' => false,
+                'deleted_by' => app(TenantContext::class)->getUsuarioId(),
+            ]);
+            $filial->delete();
+        });
 
         return response()->noContent();
     }

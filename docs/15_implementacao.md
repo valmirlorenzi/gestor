@@ -1,85 +1,79 @@
 ---
 documento: implementacao
-versao: 1.11
-data: 2026-11-03
-proposito: Acompanhamento da implementação — status, decisões técnicas, divergências, pendências e próximos passos
+versao: 2.1
+data: 2026-11-04
+proposito: Estado atual da implementação — status, padrões consolidados, pendências abertas, próximos passos
 depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_menu_numeracao, 10_modelo_dados_fisico, 11_wireframe, 12_tela_inicial]
 ---
 
+# Implementação — Estado Atual
 
-# Implementação — Acompanhamento
-
-> **O que é este documento:** registro do que já foi **codado**, das **decisões técnicas** tomadas na prática (que às vezes divergem do papel), das **pendências** e dos **próximos passos**. É um diário de bordo da implementação, não a especificação funcional.
+> **O que é este documento:** o **estado atual** do projeto — o que existe, o que falta, os padrões consolidados, e as pendências abertas. **Não é changelog** (para isso, use `git log docs/15_implementacao.md`).
 >
-> **Onde fica:** `docs/15_implementacao.md`, versionado junto com o código.
+> **Como usar:**
+> - Ao **retomar o projeto**, leia §1 (status) e §5 (pendências abertas).
+> - Ao **codar tela nova**, leia **§7 (padrões consolidados)** antes de começar. É a fonte da verdade.
+> - Ao **fechar um bloco**, atualize §1, §3, §5, §7 e **remova** o que ficou obsoleto.
 >
-> **Como usar:** ao retomar o projeto, ler a seção 1 (status) e a seção 5 (pendências). Ao codar, atualizar a seção 3 (o que foi feito) e a seção 4 (divergências).
+> **Histórico detalhado:** `git log --follow docs/15_implementacao.md`. O changelog versão-a-versão **saiu** deste arquivo na v2.0.
 
 ---
 
-## 1. Status geral
+## 1. Status atual
 
 | Bloco | O que entrega | Status |
 | :--- | :--- | :--- |
-| **0 — Setup** | Laravel 12, MariaDB, Pest 3, Pint | ✅ Concluído |
-| **1 — Migrations de domínio** | 10 tabelas | ✅ Concluído |
-| **2 — Empresas e filiais** | `empresas`, `filiais`, trait `BelongsToTenant`, `TenantContext`, factories | ✅ Concluído |
-| **3 — Comandos de importação** | 5 comandos | ✅ Concluído |
-| **4 — Seeders finais** | 6 seeders | ✅ Concluído |
-| **5 — Frontend (layout + CRUD empresas/filiais)** | Layout Blade, menu, API + fetch | ✅ Concluído |
-| **6 — Demais 51 tabelas** | 6.1 a 6.20 concluídos; 6.21 parcial | ✅ Concluído |
-| **7 — Auth + contexto real + menu por ator** | Login, `SetTenantContext` real (4-tupla), `MenuItemSeeder` reescrito, `MenuService`, `menu.js` plugado, layout `auth` | ✅ Concluído |
-| **8 — Telas "Meu Trabalho" (1.0–1.3)** | Tela Inicial (10 variantes + fallback) — **8.1 ✅**; Caixa de Entrada/Saída/Histórico — **8.2 ✅**; dropdown de filial; 25 testes verdes | ✅ Concluído (8.3 opcional pendente) |
-| **9 — Telas de cadastro (2.x + 4.x)** | Configurador (2.1–2.8), Contador (4.1–4.11) | ⏳ Pendente (9.1a próximo) |
-| **10 — Telas de operação (5.x–8.x + 10.x)** | Comprador, Faturista, Financeiro1/2, Gerente, RH | ⏳ Pendente |
-| **11 — Telas do Administrador (3.x)** | DRE, Fluxo, Análise, Posição, Relatórios avançados (3.10–3.17), Conselheiro (3.18) | ⏳ Pendente |
-| **12 — Telas do Auditor (11.x) + Administração (12.x)** | Auditoria (11.1–11.8), Administração (12.1–12.5) | ⏳ Pendente |
-| **13 — Handoff + serviços de negócio** | Serviço de baixa (P66), motor de classificação (P64), handoff (T8.1–T8.12) | ⏳ Pendente |
+| **0–8** | Setup, domínios, auth, menu, Tela Inicial, Meu Trabalho, troca de filial | ✅ Concluído |
+| **9.1a** | Centros de Custo (2.3) + Usuários e Atores (2.4) | ✅ Concluído |
+| **9.1b** | Produtos (2.5), Serviços (2.6), Ativos (2.7), OSI (2.8) + correções | ✅ **Concluído** |
+| **9.2** | Contador (4.1–4.11) | ⏳ **Próximo** |
+| **10** | Operação (5.x–8.x + 10.x) | ⏳ Pendente |
+| **11** | Administrador (3.x) | ⏳ Pendente |
+| **12** | Auditor (11.x) + Administração (12.x) | ⏳ Pendente |
+| **13** | Handoff + serviços de negócio | ⏳ Pendente |
 
-**Resumo:** **63 tabelas**, **63 models**, **35 repositórios** (`BaseRepository` + A/F/C/H + 3 novos: `AtorFuncionalRepository`, `MenuItemRepository`, `DashboardRepository`), **6 services** (`MenuService`, `TelaInicialService`, `TarefaService`, `TenantContext`, `FilialContextController`…), **3 views de domínio** + **telas de tarefas** + **Tela Inicial**, **10 seeders**, **lint de SQL cru zerado**, **25 testes verdes**.
-**Bloco 7 concluído (v1.7):** `MenuItemSeeder` (~93 itens), `TenantContext` 4-tupla, `SetTenantContext` real, `LoginController`, `Usuario` sem `BelongsToTenant` (P98/D27), `UsuarioRepository` com filtro manual. **Login funcionando.**
-**Bloco 8.1 concluído (v1.9):** `TelaInicialService` (variante por ator — configurador vence), `TarefaRepository::contarPendentesDoAtor()` + `primeirasOrdensDoAtor()`, 10 partials (3.1–3.10) + `universal` + 4 sub-partials, CSS `.ti-*` mínimo, 4 testes Pest verdes. **P113** (`TenantContext` singleton), **P114** (`UsuarioFactory`), **P112** (`filiais.nome_fantasia`).
-**Bloco 8.2 concluído (v1.11):** `TarefaController` (entrada/saída/histórico), `TarefaService` delegando ao `TarefaRepository`, `FilialContextController` (P95), `UsuarioSeeder` com 10 usuários (P110), "Lembrar-me" removido (P111), `TenantContext` singleton (P113), lint de SQL cru zerado (P116/P124/P127), `AppServiceProvider`/`MenuService`/`Usuario` usando `GrupoF\FilialRepository` (P128), **25 testes verdes**. Próximo: **9.1a** (Centros de Custo + Usuários).
-**Decisão de fatiamento (v1.5):** o antigo "Bloco 7 — Auth + API + telas" foi **fatiado em 7–13**. Motivo: os 4 documentos funcionais (`07`, `09`, `11`, `12`) mostram que o escopo é **muito** maior do que uma linha. Fazer tudo em um bloco só viraria um "big bang" impossível de testar.
+**Números atuais:** 63 tabelas, 63 models, **37 repositórios** (+ `AuditoriaRepository`), 6 services, **9 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI) + 3 de tarefas + Tela Inicial, **58 testes verdes**, lint de SQL cru zerado.
+
+**Decisão de fatiamento (histórica):** o antigo "Bloco 7 — Auth + API + telas" foi fatiado em 7–13 (escopo real: 71 telas). Cada sub-bloco é testável isoladamente.
 
 ---
 
-## 2. Ambiente
+## 2. Ambiente e como rodar
 
 | Item | Versão/Decisão |
 | :--- | :--- |
 | PHP | 8.5.4 |
 | Laravel | 12.x |
 | Banco | MariaDB (`DB_CONNECTION=mariadb`) |
-| Testes | Pest 3 (PHPUnit 11) |
+| Testes | Pest 3 (PHPUnit 11) — `RefreshDatabase` global em `Feature` |
 | Lint | Pint (preset `laravel`) + `scripts/check-raw-sql.sh` |
-| Frontend | Blade + JS (fetch) |
+| Frontend | Blade casca + JS `fetch` + ApiController JSON |
 | Assets | `public/assets/` (copiados do wireframe) |
 
-### Como rodar
+### Como rodar (do zero)
 
 ```bash
 # 1. Migrations (63 tabelas + 3 views)
 php artisan migrate
 
-# 2. Domínios (UFs, bancos, CSTs, tipos, atores)
+# 2. Domínios
 php artisan db:seed --class=UfSeeder
 php artisan db:seed --class=BancoSeeder
 php artisan db:seed --class=CstSeeder
 php artisan db:seed --class=TipoDocumentoSeeder
 php artisan db:seed --class=AtorFuncionalSeeder
 
-# 3. Domínios grandes (arquivos em database/data/)
+# 3. Domínios grandes (database/data/)
 php artisan importar:municipios
 php artisan importar:cnae
 php artisan importar:ncm
 php artisan importar:cfop
 php artisan importar:lc116
 
-# 4. Empresa de teste (ID = 1)
+# 4. Empresa de teste (ID=1, 2 filiais) + Empresa 2 (isolamento)
 php artisan db:seed --class=EmpresaFilialSeeder
 
-# 5. Configuração (6.17)
+# 5. Configuração
 php artisan db:seed --class=PlanoContaSeeder
 php artisan db:seed --class=CentroCustoSeeder
 php artisan db:seed --class=AreaNegocioSeeder
@@ -97,337 +91,354 @@ php artisan test
 php artisan serve
 ```
 
----
+**Limpeza de cache (após editar Blade):** `php artisan view:clear && php artisan route:clear && php artisan config:clear && php artisan cache:clear`.
 
-## 3. O que foi implementado
-
-### 3.1 a 3.7 — Blocos 0 a 6.4 (v1.0–v1.2)
-Setup, domínios, empresas/filiais/trait, importação, seeders, frontend, e as 19 tabelas de 6.1–6.4.
-
-### 3.8 a 3.21 — Blocos 6.5 a 6.17 (v1.3)
-38 tabelas, 38 models, 8 seeders. Detalhes na v1.3. Resumo:
-- **6.5–6.9:** ativos, documentos fiscais, contas a pagar/receber, lançamentos, folha, depreciação/provisões.
-- **6.10–6.14:** classificação, parâmetros, razão de impostos/pendências, simulação, usuários/auditoria.
-- **6.15–6.17:** handoff/ordens, menu, 9 models de domínio, 8 seeders.
-- **Correções:** constraint longa em `folhas_pagamento_proventos_descontos` (6.8); namespace em `MenuItem`/`MenuItemAtor` (6.17).
-
-### 3.22 Bloco 6.18 — Repositories (32)
-- `BaseRepository` + 10 do Grupo A + 17 do Grupo F + 4 do Grupo C + 1 do Grupo H.
-- Validações cruzadas: P23 (ativo × centro de custo), P31 (lançamento × item de nota), P45 (usuário × filial), P48 (documentos encadeados).
-- `RepositoryServiceProvider` registra os 32.
-- **P72:** `vigentes()` usa `whereDate` (não `where`) por causa do SQLite.
-
-### 3.23 Bloco 6.19 — Views (3)
-- `vw_saldo_contas_bancarias`, `vw_posicao_caixa`, `vw_caixa_entrada` (migrations 000052–000054).
-- SQL fiel ao DDL. **Não filtram tenant** (R2 é do repositório — D21).
-
-### 3.24 Bloco 6.20 — Lint de SQL cru
-- `scripts/check-raw-sql.sh` varre `app/` (exceto repositórios, migrations, seeders, tests).
-- Falha com exit 1 em violação. Avisa sobre `withoutGlobalScope` (P65/P67).
-- `composer lint` roda Pint + lint SQL.
-
-### 3.25 Bloco 6.21 — Testes Pest de isolamento (parcial)
-- `tests/Feature/IsolamentoTest.php` — **12 testes verdes**: Grupo A (3), Grupo F (1), Grupo H (2), P23 (2), P45 (2), 4-tupla (1), `MenuService` (1).
-- `tests/Feature/TarefasTest.php` — **4 verdes**.
-- `tests/Feature/TelaInicialTest.php` — **4 verdes**.
-- `tests/Feature/TenantIsolationTest.php` — **2 verdes**.
-- `tests/Feature/ExampleTest.php` — **3 verdes**.
-- **Pendentes (6.21.2):** `GrupoFTest` (17 tabelas), `GrupoCTest` (filhas puras), `ValidacoesCruzadasTest` (P31, P48), 13 factories restantes.
-
-### 3.26 Leitura dos 4 documentos funcionais (v1.5)
-Foram lidos: `07_atores_fluxo.md`, `09_menu_numeracao.md`, `11_wireframe.md`, `12_tela_inicial.md`. Impactos:
-- **`09`:** o `MenuItemSeeder` (6.17) tem **28 itens chutados**; o real tem **~93 itens em 12 blocos**. P58 **reaberta**.
-- **`07`:** o ator é **por filial** (`usuario_ator.id_filial`); o contexto de auth **não é só `id_empresa`** — é `(id_usuario, id_empresa, id_filial, id_ator_funcional)`. `configurador` tem acesso total (não precisa de outras tags). Handoff fixo, ativação por empresa.
-- **`11`:** são **71 telas** (63 do menu + 8 relatórios), não 28. O wireframe é HTML/CSS/JS com mock; o Bloco 7+ substitui o mock por API.
-- **`12`:** a Tela Inicial tem **11 variantes** (uma por ator), não 1.
-
-### 3.27 Plano de pendências (v1.5)
-
-O Bloco 7 foi **fatiado em 7–13** (ver seção 6). Motivo: o escopo real (auth 4-tupla + menu por ator + 71 telas + handoff) é **grande demais** para um bloco só. Fatiar permite testar cada parte.
-
-**Ordem dos sub-blocos:**
-- **7** (auth + contexto + menu) → **8** (Meu Trabalho) → **9** (cadastros) → **10** (operação) → **11** (Administrador) → **12** (Auditor + Administração) → **13** (handoff + serviços).
-
-### 3.28 Bloco 7 parte 1/2 — Auth + contexto 4-tupla + login (v1.6)
-
-- **`MenuItemSeeder` reescrito** com os ~93 itens do `09_menu_numeracao.md` (P58). 12 blocos, fase 1/2, vinculação por ator (`syncWithoutDetaching`). Itens do Bloco 1 (Meu Trabalho) são universais (`'*'`).
-- **`TenantContext` estendido para 4-tupla** (P82): `set(empresaId, filialId, usuarioId, atorFuncionalId)`. Métodos `getId()`, `getFilialId()`, `getUsuarioId()`, `getAtorFuncionalId()`, `isConfigurador()`. O `getId()` continua retornando `id_empresa` (compatível com `BelongsToTenant` e `BaseRepository`).
-- **`SetTenantContext` middleware** (P85): após `Auth`, resolve a 4-tupla a partir do usuário logado. Filial vem da sessão (`session('filial_id')`) ou da primeira `usuario_atores` ativa. Ator é o primeiro da filial (P94/P100 — o `MenuService` vai juntar todos).
-- **`LoginController`** (P84): `showLoginForm`, `login`, `logout`. O `login` usa `Auth::attempt` (agora funciona — `Usuario` sem trait, D27). O `logout` invalida sessão.
-- **`Usuario` sem `BelongsToTenant`** (P98, D27): o `id_empresa` é **identidade**, não escopo. O `UsuarioRepository` aplica o filtro manualmente (P98).
-- **`Usuario` com `getAuthPassword()` e `getAuthPasswordName()`** (D14): retornam `senha_hash`. O `Auth::attempt` funciona sem migration de `password`.
-- **Rotas de auth** (`/login`, `POST /login`, `POST /logout`) + middleware `tenant` no grupo autenticado.
-- **`login.blade.php`** criado (herda `layouts.app` — P97: precisa de layout `auth` limpo na parte 3).
-- **`UsuarioSeeder` ajustado** para criar `usuario_atores` do admin na primeira filial (P102).
-- **Erros corrigidos:** `composer dump-autoload` (LoginController não encontrado), `config/auth.php` apontando para `Usuario::class` (era `User`), `getAuthPasswordName()` retornando `senha_hash` (era `password`), remoção da trait do `Usuario` (global scope `WHERE 1 = 0` sem contexto).
-
-### 3.29 Bloco 7 parte 3 — MenuService + menu.js + layout auth + Dev guard (v1.7)
-
-- **`MenuService`** (P86/P92/P94/P100): menu por ator, união de **todos** os atores da filial; `configurador` vê tudo. `ICONES`/`BLOCOS` hardcoded (o banco não guarda ícone).
-- **`menu.js`** (P15/P16/P87): Ctrl+K, badge, alerta melhorado, navegação via `window.location.href = item.rota` (rotas reais do banco).
-- **`layouts/auth.blade.php`** (P97/P101): só `styles` + `content`, sem sidebar/topbar/scripts. `auth/login.blade.php` herda dele.
-- **`SetTenantContextDev`** (P96): guarda `app()->environment('local', 'testing')` — no-op em produção.
-- **Testes:** 2 testes 4-tupla no `IsolamentoTest`.
-
-### 3.30 Bloco 8.1 — Tela Inicial por ator (v1.9)
-
-- **`TelaInicialService`:** resolve o ator principal (configurador vence), variante por código, contadores, 3 primeiras ordens (RN7), usuário, filial (`nome_fantasia`), período.
-- **`TarefaRepository`:** `contarPendentesDoAtor()` e `primeirasOrdensDoAtor()`.
-- **10 partials por ator** + `universal` + 4 sub-partials (`_kpis`, `_alertas`, `_acoes`, `_ordens`).
-- **CSS `.ti-*`** mínimo viável.
-- **4 testes Pest verdes.**
-
-### 3.31 Bloco 8.2 — Caixa de Entrada, Saída e Histórico + troca de filial (v1.11)
-
-- **`TarefaService`** (ajuste): delega tudo ao `TarefaRepository`.
-- **`TarefaRepository`** (ajuste): `caixaSaidaDoAtor(int $idAtor)` e `historicoDoAtor(int $idAtor, int $limite = 50)`.
-- **`TarefaController`:** 3 ações (`entrada`, `saida`, `historico`).
-- **3 views** (`telas/tarefas/{entrada,saida,historico}.blade.php`) + `_tabela.blade.php`.
-- **`routes/web.php`:** `tarefas.entrada`, `tarefas.saida`, `tarefas.historico`.
-- **`MenuItemSeeder` (ajuste — P117):** rotas `/tarefas/entrada` etc.
-- **Troca de filial (P95):** `FilialContextController`, `POST /contexto/filial`, view composer do `topbar`, `<select>` no `topbar.blade.php`.
-- **`UsuarioSeeder` (P110):** admin (configurador) + 9 usuários de teste (`contador@gestor.local`, etc., senha `password`).
-- **`auth/login.blade.php` (P111):** "Lembrar-me" removido.
-- **Correções de lint (R2):** `MenuService`, `TelaInicialService`, `Usuario::filiaisPermitidas()` delegam a repositórios. Criados `AtorFuncionalRepository`, `MenuItemRepository`, `DashboardRepository`. `AppServiceProvider` com composer do `topbar` via `FilialRepository`.
-- **`TenantContext` singleton** (P113) — sem isso, middleware e service não compartilham a 4-tupla.
-- **`CentroCustoFactory`** criada (P124).
-- **`ExampleTest`, `TenantIsolationTest`, `IsolamentoTest`** ajustados (P121/P122/P123).
-- **Testes (25 verdes):** `TelaInicialTest` (4), `TarefasTest` (4), `IsolamentoTest` (12), `TenantIsolationTest` (2), `ExampleTest` (3).
+**Hard reload no navegador após editar JS:** `Ctrl+Shift+R` (senão o navegador usa o JS em cache).
 
 ---
 
-## 4. Divergências entre documentação e código
+## 3. O que existe hoje
 
-| # | Documento diz | Código faz | Motivo | Ação |
-| :--- | :--- | :--- | :--- | :--- |
-| D1 | `ncms.codigo` é `char(8)` | `varchar(10)` + hierarquia | NCM é hierárquico | ✅ registrado no `10` v1.2 |
-| D2 | `descricao` é `varchar(200/300)` em 4 tabelas | `TEXT` | Descrições longas | ✅ registrado no `10` v1.2 |
-| D3 | `csts` não tem IBS/CBS | Tem | LC 214/2025 | ✅ registrado no `10` v1.2 |
-| D4 | Seeds vêm de "arquivos oficiais" | `.xls`/`.xlsx`/`.txt` + GitHub | Fontes instáveis | Documentar |
-| D5 | Pest 4 | Pest 3 (PHPUnit 11) | Conflito de versão | Documentar |
-| D6 | `empresas.id_filial_matriz` tem FK | ✅ FK adicionada | Dependência circular | ✅ |
-| D7 | Views existem | ✅ 6.19 | — | ✅ |
-| D8 | Repositories existem | ✅ 6.18 | — | ✅ |
-| D9 | `empresa` tem listagem/criação | Só edição (uma empresa) | Só existe uma | Documentar no `04`/`01` |
-| D10 | `SetTenantContextDev` com `append` | `prepend` | Binding antes do contexto | Documentar |
-| D11 | `geral.js` chama `showScreen('empresa')` | Removido | Sobrescrevia o Blade | Documentar |
-| D12 | `partials/scripts.blade.php` com todos os scripts | Só essenciais | `dados-simulados.js` quebrava | Documentar |
-| D13 | `usuarios` vem depois de `periodos` | Antecipado | FK de `periodos` → `usuarios` | Documentar |
-| D14 | `usuarios.senha_hash` | `getAuthPassword()` retorna `senha_hash` | Laravel espera `password` | ✅ Bloco 7 |
-| D15 | `periodos.id_usuario_fechamento` sem FK | FK adicionada | Ordem de migrations | Documentar |
-| D16 | CHECKs do DDL | Sem CHECK no migration | SQLite não roda CHECK | ✅ registrado no `10` v1.2 (1.9) |
-| D17 | `04` chama `menu_item` (singular) | DDL chama `menus_itens` (plural) | O DDL é o que está no banco | ✅ registrado no `10` v1.2 / `04` v1.5 |
-| D18 | `empresas` sem FK de `id_filial_matriz`/`id_plano_contas_sugerido` | FK via ALTER em 6.1 | Dependência circular | ✅ registrado no `10` v1.2 |
-| D19 | `04` diz `auditoria` (singular) | Código usa `auditorias` (plural) | Consistência com DDL | ✅ registrado no `04` v1.5 |
-| D20 | `vigentes()` compara datas com `where` | Usa `whereDate` | SQLite compara string | ✅ registrado no `10` v1.2 (1.10) |
-| D21 | Views filtram por empresa | **Não** filtram | Fiel ao DDL (R2 é do repositório) | ✅ registrado no `10` v1.2 |
-| D22 | Lint de SQL cru é infalível | Heurístico (grep) | Análise estática limitada | Documentar limite |
-| **D23** | Bloco 7 = "Auth + API + telas" (uma linha) | **Fatiado em 7–13** | Escopo real (71 telas + auth 4-tupla + handoff) | ✅ registrado no `15` v1.5 |
-| **D24** | `TenantContext` só com `id_empresa` | **Precisa 4-tupla** (`id_usuario`, `id_empresa`, `id_filial`, `id_ator_funcional`) | `07_atores_fluxo` (ator por filial) | ✅ registrado em 7.2 |
-| **D25** | Menu é uma lista fixa | **Renderizado por ator** (união das tags na filial) | `09_menu_numeracao` (12 blocos) | ✅ registrado em 7.5 |
-| **D26** | `MenuItemSeeder` tem 28 itens | Real tem **~93 itens** | `09_menu_numeracao` (12 blocos) | ✅ registrado em 7.4 |
-| **D27** | `Usuario` é Grupo A (tem `id_empresa`) e usa `BelongsToTenant` | **`Usuario` sem a trait.** `UsuarioRepository` aplica `where('usuarios.id_empresa', $t)` manualmente | O `id_empresa` do `Usuario` é **identidade**, não escopo. O `Auth::attempt` não tem contexto | ✅ registrado no `04` v1.6 |
-| **D28** | `MenuItemSeeder` tem ~93 itens | Tem **76** itens | Contagem real do arquivo | ✅ registrado em 7.4 |
-| **D29** | `menus_itens` guarda ícone/bloco | Só `codigo`/`nome`/`rota`/`fase`/`dados_extras` | Schema do DDL | ✅ `MenuService` mescla ícones via mapa PHP |
-| **D30** | `menu.js` filtra por ator no client | Filtro migrou pro `MenuService` (server) | Segurança + P86/P92 | ✅ registrado em 7.5 |
-| **D31** | Wireframe tinha `seletor-ator.js` (mock) para trocar de ator na UI | Produção **não tem** troca de ator na UI. Ator é identidade (`usuarios_atores`), não escolha em runtime. Trocar de ator = trocar de usuário (logout/login) | Segurança + coerência com `07_atores_fluxo` | **P130** (documentar no `07_atores_fluxo`) |
-| **D32** | `TenantContext` é um "serviço" qualquer | Precisa ser **singleton** para funcionar (middleware e services compartilharem a 4-tupla) | Laravel resolve não-singleton como instância nova a cada `app()`/injeção | ✅ registrado em 8.1 (P113) |
-| **D33** | `12_tela_inicial` fala em 11 variantes | São **10 atores** (§3.1–§3.10) + o **card do Conselheiro** (§3.11) dentro do partial `administrador` — não é 11º partial | Leitura fiel do doc | ✅ registrado em v1.9 |
-| **D34** | `TarefaRepository::query()` é `protected` no `BaseRepository` | Para as 3 telas de "Meu Trabalho", os métodos `caixaSaidaDoAtor`/`historicoDoAtor` precisaram ir **para o repositório** (não para o `TarefaService`) | `query()` protegido força isso; service só delega | ✅ registrado em 8.2 (P116) |
-| **D35** | Menu 1.1/1.2/1.3 aponta para `/caixa-entrada`, `/caixa-saida`, `/historico` (seeder v1.6) | Agora aponta para `/tarefas/entrada`, `/tarefas/saida`, `/tarefas/historico` | Rotas nomeadas (`tarefas.*`) mais limpas que as strings do seeder | ✅ registrado em 8.2 (P117) |
-| **D36** | Login tem "Lembrar-me" (`remember`) | Checkbox removido | `usuarios` não tem `remember_token` (P111) | ✅ registrado em 8.2 |
-| **D37** | `AppServiceProvider`/`MenuService`/`Usuario` usavam `GrupoA\FilialRepository` | Correto é **`GrupoF\FilialRepository`** | O `RepositoryServiceProvider` registra em GrupoF | ✅ corrigido em v1.11 (P128) |
+### 3.1 Infraestrutura
+- **Trait `BelongsToTenant`** (Grupo A/F) + **`ParametroFiscal`** com global scope híbrido (Grupo H).
+- **`TenantContext`** — 4-tupla (`id_empresa`, `id_filial`, `id_usuario`, `id_ator_funcional`), **singleton**. `getId()` = `id_empresa`; `getFilialId()`; `getUsuarioId()`.
+- **`SetTenantContext`** (auth+tenant) e **`SetTenantContextDev`** (local/testing).
+- **`BaseRepository`** + **37 repositórios** (A/F/C/H + `AtorFuncionalRepository`, `MenuItemRepository`, `DashboardRepository`, **`AuditoriaRepository`**).
+- **3 views SQL** (`vw_saldo_contas_bancarias`, `vw_posicao_caixa`, `vw_caixa_entrada`).
+
+### 3.2 Auth + Menu
+- **`LoginController`** — `Auth::attempt` com `senha_hash` (D14/D27).
+- **`MenuService`** — menu por ator (união de todos os atores da filial; `configurador` vê tudo).
+- **`menu.js`** — Ctrl+K, badge, navegação por `window.location.href`.
+- **`layouts/auth.blade.php`** (limpo, sem sidebar/topbar) e **`layouts/app.blade.php`** (composer sidebar/topbar + `@stack('scripts')`).
+
+### 3.3 Meu Trabalho (Bloco 8)
+- **`TelaInicialController`** + **`TelaInicialService`** (10 variantes por ator + `universal`, configurador vence).
+- **`TarefaController`** + **`TarefaService`** (entrada/saída/histórico) — `TarefaRepository::contarPendentesDoAtor()`, `caixaSaidaDoAtor()`, `historicoDoAtor()`.
+- **`FilialContextController`** — troca de filial (`POST /contexto/filial`), `<select>` no topbar (só se ≥2 filiais).
+- **`layouts` + partials** da Tela Inicial (10 + universal + 4 sub-partials).
+
+### 3.4 Cadastros (Bloco 9.1a)
+- **2.3 Centros de Custo:**
+  - `CentroCustoController` (Web: `index`/`create`/`edit`).
+  - `CentroCustoApiController` (API: CRUD via `apiResource`).
+  - Views `telas/centros-custo/{index,form}.blade.php`.
+  - `public/assets/js/centros-custo-{list,form}.js`.
+  - **Lista com Editar + Excluir** (D72).
+- **2.4 Usuários e Atores:**
+  - `UsuarioController` (Web: `index`/`create`/`edit`/`atores`) — **P136 fechada** (sem `store`/`update`/`sincronizarAtores`).
+  - `UsuarioApiController` (API: CRUD via `apiResource`) — **D71/D75/D77** (filtro manual por `id_empresa`, `deleted_by` no `destroy`).
+  - `UsuarioAtorApiController` (API: `index`/`sincronizar`/`destroy`).
+  - Views `telas/usuarios/{index,form,atores}.blade.php`.
+  - `public/assets/js/usuarios-{list,form,atores}.js`.
+  - **Lista com Editar + Atores + Excluir** (D72).
+  - **`AtorFuncionalRepository::todos()`**.
+
+### 3.5 Produtos (2.5) — Bloco 9.1b
+- `ProdutoController` (Web: `index`/`create`/`edit`).
+- `ProdutoApiController` (API: `index` filtra `tipo='P'`, `store` cria `ProdutoServico` + `Produto` em transação, `show`/`update`/`destroy` com `findOrFail` explícito — **D71**; `deleted_by` no `destroy` — **D75**).
+- Views `telas/produtos/{index,form}.blade.php` (estrutura D73/D74).
+- `public/assets/js/produtos-{list,form}.js` (lista com Editar + Excluir — **D72**).
+- `tests/Feature/ProdutoApiTest.php` (6 testes, incluindo isolamento — **D81**).
+
+### 3.6 Serviços (2.6) — Bloco 9.1b
+- `ServicoController` (Web: `index`/`create`/`edit`).
+- `ServicoApiController` (API: `index` filtra `tipo='S'`, `store` cria `ProdutoServico` + `Servico` em transação, `show`/`update`/`destroy` com `findOrFail` explícito; `deleted_by` no `destroy`).
+- Views `telas/servicos/{index,form}.blade.php`.
+- `public/assets/js/servicos-{list,form}.js`.
+- `tests/Feature/ServicoApiTest.php` (5 testes).
+
+### 3.7 Ativos (2.7) — Bloco 9.1b
+- `AtivoController` (Web: `index`/`create`/`edit`; carrega `centrosCusto` ativos via `CentroCusto::query()`).
+- `AtivoApiController` (API: `index` por filial, `store`/`update` via `AtivoRepository::create()`/`update()` — valida **P23**; `show`/`destroy` com `findOrFail` explícito; `deleted_by` no `destroy`).
+- Views `telas/ativos/{index,form}.blade.php` — **sem `<select>` Ativo** (tabela não tem coluna `ativo`; ciclo de vida via `status` + `deleted_at`).
+- `public/assets/js/ativos-{list,form}.js`.
+- `tests/Feature/AtivoApiTest.php` (6 testes, incluindo P23).
+
+### 3.8 OSI (2.8) — Bloco 9.1b
+- `OsiController` (Web: tela única `index` — config + histórico).
+- `OsiApiController` (API: `show` retorna `{config, historico}`; `update` faz `updateOrCreate` + registra em `auditorias` — **D69**).
+- View `telas/osi/index.blade.php` (toggle + tabela explicativa + histórico).
+- `public/assets/js/osi-form.js` (toggle + justificativa + histórico).
+- `tests/Feature/OsiApiTest.php` (3 testes).
+- **`AuditoriaRepository`** (novo, Grupo C) — `porTabela($tabela, $idRegistro, $limite = 20)`.
+
+### 3.9 Correções transversais (pós-9.1b)
+- **Filial:** `filial-list.js` com Editar + Excluir; `FilialApiController::show`/`update`/`destroy` com `findOrFail` explícito (**D71/D78**) + `deleted_by` no `destroy` (**D75**).
+- **Centro de Custo:** `centros-custo-list.js` com Editar + Excluir; `CentroCustoApiController::destroy` com `DB::transaction` + `deleted_by`.
+- **Usuário:** `usuarios-list.js` com Editar + Atores + Excluir; `UsuarioApiController` com filtro manual por `id_empresa` em `show`/`update`/`destroy` (**D77**) + `deleted_by`.
+- **CSS:** `.btn-danger` adicionado ao `geral.css` (2 linhas) — **D72**.
+- **Todos os `*-list.js`/`*-form.js`** com IIFE + `init()` + `})();` — **D80**.
+
+### 3.10 Rotas
+- **Web** (auth+tenant): `/`, `/tela-inicial`, `/empresa`, `/filial/*`, `/contexto/filial`, `/tela/{codigo}`, `/tarefas/*`, `/centros-custo/*`, `/usuarios/*`, `/produtos/*`, `/servicos/*`, `/ativos/*`, `/osi`.
+- **API** (`web`+`auth`+`tenant`, prefixo `api.`): `apiResource('empresas'|'filiais'|'centros-custo'|'usuarios'|'produtos'|'servicos'|'ativos')` + `GET/POST /api/usuarios/{id}/atores` + `DELETE /api/usuario-atores/{id}` + `GET/PUT /api/osi`.
+
+### 3.11 Testes (58 verdes)
+- `IsolamentoTest` (12), `TarefasTest` (4), `TelaInicialTest` (4), `TenantIsolationTest` (2), `ExampleTest` (3).
+- **9.1a:** `CentroCustoApiTest` (5), `UsuarioApiTest` (4), `UsuarioAtorApiTest` (2), `UsuarioIsolamentoTest` (2).
+- **9.1b:** `ProdutoApiTest` (6), `ServicoApiTest` (5), `AtivoApiTest` (6), `OsiApiTest` (3).
 
 ---
 
-## 5. Pendências técnicas
+## 4. Divergências e decisões de arquitetura
 
-| # | Pendência | Status |
+### 4.1 Abertas (documentar no `10_modelo_dados_fisico.md`)
+
+| # | O que é | Por quê | Ação |
+| :--- | :--- | :--- | :--- |
+| **D54** | `*ApiController` usam `Model::create()` direto (não repositório), **exceto** `AtivoApiController` (usa `AtivoRepository` para validar P23) | O lint de SQL cru **não pega** `::create()` em `app/Http/Controllers/Api/`. Padrão consistente com o legado. | Documentar. Se o lint for mais rigoroso, refatorar todos juntos. |
+| **D56** | `routes/api.php` precisa de `['web', 'auth', 'tenant']` (não só `web`) | Sem `auth`/`tenant`, o `SetTenantContext` **não roda** na API → `TenantContext` vazio → `BelongsToTenant` filtra por `null` → `[]`. | Documentar no `10`. **Já corrigido.** |
+| **D71** | `ApiController` de models com `BelongsToTenant`: usar `Model::query()->findOrFail($id)` em `show`/`update`/`destroy` (não binding implícito) | O `SubstituteBindings` roda **antes** do `SetTenantContext` (grupo `web`). O binding implícito filtra `id_empresa = null` → **404 "No query results"**. | Documentar no `10`. |
+| **D75** | `deleted_by` **não** é preenchido automaticamente (a trait `BelongsToTenant` só preenche `id_empresa` no `creating`) | O `SoftDeletes` grava `deleted_at`; `deleted_by` precisa ser **manual** no `destroy` (`update(['deleted_by' => getUsuarioId()])`). | Documentar no `10`. |
+| **D79** | `produtos`/`servicos` (filhas 1:1) **não** têm `id_empresa`/`ativo`/`deleted_at`/`created_by`/`updated_by`/`deleted_by` próprios | Herdam do `ProdutoServico` pai (1:1). Adicionar seria redundância. `configuracoes_handoff` não tem auditoria própria (vai em `auditorias`, D69). `ativos` já tem tudo (Grupo F). | Documentar no `10`. **Nenhuma migration nova.** |
+
+### 4.2 Resolvidas que ainda confundem (manter 1 linha)
+
+| # | O que é | Por quê confunde |
 | :--- | :--- | :--- |
-| ~~P1~~ | Testes de isolamento (Pest) | ✅ 10 testes em 6.21 |
-| ~~P2~~ | 38 tabelas restantes | ✅ 6.17 |
-| ~~P3~~ | Views não criadas | ✅ 6.19 |
-| ~~P4~~ | Repositories não criados | ✅ 6.18 |
-| ~~P5~~ | **`SetTenantContext` real** | ✅ **feito em 7.2/7.3** (v1.6) |
-| ~~P6~~ | **`SetTenantContext` middleware** | ✅ **feito em 7.3** (v1.6) |
-| ~~P7~~ | FK de `empresas.id_filial_matriz` | ✅ 6.1 |
-| P11 | `csts.descricao` pode precisar de `TEXT` | Verificar |
-| P12 | CNAE guarda 7 dígitos (sem formatação) | Documentar no `04` |
-| ~~P13~~ | `ncms` hierárquico sem model | ✅ 6.16.1 |
-| ~~P14~~ | `seletor-ator.js` removido do layout | ✅ 7.5 |
-| ~~P15~~ | `menu.js` mostra alerta "Tela ainda não implementada" | ✅ 7.6 (melhorado) |
-| ~~P16~~ | `geral.js` tem `showScreen` | ✅ 7.6 (removido do `menu.js`) |
-| P17 | `empresa.js` não trata edição de filial matriz | Bloco 9 |
-| ~~P18~~ | Testes Pest de isolamento | ✅ 6.21 |
-| ~~P19–P22~~ | Seeders de configuração | ✅ 6.17 |
-| ~~P23~~ | `Ativo.id_centro_custo` × empresa da filial | ✅ 6.18 + 6.21 |
-| P24 | CHECKs do DDL — FormRequest | Blocos 9–12 |
-| P25 | `notas_fiscais_vinculos` sem `created_at`/`created_by` | Bloco 13 |
-| P26 | `notas_fiscais.status_importacao`/`status_fluxo` sem CHECK | Bloco 10 |
-| P27 | `chave` (44) nullable + unique — validar no parser de XML | Bloco 10 |
-| P28 | `lancamentos.status_classificacao` e `tipo_lancamento` sem CHECK | Bloco 13 |
-| P29 | `contas_pagar.status` e `contas_receber.status` sem CHECK | Bloco 10 |
-| P30 | `status_fluxo` strings livres — canônico depende do `08_ordens` | Bloco 13 |
-| ~~P31~~ | `lancamentos.id_nota_fiscal_item` × `id_nota_fiscal` | ✅ 6.18 + 6.21 |
-| P32 | `folhas_pagamento.status` sem CHECK | Bloco 10 |
-| P33 | `folhas_pagamento_proventos_descontos` sem `created_at`/`created_by` | Bloco 13 |
-| P34 | `provisoes.tipo` sem CHECK | Bloco 10 |
-| P35 | `depreciacoes` sem unique `(id_filial, id_ativo, id_periodo)` | Bloco 13 |
-| P36 | `RegraClassificacaoLog.created_at` preenchido manualmente | Bloco 13 |
-| P37 | `regras_classificacao.prioridade` (1–8) e `origem` sem CHECK | Bloco 9 |
-| P38 | `parametros_fiscais` sem unique | Bloco 9 |
-| P39 | `tabelas_inss` e `tabelas_irrf` sem CHECK `valor_final >= valor_inicial` | Bloco 10 |
-| ~~P40~~ | `ParametroFiscal` global scope local | ✅ 6.21 |
-| P41 | `razoes_impostos` sem unique | Bloco 13 |
-| P42 | CHECKs de `natureza`/`categoria`/`status` em `razoes_impostos` e `pendencias` | Bloco 12 |
-| P43 | `cenarios_simulacao` sem unique `(id_empresa, nome)` | Bloco 11 |
-| P44 | CHECK de `status` em `cenarios_simulacao` | Bloco 11 |
-| ~~P45~~ | `usuarios_atores.id_filial` × `usuario.id_empresa` | ✅ 6.18 + 6.21 |
-| P46 | `usuarios_filiais` é legado — decidir remoção | Bloco 7 parte 3 |
-| P47 | `auditorias` sem `id_empresa`/`id_filial` | Bloco 12 |
-| ~~P48~~ | `documentos_encadeados` polimórfico sem FK | ✅ 6.18 + 6.21 |
-| P49 | `documentos_encadeados` sem unique | Bloco 13 |
-| P50 | `tarefas` sem `created_at` — `data_criacao` preenchido pelo repositório | Bloco 8.3 |
-| ~~P51~~ | `menus_itens` sem seed | ✅ 6.17 / 7.4 |
-| P52 | CHECK de `fase` em `menus_itens` | Bloco 7 parte 3 |
-| P53 | `AtorFuncional` — confirmar `$timestamps` | Verificar |
-| P54 | Confirmar `created_at`/`updated_at` nas 10 tabelas de domínio | Verificar |
-| P55 | Confirmar `ncms` com `id_ncm_pai`, `aceita_lancamento`, `nivel` | Verificar |
-| P56 | `app/Models/x` (0 bytes) — apagar | Ação manual |
-| P57 | `PlanoContaSeeder` com `id_empresa = 1` hardcoded | Bloco 7 parte 3 |
-| ~~P58~~ | `MenuItemSeeder` reescrito (~93 itens) | ✅ 7.4 |
-| P59 | `UsuarioSeeder` com senha fraca — trocar em prod | Bloco 7 parte 3 |
-| P60 | `PeriodoSeeder` só empresa 1 — multi-empresa real | Bloco 7 parte 3 |
-| P61 | Grupo U sem repositório — padronizar | Bloco 7 parte 3 |
-| ~~P62~~ | `BaseRepository` confia na trait para filtro | ✅ 6.18.1 |
-| P63 | `Pessoa::tags()` precisa existir para `PessoaRepository::porTag()` | Verificar |
-| P64 | `RegraClassificacaoRepository::candidatas()` é primeira versão | Bloco 13 |
-| ~~P65~~ | `withoutGlobalScope('tenant')` intencional em 5 repositórios | ✅ aceito |
-| P66 | `baixar()`/`receber()` mudam status mas **não** criam lançamento contábil | Bloco 13 |
-| ~~P67~~ | `LancamentoRepository::create()` valida P31 via `withoutGlobalScope` | ✅ aceito |
-| P68 | `NotaFiscalItemRepository::porNota()` não valida escopo — pai valida | Documentar |
-| P69 | `DocumentoEncadeadoRepository::resolverModel()` usa heurística | Bloco 13 |
-| ~~P70~~ | `IsolamentoTest` depende de factories — criadas em 8.1/8.2 | ✅ |
-| P71 | `RepositoryServiceProvider` lista 35 repositórios manualmente | Manter |
-| ~~P72~~ | `vigentes()` corrigido com `whereDate` | ✅ 6.18.2 |
-| ~~P73~~ | `UsuarioAtorRepository`/`AtivoRepository` dependem de atores/centros no teste | ✅ 6.21 |
-| ~~P74~~ | `dump()` removido do teste H | ✅ |
-| P75 | Views não filtram tenant — R2 é do repositório | Documentar no `10` |
-| P76 | `vw_posicao_caixa` com `SUM` — OK se uma filial tiver 2 contas | OK |
-| P77 | `vw_caixa_entrada` com `ORDER BY` na view | OK |
-| P78 | Lint de SQL cru é heurístico | Documentar limite |
-| P79 | Lint varre `app/` incluindo controllers | OK |
-| P80 | Whitelist de `withoutGlobalScope` é por arquivo, não por linha | Aceitável |
-| P81 | `composer lint` roda Pint + SQL; Pint falha, SQL não roda | CI separado |
-| ~~P82~~ | **`TenantContext` 4-tupla** | ✅ **feito em 7.2** (v1.6) |
-| ~~P83~~ | **`BelongsToTenant` continua funcionando com a 4-tupla?** | ✅ **compatível** (v1.6) |
-| ~~P84~~ | **Login/logout** | ✅ **feito em 7.1** (v1.6) |
-| ~~P85~~ | **Middleware `SetTenantContext`** | ✅ **feito em 7.3** (v1.6) |
-| ~~P86~~ | **Menu por ator** | ✅ **7.5** |
-| ~~P87~~ | **Campo "Ir para" (Ctrl+K)** | ✅ **7.6** |
-| P88 | **As 71 telas** — faltam 68 | Blocos 9–12 |
-| P89 | **Substituir `dados-simulados.js` por API real** | Blocos 9–12 |
-| P90 | **Testes de cada tela** | Blocos 9–12 |
-| ~~P91~~ | `/tela/{codigo}` vs rotas Blade reais | ✅ placeholders mantidos |
-| ~~P92~~ | **`configurador` vê tudo (regra no `MenuService`)** | ✅ **7.5** |
-| ~~P93~~ | Itens antigos (chutados) ficam órfãos | ✅ limpo |
-| ~~P94~~ | **`SetTenantContext` resolve 1 ator; `MenuService` precisa de todos** | ✅ **7.5** (P100) |
-| ~~P95~~ | **Troca de filial** | ✅ **8.2** |
-| ~~P96~~ | **`SetTenantContextDev` desabilitado em produção** | ✅ **7.8** |
-| ~~P97~~ | **Layout `auth` limpo** | ✅ **7.7** |
-| ~~P98~~ | **`Usuario` sem `BelongsToTenant`** | ✅ **7.1** (D27) |
-| ~~P99~~ | **`UsuarioAtor` continua com a trait** | ✅ **7.3** |
-| ~~P100~~ | (= P94) | ✅ **7.5** |
-| ~~P101~~ | (= P97) | ✅ **7.7** |
-| ~~P102~~ | **`UsuarioSeeder` cria `usuario_atores` para o admin** | ✅ **7.1** |
-| P103 | `MenuService::nomeUsuario()` usa `withoutGlobalScopes()` — documentar | Documentar no `04` |
-| P104 | `ORDENS_PENDENTES` no `menu.js` continua mock — badge real no Bloco 8.3 | Bloco 8.3 |
-| P105 | `web.php` não tem fallback `/tela/{codigo}` para rotas dos Blocos 9–13 | Bloco 9 |
-| ~~P106~~ | `TelaInicialService::periodoAberto()` usa `periodos.ano`/`mes`/`status` | ✅ 8.1 |
-| P107 | CSS `.ti-*` da Tela Inicial é mínimo viável — integrar com o do wireframe | Bloco 9 |
-| P108 | Cards analíticos (DRE, fluxo, posição) são placeholders | Blocos 10–11 |
-| P109 | "Últimas 5 notas" / "Últimos 5 eventos" são placeholders | Blocos 10/12 |
-| ~~P110~~ | **`UsuarioSeeder` com 10 usuários de teste** | ✅ **8.2** |
-| ~~P111~~ | **"Lembrar-me" removido do login** | ✅ **8.2** |
-| ~~P112~~ | **`filiais.nome_fantasia` (não `nome`)** | ✅ 8.1 |
-| ~~P113~~ | **`TenantContext` singleton** | ✅ **8.2** |
-| ~~P114~~ | **`UsuarioFactory` criada** | ✅ 8.1 |
-| P115 | `tarefas.id_documento` não tem FK (polimórfico via `tipo_documento`) | Documentar no `10` |
-| ~~P116~~ | **`TarefaService` não chama `query()` protegido** | ✅ **8.2** |
-| ~~P117~~ | **`MenuItemSeeder` com rotas `/tarefas/...`** | ✅ **8.2** |
-| ~~P118~~ | **`FilialContextController` valida `UsuarioAtor` ativo** | ✅ **8.2** |
-| P119 | Dropdown de filial só aparece se `count($filiaisDisponiveis) > 1` | Documentar no `04` |
-| P120 | Caixa de Entrada usa só o **primeiro ator** da filial (o que o `SetTenantContext` seta) — o `MenuService` já resolve a união, mas as telas de tarefa **não** | Bloco 8.3 |
-| ~~P121~~ | `ExampleTest` do Laravel não condiz com auth | ✅ **8.2** |
-| ~~P122~~ | `TenantIsolationTest` "criar filial sem contexto falha" — expectativa errada | ✅ **8.2** |
-| ~~P123~~ | `IsolamentoTest` usa `firstOrFail` em `AtorFuncional` — falha sem seeder | ✅ **8.2** |
-| ~~P124~~ | `CentroCustoFactory` criada | ✅ **8.2** |
-| ~~P125~~ | `MenuService` test rodando com seed | ✅ **8.2** |
-| ~~P126~~ | `dump()` removidos do `IsolamentoTest` | ✅ **8.2** |
-| ~~P127~~ | `TarefaService` delega ao `TarefaRepository` | ✅ **8.2** |
-| ~~P128~~ | `FilialRepository` é **GrupoF** (não GrupoA) — `use` corrigido | ✅ **8.2** |
-| ~~P129~~ | `TenantContext` é **singleton** | ✅ **8.2** |
-| **P130** | Documentar D31 no `07_atores_fluxo` (não há troca de ator na UI; ator é identidade) | Documentar no `07` |
+| **D27** | `Usuario` **sem** `BelongsToTenant` | `id_empresa` do usuário é **identidade**, não escopo. `Auth::attempt` não tem contexto. **`UsuarioApiController` filtra manual** com `where('id_empresa', $ctx->getId())` em `index`/`show`/`update`/`destroy` (**D77**). **Nunca** adicionar a trait. |
+| **D31** | **Não há** troca de ator na UI | Ator é identidade (`usuario_atores`). Trocar de ator = logout/login. O `seletor-ator.js` do wireframe foi **removido** (era mock). |
+| **D71/D75** | `findOrFail` explícito + `deleted_by` manual | Quem for criar `ApiController` novo **precisa** saber. Ver §7.2. |
 
-**Total: 130 pendências**, das quais **81 resolvidas**.
-**Abertas para 8.3/9.1a+:** P11, P12, P17, P24, P25, P26, P27, P28, P29, P30, P32, P33, P34, P35, P36, P37, P38, P39, P41, P42, P43, P44, P46, P47, P49, P50, P52, P53, P54, P55, P56, P57, P59, P60, P61, P63, P64, P66, P68, P69, P71, P75, P76, P77, P78, P79, P80, P81, P88, P89, P90, P103, P104, P105, P107, P108, P109, P115, P119, P120, P130.
+**Resolvidas que o código já reflete (não precisam ficar):** D1–D26, D28–D30, D32–D53, **D55, D57–D70, D72–D74, D76–D78, D80, D81**. Tracking completo em `06_pendencias.md`.
+
+---
+
+## 5. Pendências abertas (resumo)
+
+**Tracking completo em `06_pendencias.md`.** Aqui só o que bloqueia o 9.2 e blocos futuros.
+
+### 5.1 Bloqueantes de blocos futuros
+- **P24** — CHECKs do DDL (FormRequest) — Blocos 9–12.
+- **P50** — `tarefas.data_criacao` preenchido pelo repositório — Bloco 8.3.
+- **P66** — `baixar()`/`receber()` não criam lançamento contábil — Bloco 13.
+- **P88** — 68 telas faltantes — Blocos 9–12.
+- **P89** — Substituir `dados-simulados.js` por API — Blocos 9–12.
+- **P90** — Testes de cada tela — Blocos 9–12.
+- **P119** — Dropdown de filial só aparece se ≥2 filiais — documentar no `04`.
+- **P120** — Caixa de Entrada usa só o primeiro ator da filial — Bloco 8.3.
+
+### 5.2 Dívidas técnicas menores
+- P11 (csts.descricao), P12 (CNAE 7 dígitos), P17 (empresa.js sem matriz), P25–P49 (CHECKs/FKs das tabelas de operação), P52 (menus_itens.fase), P53 (AtorFuncional.timestamps), P54 (created_at nas 10 tabelas), P55 (ncms hierarquia), P56 (app/Models/x 0 bytes), P57 (PlanoContaSeeder id_empresa=1), P59 (senha fraca em prod), P60 (PeriodoSeeder só empresa 1), P61 (Grupo U sem repositório), P63 (Pessoa::tags()), P64 (RegraClassificacaoRepository), P68 (NotaFiscalItemRepository), P69 (DocumentoEncadeadoRepository), P71 (RepositoryServiceProvider manual), P75 (views não filtram tenant), P78 (lint heurístico), P103 (MenuService::nomeUsuario sem escopo), P104 (badge mock), P105 (fallback /tela), P107 (CSS .ti-*), P108–P109 (placeholders), P115 (tarefas.id_documento sem FK), P133 (usuarios-atores.js carrega tudo), P135 (= D54).
+
+### 5.3 Fechadas no 9.1b
+- **P136** — `UsuarioController` enxugado (sem `store`/`update`/`sincronizarAtores`). ✅
+- **P137** — `MenuItemSeeder` 1.0 → `/` (rodar `php artisan db:seed --class=MenuItemSeeder`). ✅
 
 ---
 
 ## 6. Próximos passos
 
-### 6.21.2 — Testes Pest (complemento)
-- `GrupoFTest.php` (17 tabelas), `GrupoCTest.php` (filhas puras), `ValidacoesCruzadasTest.php` (P31, P48), 13 factories restantes.
+### 6.1 Bloco 9.2 — Contador (4.1–4.11)
+- Tabelas Fiscais, Plano de Contas, Config. Contábeis, Config. Fiscais, Regras, Lançamento Manual, Revisão, Validação, Pendências, Preparar Fechamento, Fechar.
+- **Padrão:** §7 inteira (Blade casca + JS fetch + API `auth`/`tenant` + `->name('api.')` + `findOrFail` explícito + `deleted_by` no `destroy` + IIFE).
+- **Testes:** mesmo padrão de `ProdutoApiTest`/`AtivoApiTest` (incluindo isolamento via controller direto — **D81**).
 
-### Bloco 8.3 — Refinamento das telas de "Meu Trabalho"
-- **P120** — Caixa de Entrada com todos os atores da filial (não só o primeiro).
-- **P104** — Badge real de ordens pendentes no `menu.js` (via `TarefaRepository`).
-- **P50** — `tarefas.data_criacao` preenchido pelo repositório.
-- Testes de feature das 3 telas + Tela Inicial juntos.
-- (Opcional) Botão "abrir" da tarefa → detalhe (depende do `08_ordens`, Bloco 13).
+### 6.2 Blocos 10–13
+- Operação (5.x–8.x + 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
 
-### Bloco 9.1a — Centros de Custo (2.3) + Usuários e Atores (2.4)
-- 2.3 Centros de Custo (CRUD completo) — `CentroCustoRepository` existe.
-- 2.4 Usuários e Atores (CRUD + gerenciar atores/filiais) — `UsuarioRepository` + `UsuarioAtorRepository` existem.
-
-### Bloco 9.1b — Produtos (2.5) + Serviços (2.6) + Ativos (2.7) + Handoff (2.8)
-- `ProdutoServicoRepository` + `AtivoRepository` + `ConfiguracaoHandoff` (model).
-
-### Bloco 9.2 — Contador (4.1–4.11)
-- 4.1 Tabelas Fiscais, 4.2 Plano de Contas, 4.3 Config. Contábeis, 4.4 Config. Fiscais, 4.5 Regras Classificação, 4.6 Lançamento Manual, 4.7 Revisão Lançamentos, 4.8 Validação Cálculos, 4.9 Relatório Pendências, 4.10 Preparar Fechamento, 4.11 Fechar Período.
-
-### Bloco 10 — Telas de operação (5.x–8.x + 10.x)
-- Comprador (5.1–5.5) + Faturista (6.1–6.5) + Financeiro1 (7.1–7.3) + Financeiro2 (8.1–8.3) + Gerente (9.1–9.2) + RH (10.1–10.6).
-
-### Bloco 11 — Telas do Administrador (3.x)
-- DRE (3.1–3.3) + Fluxo (3.4) + Análise (3.5–3.6) + Exportação (3.7) + Posição (3.8) + Relatórios avançados (3.10–3.17) + Conselheiro (3.18).
-
-### Bloco 12 — Auditor (11.x) + Administração (12.x)
-- Auditoria (11.1–11.8) + Administração (12.1–12.5).
-
-### Bloco 13 — Handoff + serviços de negócio
-- Serviço de baixa (P66 — cria lançamento contábil).
-- Motor de classificação (P64).
-- Handoff (T8.1–T8.12).
+### 6.3 Bloco 8.3 (opcional, quando der)
+- P120 (todos os atores na Caixa de Entrada), P50 (data_criacao), P104 (badge real).
 
 ---
 
-## Histórico de versões
+## 7. Padrões consolidados (ler ANTES de codar tela nova)
 
-| Versão | Data | Mudança |
-| :--- | :--- | :--- |
-| 1.0 | 2026-10-31 | Criação. Blocos 0–4. 8 divergências (D1–D8), 13 pendências (P1–P13). |
-| 1.1 | 2026-11-02 | Bloco 5 concluído (frontend). D9–D12, P14–P18. |
-| 1.2 | 2026-11-02 | Bloco 6.1–6.4 (19 tabelas). D13–D15, P19–P22. |
-| 1.3 | 2026-11-02 | Bloco 6.5–6.17 (38 tabelas, 38 models, 8 seeders). 9 models de domínio em 6.16.1. `ParametroFiscal` com global scope híbrido. D16–D19, P23–P61. |
-| 1.4 | 2026-11-02 | Bloco 6.18–6.21 (parcial). 32 repositórios, 3 views, lint SQL, 10 testes verdes. Correção `whereDate`. D20–D22, P62–P81. P1–P4, P7, P13, P18–P23, P40, P45, P48, P51, P65, P67, P72–P74 resolvidos. |
-| 1.5 | 2026-11-02 | Leitura dos 4 docs funcionais (`07`, `09`, `11`, `12`). Bloco 7 fatiado em 7–13. D23–D26, P82–P90. **P58 reaberta.** P5/P6 reformuladas (contexto 4-tupla). |
-| 1.6 | 2026-11-02 | Bloco 7 parte 1/2: `MenuItemSeeder` reescrito (~93 itens), `TenantContext` 4-tupla, `SetTenantContext` real, `LoginController`, `Usuario` sem `BelongsToTenant` (D27/P98) com `getAuthPassword()`/`getAuthPasswordName()`, `UsuarioRepository` com filtro manual. Login funcionando. D27, P91–P102. P94=P100 e P97=P101 (duplicatas). |
-| 1.7 | 2026-11-02 | Bloco 7 parte 3: `MenuService` (P86/P92/P94/P100), `menu.js` (P15/P87), `layouts/auth.blade.php` (P97/P101), `SetTenantContextDev` guarda (P96), 2 testes 4-tupla no `IsolamentoTest`. D28–D30, P103–P105. Próximo: Bloco 8 (Meu Trabalho). |
-| 1.8 | 2026-11-02 | **Bloco 8.1:** `TelaInicialService` (variante por ator — configurador vence), `TarefaRepository::contarPendentesDoAtor()` + `primeirasOrdensDoAtor()`, 10 partials (3.1–3.10) + `universal` + 4 sub-partials reutilizáveis, CSS `.ti-*` mínimo, 4 testes Pest verdes. **P113** (`TenantContext` singleton), **P114** (`UsuarioFactory`), **P112** (`filiais.nome_fantasia`). D31–D33, P106–P115. |
-| 1.9 | 2026-11-02 | **Bloco 8.1 concluído:** ajustes finais no `TelaInicialService` (configurador vence), `CentroCustoFactory`, `IsolamentoTest` (2 testes 4-tupla + `MenuService` com seed), `dump()` removidos. **P113/P114/P124/P125/P126.** Próximo: 8.2. |
-| 1.10 | 2026-11-02 | **Bloco 8.2 (parte 1/2):** Caixa de Entrada (1.1), Caixa de Saída (1.2), Histórico (1.3) — `TarefaService` + `TarefaRepository::caixaSaidaDoAtor()`/`historicoDoAtor()`, 3 views + `_tabela` reutilizável, CSS, `TarefasTest` (4 verdes). Dropdown de filial (P95) — `FilialContextController` + view composer do topbar. `UsuarioSeeder` com 10 usuários (P110). "Lembrar-me" removido (P111). `MenuItemSeeder` com rotas `/tarefas/...` (P117). D34–D36, P116–P120. |
-| **1.11** | **2026-11-03** | **Bloco 8.2 fechado:** `TarefaController` (entrada/saída/histórico), `TarefaService` delegando ao `TarefaRepository` (P116/P127), `FilialContextController` (P95), `UsuarioSeeder` com 10 usuários (P110), "Lembrar-me" removido (P111), `TenantContext` singleton (P113/P129), lint de SQL cru zerado (P116/P124/P127), `AppServiceProvider`/`MenuService`/`Usuario` usando `GrupoF\FilialRepository` (P128), **25 testes verdes**. D34–D37, P95/P110/P111/P113/P116/P117/P118/P121–P129. **P130** (documentar D31 no `07`). Próximo: **9.1a** (Centros de Custo + Usuários). |
+> Esta seção é a **fonte da verdade** para novas telas. Consolidada no 9.1a, revisada no 9.1b. **Se algo aqui conflitar com o que você acha que sabe, este documento ganha.**
+
+### 7.1 Arquitetura Web vs API
+
+O projeto **não usa MVC clássico** (Blade POST/PUT). Usa **Blade casca + JS `fetch` + ApiController JSON**:
+
+```
+Blade (casca, sem dados) ──fetch──► ApiController ──► Model ──► JSON
+        ▲                                  │
+        │                                  ▼
+        └── JS preenche tbody / coleta form / trata erro / redireciona
 ```
 
+**Evidência:** `FilialApiController` (CRUD), `filial-list.js` (fetch + `tbody.innerHTML`), `filial-form.js` (fetch + redirect).
+
+### 7.2 Contrato de `ApiController`
+
+- **Validação:** `$request->validate([...])` **inline** (sem FormRequest). Pipe (`'required|string'`) ou array (`['required', 'string']`) — escolher um por arquivo.
+- **Update:** `unique:tabela,campo,'.$model->id` (concatenação de string).
+- **R2 (tenant) no store:** `$data['id_empresa'] = app(TenantContext::class)->getId();` (Grupo A) ou `$data['id_filial'] = app(TenantContext::class)->getFilialId();` (Grupo F) + early return `422` se nulo.
+- **R2 (tenant) no update:** `unset($data['id_empresa'])` / `unset($data['id_filial'])`.
+- **Retorno:** `store` → `response()->json($model, 201)`; `show`/`update` → `response()->json($model)`; `index` → `response()->json($collection)`; `destroy` → `response()->noContent()` (retorna **`Illuminate\Http\Response`**, não `JsonResponse` — **D71**).
+- **`destroy` = soft delete:** `DB::transaction` + `$model->update(['ativo' => false, 'deleted_by' => app(TenantContext::class)->getUsuarioId()]); $model->delete();`. Se a tabela **não** tem `deleted_at` (ex.: `usuario_atores`), só `update(['ativo' => false])`. Se a tabela **não** tem `ativo` (ex.: `ativos`), só `update(['deleted_by' => ...])` + `delete()`. — **D75**.
+- **Model binding no path:** ❌ **não usar** (`Model $model`). Usar `findOrFail($id)` explícito em `show`/`update`/`destroy` — **D71** (o `SubstituteBindings` roda antes do `SetTenantContext` → 404).
+- **Repository no ApiController:** ❌ **não usar** (D54), **exceto** quando o repository valida regra de negócio (ex.: `AtivoRepository` valida P23).
+- **`UsuarioApiController`:** filtro manual por `id_empresa` em **todos** os métodos (`index`/`show`/`update`/`destroy`) — **D77** (D27: `Usuario` sem `BelongsToTenant`).
+
+### 7.3 Contrato de `WebController`
+
+- **Só** `index`/`create`/`edit` (+ ações extras como `atores`, `index` de OSI). **Sem** `store`/`update`/`destroy`.
+- **Sem `return type`** explícito.
+- **`create()`** passa `view('...form', ['model' => null] + dados auxiliares)`.
+- **`edit(int $id)`** → `Model::query()->findOrFail($id)` + `view('...form', compact('model') + dados auxiliares)`.
+- **`index()`** passa `view('...index')` **sem dados** (casca), exceto OSI (tela única que precisa de `config` + `historico`).
+- **`atores(int $id)`** (quando aplicável) busca dados auxiliares via repositório e passa `compact(...)`.
+- **`request()` helper global:** ❌ não usar. Usar `Request $request` injetado.
+- **`$this->repo->query()`:** ❌ não funciona (`query()` é `protected` no `BaseRepository`). Usar `Model::query()` direto (global scope filtra).
+
+### 7.4 Contrato de view Blade (casca)
+
+- `@extends('layouts.app')` + `@section('title', '...')` + `@section('content')`.
+- **Index:**
+  - `<div id="recurso-list-app">` envolvendo tudo.
+  - `.page-header` **com `style` inline**: `style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"` — **D74**.
+  - `<h1>` + `<a class="btn btn-primary">Novo recurso</a>` dentro do `.page-header`.
+  - `.card` com `<h2>` + `<table class="data" id="tabela-recurso">` + `<tbody></tbody>` vazio + `<p class="muted" id="recurso-vazio" style="display:none;">`.
+- **Form:**
+  - `<div id="recurso-form-app" data-id="{{ $model->id ?? '' }}">` envolvendo tudo.
+  - `<h1>` **solto** dentro do `#app` (sem `.page-header`, sem "Voltar") — **D73**.
+  - `.card` com `<h2>` + `.form-grid` + `.form-row` (label **sem `for`**) + `<input id="...">`.
+  - **Ativo** como `<select>` Sim/Não (**não** checkbox) — **D73**.
+  - `.form-actions` **fora** do `.card`, irmão dele — **D73**.
+  - Ordem: **Cancelar** (`btn btn-secondary`) → **Salvar** (`btn btn-primary`).
+  - `<button>` Salvar **sem** `type` (não submete porque não tem `<form>`).
+- **Tabela:** `<table class="data">` — `<tbody>` **vazio** (JS preenche). **Nunca** `@forelse` no `<tbody>`.
+- **`@json` em `data-*`:** `data-filiais='@json($filiais)'` — **sem aspa simples extra**.
+- **`isset($model)` no lugar de `$model ?`** (defesa).
+- **`@push('scripts')`** com `<script src="{{ asset('assets/js/...js') }}"></script>`.
+
+### 7.5 Contrato de JS
+
+- **Estrutura obrigatória** (**D80**):
+  ```javascript
+  (function () {
+    'use strict';
+    async function carregar...() { ... }
+    async function excluir(id) { ... } // se lista
+    function getCsrfToken() { ... }
+    function init() { carregar...(); /* addEventListener do salvar se form */ }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  ```
+  **Sem o `})();` final, o arquivo define funções mas não executa** (tabela vazia, sem erro no console).
+- **CSRF:** `getCsrfToken()` lê `XSRF-TOKEN` do cookie via `document.cookie.match(/XSRF-TOKEN=([^;]+)/)`.
+- **GET:** `fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })`.
+- **POST/PUT:** `fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() }, credentials: 'same-origin', body: JSON.stringify(data) })`.
+- **DELETE:** `fetch(url, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() }, credentials: 'same-origin' })`.
+- **Erro:** `alert('Erro: ' + JSON.stringify(err.errors || err.message || err));`.
+- **Sucesso:** `window.location.href = '/recurso';` (redirect tradicional).
+- **Lista:** `tbody.innerHTML = data.map(item => \`<tr>...</tr>\`).join('');`. Se `data.length === 0`, `vazio.style.display = ''` e `tbody.innerHTML = ''`.
+- **Form:** `coletarDados()` lê cada `id`; `salvar()` valida no client (alert), escolhe URL/método pelo `state.id`, envia.
+- **Estado:** `const state = { id: null };` — preenchido no `init()` a partir de `app.dataset.id`.
+- **Botões da lista** (**D72**):
+  - **Editar:** `<a href="/recurso/{id}/edit" class="btn btn-secondary">Editar</a>`.
+  - **Excluir:** `<button type="button" class="btn btn-danger" data-id="{id}" data-acao="excluir">Excluir</button>`.
+  - **Sem** `.acoes-linha`, **sem** `btn-sm` (não existe no CSS), **sem** `<div>` em volta.
+- **`confirm()`** antes do `DELETE`: `if (!confirm('Excluir este recurso? ...')) return;`.
+- **Campos do model:** `AtorFuncional` tem `descricao` (não `nome`). `Filial` tem `nome_fantasia` (não `nome`). `ProdutoServico` tem `descricao`. Relações viram **snake_case** no JSON (`centroCusto` → `centro_custo`, `servicoLc116` → `servico_lc116`). Sempre conferir o model antes de montar a view/JS.
+
+### 7.6 Rotas
+
+- **Web:** `Route::prefix('recurso')->name('recurso.')->group(...)` com `index`/`create`/`edit` (+ extras como `atores`). **Planas**, sem prefixo `cadastros.`.
+- **API:** `Route::middleware(['web', 'auth', 'tenant'])->name('api.')->group(...)` + `Route::apiResource('recurso', RecursoApiController::class)`.
+  - **`auth`/`tenant` são obrigatórios** (D56).
+  - **`->name('api.')` é obrigatório** (evita colisão Web/API).
+- **Nome de path com hífen** (`centros-custo`, não `centros_custo`).
+- **Ações extras da API:** `Route::post('recurso/{id}/acao', ...)` fora do `apiResource`.
+- **Model binding:** ❌ **não usar** na API — `findOrFail($id)` explícito (**D71**).
+- **OSI:** `Route::get('osi', ...)` + `Route::put('osi', ...)` (não é `apiResource` — é singleton por empresa).
+
+### 7.7 O que **NÃO** fazer (lições aprendidas)
+
+| ❌ Não fazer | ✅ Fazer |
+|---|---|
+| `FormRequest` | `$request->validate([...])` inline |
+| `$this->repo->create()` no ApiController | `Model::create()` direto (D54), **exceto** `AtivoApiController` (valida P23) |
+| `store`/`update`/`destroy` no WebController | Só `index`/`create`/`edit` (+ `atores`, `index` de OSI) |
+| `request()` helper global | `Request $request` injetado |
+| `@forelse` no `<tbody>` | `<tbody></tbody>` vazio + JS preenche |
+| `@csrf`/`@method`/`old()`/`@error` no form | JS cuida de CSRF; sem `old`/`@error` |
+| `with('sucesso')` / flash | `window.location.href` no JS |
+| `<h2>` como título de página | `<h1>` + `.page-header` (index) ou `<h1>` solto (form) |
+| `<table class="tabela-basica">` | `<table class="data" id="tabela-recurso">` |
+| `abort_if($x === null, 404)` | `Model::query()->findOrFail($id)` |
+| `Route::resource` em Web | Rotas explícitas (`Route::get/post/...`) |
+| Prefixo `cadastros.` | Rotas planas (`recurso.*`) |
+| `destroy` duplicado Web+Api | Só no ApiController (padrão `apiResource`) |
+| `delete()` físico | `delete()` soft (trait `SoftDeletes`) + `deleted_by` manual |
+| **`Model $model` no path do ApiController** | **`findOrFail($id)` explícito (D71)** |
+| **`update(['ativo' => false])` em tabela sem coluna `ativo`** | **`update(['deleted_by' => ...])` + `delete()` (ex.: `ativos`)** |
+| **`$this->repo->query()` no controller** | **`Model::query()` direto (global scope filtra)** |
+| **`.acoes-linha`** | **Botões direto no `<td>` (D72)** |
+| **`btn-sm` sozinho** | **`btn btn-secondary` / `btn btn-danger`** |
+| **`<button class="btn-sm">` para Editar** | **`<a class="btn btn-secondary">` para Editar; `<button class="btn btn-danger">` para Excluir** |
+| **`.form-actions` dentro do `.card`** | **`.form-actions` fora do `.card` (D73)** |
+| **`.page-header` no form** | **`<h1>` solto dentro do `#app` (D73)** |
+| **`<label for="...">`** | **`<label>` sem `for` (D73)** |
+| **`<input type="checkbox">` p/ Ativo** | **`<select>` Sim/Não (D73)** |
+| **`data-filiais='@json($var')` (aspa extra)** | **`data-filiais='@json($var)'`** |
+| **`route('recurso.store')` no Blade** | **`route('recurso.index')` (Web)** |
+| **`a.nome` no JS p/ `AtorFuncional`** | **`a.descricao`** |
+| **`$busca`/`$ativo` no Blade casca** | **Filtros no JS + `ApiController`** |
+| **`$this->atoresFuncionais->all()`** | **`$this->atoresFuncionais->todos()`** |
+| **`$model ? 'Editar' : 'Novo'`** | **`isset($model) ? 'Editar' : 'Novo'`** |
+| **`*-list.js` sem IIFE e sem `init()`** | **IIFE + `init()` + `})();` (D80)** |
+| **`TenantContext::set(...)` + `getJson` no teste de isolamento** | **Chamar o controller direto (D81)** |
+
+### 7.8 Testes Pest
+
+- **`Pest.php`** já tem `pest()->extend(TestCase::class)->use(RefreshDatabase::class)->in('Feature');` — **não** repetir no teste.
+- **`beforeEach`:** `$this->seed(EmpresaFilialSeeder::class); $this->seed(AtorFuncionalSeeder::class); $this->seed(UsuarioSeeder::class);` + **se necessário** `$this->seed(CentroCustoSeeder::class);`.
+- **Usuário:** `Usuario::withoutGlobalScopes()->where('email', 'admin@gestor.local')->firstOrFail();`.
+- **`TenantContext`:** `app(TenantContext::class)->set(1, 1, $usuario->id, null);`.
+- **`actingAs($this->usuario);`**.
+- **Isolamento (D81):** trocar o contexto (`app(TenantContext::class)->set(2, 2, ...)`) e **chamar o controller direto**:
+  ```php
+  $controller = new \App\Http\Controllers\Api\XApiController();
+  $request = \Illuminate\Http\Request::create('/api/x', 'GET');
+  $response = $controller->index($request);
+  ```
+  **Não** usar `getJson` (o middleware `SetTenantContext` reseta o contexto).
+- **API (contexto normal):** `getJson`/`postJson`/`putJson`/`deleteJson`. **Não** `get`/`post` (que não setam `Accept: application/json`).
+- **Assertions:** `assertOk()`, `assertCreated()`, `assertNoContent()`, `assertJsonFragment([...])`, `assertJsonMissing([...])`, `assertStatus(422)`, `assertJsonValidationErrors(['campo'])`, `assertDatabaseHas('tabela', [...])`.
+- **`update`/`destroy`:** preferir `assertDatabaseHas` a `assertJsonFragment`.
+- **Soft delete:** `expect($model->refresh()->deleted_at)->not->toBeNull();` e, se a tabela tem `ativo`, `expect($model->ativo)->toBeFalse();`.
+- **Senha:** `expect(Hash::check('senha', $u->senha_hash))->toBeTrue();`.
+- **P23:** criar `CentroCusto` na empresa 2 via `withoutGlobalScopes()->create(['id_empresa' => 2, ...])`.
+
+### 7.9 Regras de ouro para o próximo chat
+
+> **Antes de codar uma tela nova:**
+> 1. Ela já tem `MenuItemSeeder` apontando? (Se sim, usar a rota existente.)
+> 2. O model tem `SoftDeletes`? (Se sim, `delete()` é soft.)
+> 3. O model tem `BelongsToTenant`? (Se não — ex.: `Usuario` — filtrar manual por `id_empresa`.)
+> 4. Qual é a tabela? (`id_empresa` ou `id_filial`? Grupo A ou F?)
+> 5. A tabela tem coluna `ativo`? (Se não — ex.: `ativos` — o `destroy` não seta `ativo`.)
+> 6. O padrão §7.2/7.3/7.4/7.5/7.6 cobre? (Se sim, copiar a estrutura.)
+> 7. Tem teste Pest do `ProdutoApiTest`/`AtivoApiTest` para copiar? (Sim.)
+> 8. Documentar divergências em **D82+** e pendências em **P138+**. **Não criar D/P novos** sem necessidade.
+> 9. Atualizar §1 (status), §3 (o que existe), §5 (pendências), §7 (se descobriu padrão novo) — **sem changelog**.
+
+### 7.10 Observações específicas
+
+- **`Usuario` sem `BelongsToTenant` (D27):** o `id_empresa` é identidade. `Auth::attempt` não tem contexto. `UsuarioApiController` filtra manual com `where('id_empresa', $ctx->getId())` em **todos** os métodos (**D77**). **Não adicionar a trait.**
+- **Ator é identidade (D31):** não há troca de ator na UI. `seletor-ator.js` **removido**. Trocar de ator = logout/login.
+- **`menu.js` não sobrescreve `period-label`:** o Blade renderiza o período; o JS só preenche `user-label`.
+- **`/tela-inicial` é alias de `/`:** duas rotas → mesmo controller. `MenuItemSeeder` aponta 1.0 → `/` (canônica).
+- **Filtros de listagem:** ficam no **`ApiController::index()`** (query string `?q=&ativo=`). O Blade casca **não tem** `<form>` de filtro.
+- **`descricao` vs `nome`:** `AtorFuncional`, `ProdutoServico`, `Ativo` têm `descricao`. `CentroCusto` tem `nome`. `Filial` tem `razao_social`/`nome_fantasia`. **Conferir o model** antes de montar a view.
+- **`deleted_by`:** só é setado no `destroy` (D75). `created_by`/`updated_by` **não** são preenchidos (a trait não faz; consistência com o legado). Documentar como dívida.
+- **OSI:** tela **única** (`index`), não é `apiResource`. O `show` da API retorna `{config, historico}`. O `update` grava em `auditorias` (D69). O `Auditoria` **não tem `timestamps`** (só `created_at`, nullable).
+- **`Ativo`:** tabela **não tem** coluna `ativo` (ciclo de vida via `status` + `deleted_at`). O form **não tem** `<select>` Ativo. O `destroy` **não** seta `ativo` — só `deleted_by` + `delete()`.
+- **`produtos`/`servicos`:** filhas 1:1, **sem** colunas de tenant/soft delete/auditoria próprias (D79). O `$fillable` **não** inclui `created_by`/`updated_by` (não setados).
+
 ---
+
+## 8. Como contribuir com este documento
+
+- **Ao fechar bloco:** atualize §1 (status), §3 (o que existe), §5 (pendências), §7 (se descobriu padrão novo). **Remova** o que ficou obsoleto.
+- **Ao resolver divergência:** remova de §4.1/§4.2 (ou deixe 1 linha se ainda confunde).
+- **Ao resolver pendência:** remova de §5 (o tracking detalhado fica em `06_pendencias.md`).
+- **Nunca** adicione histórico de versões aqui — use `git log docs/15_implementacao.md`.
+- **Nunca** duplique informação: se está em `06_pendencias.md`, aqui só o resumo; se está em `10_modelo_dados_fisico.md`, aqui só a referência.

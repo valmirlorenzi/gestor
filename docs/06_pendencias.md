@@ -958,3 +958,125 @@ depende_de: [01_visao_geral, 03_casos_de_uso, 05_apendices, 07_atores_fluxo, 08_
 | Histórico | v1.6 | **+ linha v1.7** |
 
 ---
+
+
+---
+
+## Anexo A — Pendências resolvidas (migradas do `15_implementacao.md` v1.12 em 2026-11-03)
+
+> Tracking histórico por ID. **Não remova** — é o registro de que cada pendência foi resolvida e em qual bloco/versão. Para o estado atual, ver `15_implementacao.md` §5.
+
+| # | Pendência | Resolvida em |
+| :--- | :--- | :--- |
+| P1 | Testes de isolamento (Pest) | 6.21 (v1.4) |
+| P2 | 38 tabelas restantes | 6.17 (v1.3) |
+| P3 | Views não criadas | 6.19 (v1.4) |
+| P4 | Repositories não criados | 6.18 (v1.4) |
+| P5 | `SetTenantContext` real | 7.2/7.3 (v1.6) |
+| P6 | `SetTenantContext` middleware | 7.3 (v1.6) |
+| P7 | FK `empresas.id_filial_matriz` | 6.1 (v1.2) |
+| P13 | `ncms` hierárquico sem model | 6.16.1 (v1.3) |
+| P14 | `seletor-ator.js` removido do layout | 7.5 (v1.7) |
+| P15 | `menu.js` mostra alerta "Tela ainda não implementada" | 7.6 (v1.7) |
+| P16 | `geral.js` tem `showScreen` | 7.6 (v1.7) |
+| P18 | Testes Pest de isolamento | 6.21 (v1.4) |
+| P19–P22 | Seeders de configuração | 6.17 (v1.3) |
+| P23 | `Ativo.id_centro_custo` × empresa da filial | 6.18 + 6.21 (v1.4) |
+| P31 | `lancamentos.id_nota_fiscal_item` × `id_nota_fiscal` | 6.18 + 6.21 (v1.4) |
+| P40 | `ParametroFiscal` global scope local | 6.21 (v1.4) |
+| P45 | `usuarios_atores.id_filial` × `usuario.id_empresa` | 6.18 + 6.21 (v1.4) |
+| P48 | `documentos_encadeados` polimórfico sem FK | 6.18 + 6.21 (v1.4) |
+| P51 | `menus_itens` sem seed | 6.17 / 7.4 (v1.3/v1.6) |
+| P58 | `MenuItemSeeder` reescrito (~93 itens) | 7.4 (v1.6) |
+| P62 | `BaseRepository` confia na trait para filtro | 6.18.1 (v1.4) |
+| P65 | `withoutGlobalScope('tenant')` intencional em 5 repositórios | 6.21 (v1.4) |
+| P67 | `LancamentoRepository::create()` valida P31 via `withoutGlobalScope` | 6.18 (v1.4) |
+| P70 | `IsolamentoTest` depende de factories | 8.1/8.2 (v1.8/v1.11) |
+| P72 | `vigentes()` corrigido com `whereDate` | 6.18.2 (v1.4) |
+| P73 | `UsuarioAtorRepository`/`AtivoRepository` dependem de atores/centros | 6.21 (v1.4) |
+| P74 | `dump()` removido do teste H | 6.21 (v1.4) |
+| P82 | `TenantContext` 4-tupla | 7.2 (v1.6) |
+| P83 | `BelongsToTenant` compatível com 4-tupla | 7.2 (v1.6) |
+| P84 | Login/logout | 7.1 (v1.6) |
+| P85 | Middleware `SetTenantContext` | 7.3 (v1.6) |
+| P86 | Menu por ator | 7.5 (v1.7) |
+| P87 | Campo "Ir para" (Ctrl+K) | 7.6 (v1.7) |
+| P91 | `/tela/{codigo}` vs rotas Blade reais | 7.5 (v1.7) |
+| P92 | `configurador` vê tudo | 7.5 (v1.7) |
+| P93 | Itens antigos órfãos | 7.5 (v1.7) |
+| P94 | `SetTenantContext` resolve 1 ator; `MenuService` precisa de todos | 7.5 (v1.7) |
+| P95 | Troca de filial | 8.2 (v1.11) |
+| P96 | `SetTenantContextDev` desabilitado em produção | 7.8 (v1.7) |
+| P97 | Layout `auth` limpo | 7.7 (v1.7) |
+| P98 | `Usuario` sem `BelongsToTenant` | 7.1 (v1.6) |
+| P99 | `UsuarioAtor` continua com a trait | 7.3 (v1.6) |
+| P100 | (= P94) | 7.5 (v1.7) |
+| P101 | (= P97) | 7.7 (v1.7) |
+| P102 | `UsuarioSeeder` cria `usuario_atores` para o admin | 7.1 (v1.6) |
+| P106 | `TelaInicialService::periodoAberto()` usa `periodos.ano`/`mes`/`status` | 8.1 (v1.9) |
+| P110 | `UsuarioSeeder` com 10 usuários | 8.2 (v1.11) |
+| P111 | "Lembrar-me" — **revertida**: é client-side, mantida | 8.2 (v1.11) |
+| P112 | `filiais.nome_fantasia` (não `nome`) | 8.1 (v1.9) |
+| P113 | `TenantContext` singleton | 8.2 (v1.11) |
+| P114 | `UsuarioFactory` criada | 8.1 (v1.9) |
+| P116 | `TarefaService` não chama `query()` protegido | 8.2 (v1.11) |
+| P117 | `MenuItemSeeder` com rotas `/tarefas/...` | 8.2 (v1.11) |
+| P118 | `FilialContextController` valida `UsuarioAtor` ativo | 8.2 (v1.11) |
+| P121 | `ExampleTest` do Laravel não condiz com auth | 8.2 (v1.11) |
+| P122 | `TenantIsolationTest` "criar filial sem contexto falha" | 8.2 (v1.11) |
+| P123 | `IsolamentoTest` usa `firstOrFail` em `AtorFuncional` | 8.2 (v1.11) |
+| P124 | `CentroCustoFactory` criada | 8.2 (v1.11) |
+| P125 | `MenuService` test rodando com seed | 8.2 (v1.11) |
+| P126 | `dump()` removidos do `IsolamentoTest` | 8.2 (v1.11) |
+| P127 | `TarefaService` delega ao `TarefaRepository` | 8.2 (v1.11) |
+| P128 | `FilialRepository` é GrupoF | 8.2 (v1.11) |
+| P129 | `TenantContext` é singleton | 8.2 (v1.11) |
+| P131 | `MenuItemSeeder` já aponta 2.3/2.4 | 9.1a (v1.12) |
+| P132 | `UsuarioAtorApiController::index` retorna `groupBy` — JSON string | 9.1a (v1.12) |
+| P134 | `web.php` tinha `store`/`update`/`destroy` no WebController | 9.1a (v1.12) |
+
+---
+
+## Anexo B — Divergências resolvidas (migradas do `15_implementacao.md` v1.12 em 2026-11-03)
+
+> Tracking histórico por ID. **Não remova**. Para o estado atual, ver `15_implementacao.md` §4.
+
+| # | O que era | Como foi resolvido |
+| :--- | :--- | :--- |
+| D1 | `ncms.codigo` é `char(8)` | `varchar(10)` + hierarquia (NCM é hierárquico) |
+| D2 | `descricao` é `varchar` | `TEXT` (descrições longas) |
+| D3 | `csts` não tem IBS/CBS | Tem (LC 214/2025) |
+| D4 | Seeds vêm de "arquivos oficiais" | `.xls`/`.xlsx`/`.txt` + GitHub |
+| D5 | Pest 4 | Pest 3 (PHPUnit 11) |
+| D6 | `empresas.id_filial_matriz` tem FK | ✅ FK adicionada |
+| D7 | Views existem | ✅ 6.19 |
+| D8 | Repositories existem | ✅ 6.18 |
+| D9 | `empresa` tem listagem/criação | Só edição (uma empresa) |
+| D10 | `SetTenantContextDev` com `append` | `prepend` |
+| D11 | `geral.js` chama `showScreen('empresa')` | Removido |
+| D12 | `partials/scripts.blade.php` com todos os scripts | Só essenciais |
+| D13 | `usuarios` vem depois de `periodos` | Antecipado |
+| D14 | `usuarios.senha_hash` | `getAuthPassword()` retorna `senha_hash` |
+| D15 | `periodos.id_usuario_fechamento` sem FK | FK adicionada |
+| D16 | CHECKs do DDL | Sem CHECK no migration |
+| D17 | `04` chama `menu_item` (singular) | DDL chama `menus_itens` |
+| D18 | `empresas` sem FK de `id_filial_matriz`/`id_plano_contas_sugerido` | FK via ALTER |
+| D19 | `04` diz `auditoria` (singular) | Código usa `auditorias` |
+| D20 | `vigentes()` compara datas com `where` | Usa `whereDate` |
+| D21 | Views filtram por empresa | **Não** filtram |
+| D22 | Lint de SQL cru é infalível | Heurístico (grep) |
+| D23 | Bloco 7 = "Auth + API + telas" | Fatiado em 7–13 |
+| D24 | `TenantContext` só `id_empresa` | 4-tupla |
+| D25 | Menu é lista fixa | Renderizado por ator |
+| D26 | `MenuItemSeeder` tem 28 itens | ~93 itens |
+| D28 | `MenuItemSeeder` tem ~93 itens | 76 itens (contagem real) |
+| D29 | `menus_itens` guarda ícone/bloco | Só `codigo`/`nome`/`rota`/`fase`/`dados_extras` |
+| D30 | `menu.js` filtra por ator no client | Migrou pro `MenuService` |
+| D32 | `TenantContext` é "serviço" | Precisa ser singleton |
+| D33 | `12_tela_inicial` fala em 11 variantes | São 10 atores + card do Conselheiro |
+| D34 | `TarefaRepository::query()` é `protected` | Métodos foram pro repositório |
+| D35 | Menu 1.1/1.2/1.3 aponta `/caixa-*` | Agora `/tarefas/*` |
+| D36 | Login tem "Lembrar-me" | **Mantido como client-side** (não é `remember_token`) |
+| D37 | `AppServiceProvider` usava `GrupoA\FilialRepository` | Correto é `GrupoF\FilialRepository` |
+
+---

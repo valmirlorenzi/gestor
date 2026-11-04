@@ -27,13 +27,14 @@
       credentials: 'same-origin',
     });
     const porFilial = await resp.json();
-    const selecionados = (porFilial[idFilial] || []).map(a => a.id_ator_funcional);
+    // JSON serializa chaves de objeto como string.
+    const selecionados = (porFilial[String(idFilial)] || []).map(a => a.id_ator_funcional);
 
     const container = document.getElementById('atores-checkboxes');
     container.innerHTML = state.atores.map(a => `
       <label style="display:flex; align-items:center; gap:8px; font-weight:400;">
         <input type="checkbox" value="${a.id}" ${selecionados.includes(a.id) ? 'checked' : ''}>
-        ${a.nome}
+        ${a.descricao}
       </label>
     `).join('');
   }

@@ -68,14 +68,15 @@ class UsuarioAtorRepository extends BaseRepository
                 if (! $ua->ativo) {
                     $ua->update(['ativo' => true]);
                 }
+
                 continue;
             }
 
             parent::create([
-                'id_usuario'        => $idUsuario,
-                'id_filial'         => $idFilial,
+                'id_usuario' => $idUsuario,
+                'id_filial' => $idFilial,
                 'id_ator_funcional' => $idAtor,
-                'ativo'             => true,
+                'ativo' => true,
             ]);
         }
     }
@@ -108,7 +109,7 @@ class UsuarioAtorRepository extends BaseRepository
     private function validarUsuarioDaMesmaEmpresa(int $idUsuario, int $idFilial): void
     {
         $idEmpresaUsuario = Usuario::withoutGlobalScope('tenant')->where('id', $idUsuario)->value('id_empresa');
-        $idEmpresaFilial  = Filial::withoutGlobalScope('tenant')->where('id', $idFilial)->value('id_empresa');
+        $idEmpresaFilial = Filial::withoutGlobalScope('tenant')->where('id', $idFilial)->value('id_empresa');
 
         if ($idEmpresaUsuario === null || $idEmpresaFilial === null) {
             throw ValidationException::withMessages([
