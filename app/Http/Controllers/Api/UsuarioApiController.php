@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Usuario;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
 class UsuarioApiController extends Controller
 {

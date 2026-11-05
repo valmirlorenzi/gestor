@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ProdutoServico;
 use App\Models\Servico;
+use App\Repositories\GrupoA\ProdutoServicoRepository;
 use App\Services\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,17 +14,13 @@ use Illuminate\Support\Facades\DB;
 
 class ServicoApiController extends Controller
 {
+    public function __construct(
+        private ProdutoServicoRepository $servicos,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $query = ProdutoServico::query()
-            ->where('tipo', 'S')
-            ->with(['servico.servicoLc116']);
-
-        if ($request->filled('q')) {
-            $query->where('descricao', 'like', '%'.$request->input('q').'%');
-        }
-
-        return response()->json($query->orderBy('descricao')->get());
+        return response()->json($this->servicos->servicosComLc116($request->input('q')));
     }
 
     public function store(Request $request): JsonResponse
@@ -62,19 +59,12 @@ class ServicoApiController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $servico = ProdutoServico::query()
-            ->where('tipo', 'S')
-            ->with('servico.servicoLc116')
-            ->findOrFail($id);
-
-        return response()->json($servico);
+        return response()->json($this->servicos->servicoComLc116($id));
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $servico = ProdutoServico::query()
-            ->where('tipo', 'S')
-            ->findOrFail($id);
+        $servico = $this->servicos->servico($id);
 
         $data = $request->validate([
             'descricao' => ['required', 'string', 'max:300'],
@@ -103,9 +93,7 @@ class ServicoApiController extends Controller
 
     public function destroy(int $id): Response
     {
-        $servico = ProdutoServico::query()
-            ->where('tipo', 'S')
-            ->findOrFail($id);
+        $servico = $this->servicos->servico($id);
 
         DB::transaction(function () use ($servico) {
             $servico->update([

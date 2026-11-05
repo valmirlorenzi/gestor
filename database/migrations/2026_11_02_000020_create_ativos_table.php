@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('id_centro_custo')->nullable()->constrained('centros_custo')->cascadeOnUpdate();
             $table->string('destino', 10);
             $table->string('status', 20)->default('Em uso');
+            $table->boolean('ativo')->default(true);
             $table->json('dados_extras')->nullable();
 
             $table->timestamps();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ProdutoApiController;
 use App\Models\Produto;
 use App\Models\ProdutoServico;
 use App\Models\Usuario;
@@ -7,6 +8,7 @@ use App\Services\TenantContext;
 use Database\Seeders\AtorFuncionalSeeder;
 use Database\Seeders\EmpresaFilialSeeder;
 use Database\Seeders\UsuarioSeeder;
+use Illuminate\Http\Request;
 
 beforeEach(function () {
     $this->seed(EmpresaFilialSeeder::class);
@@ -94,7 +96,7 @@ it('atualiza produto e seus dados de produto', function () {
 
     $id = $response->json('id');
 
-    $this->putJson('/api/produtos/' . $id, [
+    $this->putJson('/api/produtos/'.$id, [
         'descricao' => 'Depois',
         'codigo_interno' => 'DEP',
         'unidade' => 'CX',
@@ -121,7 +123,7 @@ it('faz soft delete de produto', function () {
 
     $id = $response->json('id');
 
-    $this->deleteJson('/api/produtos/' . $id)->assertNoContent();
+    $this->deleteJson('/api/produtos/'.$id)->assertNoContent();
 
     $produtoServico = ProdutoServico::withoutGlobalScopes()->find($id);
 
@@ -141,9 +143,10 @@ it('não vê produtos de outra empresa', function () {
     // Muda o contexto pra empresa 2 (direto no singleton)
     app(TenantContext::class)->set(2, 2, $this->usuario->id, null);
 
-    // Chama o controller direto (sem middleware, que resetaria o contexto)
-    $controller = new \App\Http\Controllers\Api\ProdutoApiController();
-    $request = \Illuminate\Http\Request::create('/api/produtos', 'GET');
+    // Chama o controller direto (sem middleware, que resetaria o contexto).
+    // D81: usar o container para resolver as dependências do construtor.
+    $controller = app(ProdutoApiController::class);
+    $request = Request::create('/api/produtos', 'GET');
     $response = $controller->index($request);
 
     $data = $response->getData(true);

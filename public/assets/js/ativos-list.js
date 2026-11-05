@@ -31,6 +31,7 @@
         <td>${formatarMoeda(a.valor_original)}</td>
         <td>${a.centro_custo ? a.centro_custo.nome : '—'}</td>
         <td>${a.status || '—'}</td>
+        <td>${a.ativo ? 'Sim' : 'Não'}</td>
         <td>
           <a href="/ativos/${a.id}/edit" class="btn btn-secondary">Editar</a>
           <button type="button" class="btn btn-danger" data-id="${a.id}" data-acao="excluir">Excluir</button>

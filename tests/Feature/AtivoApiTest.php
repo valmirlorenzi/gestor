@@ -92,7 +92,7 @@ it('atualiza ativo', function () {
     $response = $this->postJson('/api/ativos', payloadAtivo())->assertCreated();
     $id = $response->json('id');
 
-    $this->putJson('/api/ativos/' . $id, payloadAtivo(['descricao' => 'Notebook Dell Atualizado']))
+    $this->putJson('/api/ativos/'.$id, payloadAtivo(['descricao' => 'Notebook Dell Atualizado']))
         ->assertOk();
 
     $this->assertDatabaseHas('ativos', [
@@ -105,10 +105,11 @@ it('faz soft delete de ativo', function () {
     $response = $this->postJson('/api/ativos', payloadAtivo())->assertCreated();
     $id = $response->json('id');
 
-    $this->deleteJson('/api/ativos/' . $id)->assertNoContent();
+    $this->deleteJson('/api/ativos/'.$id)->assertNoContent();
 
     $ativo = Ativo::withoutGlobalScopes()->find($id);
 
     expect($ativo)->not->toBeNull();
     expect($ativo->deleted_at)->not->toBeNull();
+    expect($ativo->ativo)->toBeFalse();
 });

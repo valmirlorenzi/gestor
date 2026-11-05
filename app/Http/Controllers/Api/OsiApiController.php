@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Auditoria;
 use App\Models\ConfiguracaoHandoff;
+use App\Repositories\GrupoA\ConfiguracaoHandoffRepository;
 use App\Repositories\GrupoC\AuditoriaRepository;
 use App\Services\TenantContext;
 use Illuminate\Http\JsonResponse;
@@ -15,13 +16,14 @@ class OsiApiController extends Controller
 {
     public function __construct(
         private AuditoriaRepository $auditorias,
+        private ConfiguracaoHandoffRepository $config,
     ) {}
 
     public function show(): JsonResponse
     {
         $idEmpresa = app(TenantContext::class)->getId();
 
-        $config = ConfiguracaoHandoff::query()->first();
+        $config = $this->config->daEmpresa();
 
         $historico = $config !== null
             ? $this->auditorias->porTabela('configuracoes_handoff', $config->id)
@@ -48,7 +50,7 @@ class OsiApiController extends Controller
         ]);
 
         $config = DB::transaction(function () use ($data, $idEmpresa, $idUsuario) {
-            $config = ConfiguracaoHandoff::query()->first();
+            $config = $this->config->daEmpresa();
 
             $dadosAnteriores = $config ? $config->toArray() : null;
 

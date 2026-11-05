@@ -20,4 +20,9 @@ class CentroCustoRepository extends BaseRepository
             ->orderBy('nome')
             ->get();
     }
+
+    public function porId(int $id): CentroCusto
+    {
+        return $this->query()->findOrFail($id);
+    }
 }

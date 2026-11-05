@@ -1,0 +1,14 @@
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ..........................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 270 files  
+
+AVISO: app/Repositories/GrupoF/AtivoRepository.php usa withoutGlobalScope('tenant') — verificar se é intencional (P65/P67).
+AVISO: app/Repositories/GrupoF/UsuarioAtorRepository.php usa withoutGlobalScope('tenant') — verificar se é intencional (P65/P67).
+AVISO: app/Repositories/GrupoF/LancamentoRepository.php usa withoutGlobalScope('tenant') — verificar se é intencional (P65/P67).
+AVISO: app/Repositories/GrupoC/DocumentoEncadeadoRepository.php usa withoutGlobalScope('tenant') — verificar se é intencional (P65/P67).
+OK: nenhum SQL cru ou Model::query() fora de app/Repositories/.

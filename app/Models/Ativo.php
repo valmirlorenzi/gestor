@@ -26,6 +26,7 @@ class Ativo extends Model
         'id_centro_custo',
         'destino',
         'status',
+        'ativo',
         'dados_extras',
     ];
 
@@ -34,6 +35,7 @@ class Ativo extends Model
         'valor_original' => 'decimal:2',
         'valor_residual' => 'decimal:2',
         'vida_util_meses' => 'integer',
+        'ativo' => 'boolean',
         'dados_extras' => 'array',
     ];
 

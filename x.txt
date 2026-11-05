@@ -1,0 +1,132 @@
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   PASS  Tests\Feature\AtivoApiTest
+  ✓ it lista ativos da filial do contexto                                0.23s  
+  ✓ it cria ativo com id_filial do contexto                              0.02s  
+  ✓ it cria ativo com centro de custo da mesma empresa (P23 ok)          0.02s  
+  ✓ it rejeita centro de custo de outra empresa (P23)                    0.02s  
+  ✓ it atualiza ativo                                                    0.03s  
+  ✓ it faz soft delete de ativo                                          0.03s  
+
+   PASS  Tests\Feature\CentroCustoApiTest
+  ✓ lista só centros da empresa do contexto                              0.02s  
+  ✓ cria centro de custo com id_empresa do contexto                      0.02s  
+  ✓ não deixa o cliente definir id_empresa                               0.02s  
+  ✓ atualiza centro de custo                                             0.02s  
+  ✓ destroy faz soft delete e desativa                                   0.02s  
+
+   PASS  Tests\Feature\ConfiguracaoHandoffRepositoryTest
+  ✓ it retorna null quando não há configuração                           0.02s  
+  ✓ it retorna a configuração da empresa do contexto                     0.02s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ a raiz redireciona para o login quando não autenticado               0.01s  
+  ✓ a rota de saúde responde 200                                         0.01s  
+
+   PASS  Tests\Feature\IsolamentoTest
+  ✓ it Grupo A: isolamento de PlanoConta                                 0.02s  
+  ✓ it Grupo A: isolamento de CentroCusto                                0.01s  
+  ✓ it Grupo A: sem contexto retorna vazio                               0.01s  
+  ✓ it Grupo F: isolamento de Filial                                     0.01s  
+  ✓ it Grupo H: globais aparecem para todas as empresas                  0.01s  
+  ✓ it Grupo H: override de uma empresa NÃO vaza para outra              0.01s  
+  ✓ it P23: rejeita centro de custo de outra empresa                     0.01s  
+  ✓ it P23: aceita centro de custo da mesma empresa                      0.01s  
+  ✓ it P45: rejeita ator de usuário em filial de outra empresa           0.01s  
+  ✓ it P45: aceita usuário e filial da mesma empresa                     0.01s  
+  ✓ it BelongsToTenant continua filtrando por id_empresa com contexto 4… 0.01s  
+  ✓ it MenuService devolve menu por ator (configurador vê tudo; contado… 0.04s  
+
+   PASS  Tests\Feature\NcmRepositoryTest
+  ✓ it retorna ncms ordenados por código                                 0.01s  
+  ✓ it retorna apenas id, codigo e descricao                             0.01s  
+
+   PASS  Tests\Feature\OsiApiTest
+  ✓ it show retorna default quando não há configuração                   0.02s  
+  ✓ it update cria configuração e registra auditoria                     0.02s  
+  ✓ it update atualiza configuração existente e registra nova auditoria  0.02s  
+
+   FAIL  Tests\Feature\ParametroFiscalApiTest
+  ✓ it lista parâmetros da empresa e globais                             0.03s  
+  ✓ it cria parâmetro com id_empresa do contexto                         0.02s  
+  ✓ it cria parâmetro global quando id_empresa é omitido                 0.02s  
+  ✓ it atualiza parâmetro                                                0.02s  
+  ⨯ it faz soft delete de parâmetro                                      0.03s  
+
+   PASS  Tests\Feature\PlanoContaApiTest
+  ✓ it lista contas da empresa do contexto                               0.02s  
+  ✓ it cria conta com id_empresa do contexto e nível correto             0.02s  
+  ✓ it rejeita conta pai inexistente                                     0.02s  
+  ✓ it atualiza conta e mantém a empresa original                        0.03s  
+  ✓ it faz soft delete de conta                                          0.02s  
+
+   PASS  Tests\Feature\ProdutoApiTest
+  ✓ it lista produtos da empresa do contexto                             0.03s  
+  ✓ it cria produto com id_empresa do contexto                           0.03s  
+  ✓ it cria produto com NCM válido                                       0.03s  
+  ✓ it atualiza produto e seus dados de produto                          0.03s  
+  ✓ it faz soft delete de produto                                        0.03s  
+  ✓ it não vê produtos de outra empresa                                  0.02s  
+
+   PASS  Tests\Feature\ServicoApiTest
+  ✓ it lista servicos da empresa do contexto                             0.03s  
+  ✓ it cria servico com id_empresa do contexto                           0.03s  
+  ✓ it cria servico com LC116 valido                                     0.02s  
+  ✓ it atualiza servico e seus dados de servico                          0.03s  
+  ✓ it faz soft delete de servico                                        0.02s  
+
+   PASS  Tests\Feature\ServicoLc116RepositoryTest
+  ✓ it retorna servicos lc116 ordenados por código                       0.01s  
+  ✓ it retorna apenas id, codigo e descricao                             0.01s  
+
+   PASS  Tests\Feature\TarefasTest
+  ✓ it entrada lista pendentes/em andamento do ator                      0.01s  
+  ✓ it saida lista pendentes/em andamento do ator como origem            0.01s  
+  ✓ it historico lista concluidas do ator (origem ou destino)            0.01s  
+  ✓ it troca de filial so aceita filial em que o usuario tem ator        0.01s  
+
+   PASS  Tests\Feature\TelaInicialTest
+  ✓ it renderiza a Tela Inicial com a variante do contador               0.02s  
+  ✓ it mostra as 3 primeiras ordens do ator (RN7)                        0.01s  
+  ✓ it cai em universal quando o usuário não tem ator                    0.01s  
+  ✓ it prefere configurador quando o usuário tem múltiplos atores        0.01s  
+
+   PASS  Tests\Feature\TenantIsolationTest
+  ✓ isolamento: empresa A nao ve filiais da empresa B                    0.01s  
+  ✓ isolamento: sem contexto, nenhuma filial e visivel                   0.01s  
+
+   PASS  Tests\Feature\UsuarioApiTest
+  ✓ lista só usuários da empresa do contexto                             0.02s  
+  ✓ cria usuário com senha hasheada                                      0.03s  
+  ✓ atualiza sem trocar senha                                            0.02s  
+  ✓ atualiza trocando senha                                              0.02s  
+
+   PASS  Tests\Feature\UsuarioAtorApiTest
+  ✓ sincroniza atores do usuário na filial                               0.03s  
+  ✓ rejeita filial de outra empresa (P45)                                0.02s  
+
+   PASS  Tests\Feature\UsuarioIsolamentoTest
+  ✓ empresa 1 não vê usuários da empresa 2                               0.02s  
+  ✓ empresa 1 não cria usuário na empresa 2                              0.02s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ParametroFiscalApiTest > it faz soft delete de parâ…   
+  Expecting null not to be null .
+
+  at tests/Feature/ParametroFiscalApiTest.php:118
+    114▕     $this->deleteJson('/api/parametros-fiscais/'.$id)->assertNoContent();
+    115▕ 
+    116▕     $param = ParametroFiscal::withoutGlobalScopes()->find($id);
+    117▕ 
+  ➜ 118▕     expect($param)->not->toBeNull();
+    119▕     expect($param->deleted_at)->not->toBeNull();
+    120▕ });
+    121▕
+
+  1   tests/Feature/ParametroFiscalApiTest.php:118
+
+
+  Tests:    1 failed, 73 passed (222 assertions)
+  Duration: 1.73s
+

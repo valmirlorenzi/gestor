@@ -24,6 +24,7 @@
       id_centro_custo: document.getElementById('ativo-id-centro-custo').value || null,
       destino: document.getElementById('ativo-destino').value.trim(),
       status: document.getElementById('ativo-status').value.trim() || 'Em uso',
+      ativo: document.getElementById('ativo-ativo').value === '1',
     };
   }
 

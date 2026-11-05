@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Filial;
+use App\Repositories\GrupoF\FilialRepository;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FilialApiController extends Controller
 {
+    public function __construct(private FilialRepository $filiais) {}
+
     public function index()
     {
         // O trait BelongsToTenant aplica WHERE id_empresa = contexto.
@@ -50,13 +53,14 @@ class FilialApiController extends Controller
 
     public function show(int $id)
     {
-        $filial = Filial::query()->findOrFail($id);
+        $filial = $this->filiais->porId($id);
+
         return response()->json($filial);
     }
 
     public function update(Request $request, int $id)
     {
-        $filial = Filial::query()->findOrFail($id);
+        $filial = $this->filiais->porId($id);
         $data = $request->validate([
             'cnpj' => 'required|string|size:14|unique:filiais,cnpj,'.$filial->id,
             'razao_social' => 'required|string|max:200',
@@ -81,7 +85,8 @@ class FilialApiController extends Controller
 
     public function destroy(int $id)
     {
-        $filial = Filial::query()->findOrFail($id);
+
+        $filial = $this->filiais->porId($id);
 
         DB::transaction(function () use ($filial) {
             $filial->update([

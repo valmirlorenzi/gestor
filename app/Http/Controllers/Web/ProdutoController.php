@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ncm;
-use App\Models\ProdutoServico;
+use App\Repositories\GrupoA\ProdutoServicoRepository;
+use App\Repositories\GrupoU\NcmRepository;
 
 class ProdutoController extends Controller
 {
+    public function __construct(
+        private NcmRepository $ncms,
+        private ProdutoServicoRepository $produtos,
+    ) {}
+
     public function index()
     {
         return view('telas.produtos.index');
@@ -15,7 +20,7 @@ class ProdutoController extends Controller
 
     public function create()
     {
-        $ncms = Ncm::query()->orderBy('codigo')->get(['id', 'codigo', 'descricao']);
+        $ncms = $this->ncms->todosOrdenadosPorCodigo();
 
         return view('telas.produtos.form', [
             'model' => null,
@@ -25,12 +30,9 @@ class ProdutoController extends Controller
 
     public function edit(int $id)
     {
-        $model = ProdutoServico::query()
-            ->where('tipo', 'P')
-            ->with('produto')
-            ->findOrFail($id);
+        $model = $this->produtos->produtoComProduto($id);
 
-        $ncms = Ncm::query()->orderBy('codigo')->get(['id', 'codigo', 'descricao']);
+        $ncms = $this->ncms->todosOrdenadosPorCodigo();
 
         return view('telas.produtos.form', compact('model', 'ncms'));
     }

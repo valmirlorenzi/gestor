@@ -1,10 +1,18 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Web\AtivoController;
 use App\Http\Controllers\Web\CentroCustoController;
+use App\Http\Controllers\Web\ConfiguracaoContabilController;
+use App\Http\Controllers\Web\ConfiguracaoFiscalController;
 use App\Http\Controllers\Web\EmpresaWebController;
 use App\Http\Controllers\Web\FilialContextController;
 use App\Http\Controllers\Web\FilialWebController;
+use App\Http\Controllers\Web\OsiController;
+use App\Http\Controllers\Web\ParametroFiscalController;
+use App\Http\Controllers\Web\PlanoContaController;
+use App\Http\Controllers\Web\ProdutoController;
+use App\Http\Controllers\Web\ServicoController;
 use App\Http\Controllers\Web\TarefaController;
 use App\Http\Controllers\Web\TelaInicialController;
 use App\Http\Controllers\Web\UsuarioController;
@@ -61,24 +69,44 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     // routes/web.php (dentro do grupo auth+tenant)
     Route::prefix('produtos')->name('produtos.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Web\ProdutoController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\Web\ProdutoController::class, 'create'])->name('create');
-        Route::get('/{id}/edit', [App\Http\Controllers\Web\ProdutoController::class, 'edit'])->name('edit');
+        Route::get('/', [ProdutoController::class, 'index'])->name('index');
+        Route::get('/create', [ProdutoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [ProdutoController::class, 'edit'])->name('edit');
     });
 
     // routes/web.php
     Route::prefix('servicos')->name('servicos.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Web\ServicoController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Web\ServicoController::class, 'create'])->name('create');
-        Route::get('/{id}/edit', [\App\Http\Controllers\Web\ServicoController::class, 'edit'])->name('edit');
+        Route::get('/', [ServicoController::class, 'index'])->name('index');
+        Route::get('/create', [ServicoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [ServicoController::class, 'edit'])->name('edit');
     });
 
     Route::prefix('ativos')->name('ativos.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Web\AtivoController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Web\AtivoController::class, 'create'])->name('create');
-        Route::get('/{id}/edit', [\App\Http\Controllers\Web\AtivoController::class, 'edit'])->name('edit');
+        Route::get('/', [AtivoController::class, 'index'])->name('index');
+        Route::get('/create', [AtivoController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [AtivoController::class, 'edit'])->name('edit');
+        Route::get('/osi', [OsiController::class, 'index'])->name('osi.index');
     });
 
-    Route::get('/osi', [\App\Http\Controllers\Web\OsiController::class, 'index'])->name('osi.index');    
+    Route::prefix('contador/plano-contas')->name('plano-contas.')->group(function () {
+        Route::get('/', [PlanoContaController::class, 'index'])->name('index');
+        Route::get('/create', [PlanoContaController::class, 'create'])->name('create');
+        Route::get('/{id}/edit', [PlanoContaController::class, 'edit'])->name('edit');
+    });
 
+    Route::prefix('contador/tabelas-fiscais')->name('tabelas-fiscais.')->group(function () {
+        Route::get('/', [ParametroFiscalController::class, 'index'])->name('index');
+        Route::get('/create', [ParametroFiscalController::class, 'create'])->name('create');
+        Route::get('/inss', [ParametroFiscalController::class, 'inss'])->name('inss');
+        Route::get('/irrf', [ParametroFiscalController::class, 'irrf'])->name('irrf');
+        Route::get('/encargos', [ParametroFiscalController::class, 'encargos'])->name('encargos');
+        Route::get('/{id}/edit', [ParametroFiscalController::class, 'edit'])->name('edit');
+    });
+
+    Route::prefix('contador/config-contabeis')->name('config-contabeis.')->group(function () {
+        Route::get('/', [ConfiguracaoContabilController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [ConfiguracaoContabilController::class, 'edit'])->name('edit');
+    });
+
+    Route::get('contador/config-fiscais', [ConfiguracaoFiscalController::class, 'index'])->name('config-fiscais.index');
 });

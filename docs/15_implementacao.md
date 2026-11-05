@@ -1,6 +1,6 @@
 ---
 documento: implementacao
-versao: 2.1
+versao: 2.2
 data: 2026-11-04
 proposito: Estado atual da implementação — status, padrões consolidados, pendências abertas, próximos passos
 depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_menu_numeracao, 10_modelo_dados_fisico, 11_wireframe, 12_tela_inicial]
@@ -26,13 +26,15 @@ depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_
 | **0–8** | Setup, domínios, auth, menu, Tela Inicial, Meu Trabalho, troca de filial | ✅ Concluído |
 | **9.1a** | Centros de Custo (2.3) + Usuários e Atores (2.4) | ✅ Concluído |
 | **9.1b** | Produtos (2.5), Serviços (2.6), Ativos (2.7), OSI (2.8) + correções | ✅ **Concluído** |
+| **9.1c** | Refatoração de repositórios (R2) + coluna `ativo` em `ativos` + OSI ≡ handoff | ✅ **Concluído** |
+| **9.2a** | Plano de Contas (4.2) — CRUD com árvore | ✅ **Concluído** |
 | **9.2** | Contador (4.1–4.11) | ⏳ **Próximo** |
 | **10** | Operação (5.x–8.x + 10.x) | ⏳ Pendente |
 | **11** | Administrador (3.x) | ⏳ Pendente |
 | **12** | Auditor (11.x) + Administração (12.x) | ⏳ Pendente |
 | **13** | Handoff + serviços de negócio | ⏳ Pendente |
 
-**Números atuais:** 63 tabelas, 63 models, **37 repositórios** (+ `AuditoriaRepository`), 6 services, **9 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI) + 3 de tarefas + Tela Inicial, **58 testes verdes**, lint de SQL cru zerado.
+**Números atuais:** 63 tabelas, 63 models, **40 repositórios**, 6 services, **10 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas) + 3 de tarefas + Tela Inicial, **69 testes verdes**, lint de SQL cru zerado.
 
 **Decisão de fatiamento (histórica):** o antigo "Bloco 7 — Auth + API + telas" foi fatiado em 7–13 (escopo real: 71 telas). Cada sub-bloco é testável isoladamente.
 
@@ -103,7 +105,7 @@ php artisan serve
 - **Trait `BelongsToTenant`** (Grupo A/F) + **`ParametroFiscal`** com global scope híbrido (Grupo H).
 - **`TenantContext`** — 4-tupla (`id_empresa`, `id_filial`, `id_usuario`, `id_ator_funcional`), **singleton**. `getId()` = `id_empresa`; `getFilialId()`; `getUsuarioId()`.
 - **`SetTenantContext`** (auth+tenant) e **`SetTenantContextDev`** (local/testing).
-- **`BaseRepository`** + **37 repositórios** (A/F/C/H + `AtorFuncionalRepository`, `MenuItemRepository`, `DashboardRepository`, **`AuditoriaRepository`**).
+- **`BaseRepository`** + **40 repositórios** (A/F/C/H/U + `AtorFuncionalRepository`, `MenuItemRepository`, `DashboardRepository`, `AuditoriaRepository`).
 - **3 views SQL** (`vw_saldo_contas_bancarias`, `vw_posicao_caixa`, `vw_caixa_entrada`).
 
 ### 3.2 Auth + Menu
@@ -135,33 +137,33 @@ php artisan serve
   - **`AtorFuncionalRepository::todos()`**.
 
 ### 3.5 Produtos (2.5) — Bloco 9.1b
-- `ProdutoController` (Web: `index`/`create`/`edit`).
-- `ProdutoApiController` (API: `index` filtra `tipo='P'`, `store` cria `ProdutoServico` + `Produto` em transação, `show`/`update`/`destroy` com `findOrFail` explícito — **D71**; `deleted_by` no `destroy` — **D75**).
+- `ProdutoController` (Web: `index`/`create`/`edit`; usa `NcmRepository` + `ProdutoServicoRepository`).
+- `ProdutoApiController` (API: `index` filtra `tipo='P'`, `store` cria `ProdutoServico` + `Produto` em transação, `show`/`update`/`destroy` via `ProdutoServicoRepository` — **R2/D71**; `deleted_by` no `destroy` — **D75**).
 - Views `telas/produtos/{index,form}.blade.php` (estrutura D73/D74).
 - `public/assets/js/produtos-{list,form}.js` (lista com Editar + Excluir — **D72**).
-- `tests/Feature/ProdutoApiTest.php` (6 testes, incluindo isolamento — **D81**).
+- `tests/Feature/ProdutoApiTest.php` (6 testes, incluindo isolamento — **D81**, com `app(ProdutoApiController::class)`).
 
 ### 3.6 Serviços (2.6) — Bloco 9.1b
-- `ServicoController` (Web: `index`/`create`/`edit`).
-- `ServicoApiController` (API: `index` filtra `tipo='S'`, `store` cria `ProdutoServico` + `Servico` em transação, `show`/`update`/`destroy` com `findOrFail` explícito; `deleted_by` no `destroy`).
+- `ServicoController` (Web: `index`/`create`/`edit`; usa `ServicoLc116Repository` + `ProdutoServicoRepository`).
+- `ServicoApiController` (API: `index` filtra `tipo='S'`, `store` cria `ProdutoServico` + `Servico` em transação, `show`/`update`/`destroy` via `ProdutoServicoRepository`; `deleted_by` no `destroy`).
 - Views `telas/servicos/{index,form}.blade.php`.
 - `public/assets/js/servicos-{list,form}.js`.
 - `tests/Feature/ServicoApiTest.php` (5 testes).
 
-### 3.7 Ativos (2.7) — Bloco 9.1b
-- `AtivoController` (Web: `index`/`create`/`edit`; carrega `centrosCusto` ativos via `CentroCusto::query()`).
-- `AtivoApiController` (API: `index` por filial, `store`/`update` via `AtivoRepository::create()`/`update()` — valida **P23**; `show`/`destroy` com `findOrFail` explícito; `deleted_by` no `destroy`).
-- Views `telas/ativos/{index,form}.blade.php` — **sem `<select>` Ativo** (tabela não tem coluna `ativo`; ciclo de vida via `status` + `deleted_at`).
-- `public/assets/js/ativos-{list,form}.js`.
-- `tests/Feature/AtivoApiTest.php` (6 testes, incluindo P23).
+### 3.7 Ativos (2.7) — Bloco 9.1b / 9.1c
+- `AtivoController` (Web: `index`/`create`/`edit`; usa `CentroCustoRepository` + `AtivoRepository`).
+- `AtivoApiController` (API: `index` via `AtivoRepository::listarComCentroCusto()`, `store`/`update` via `AtivoRepository::create()`/`update()` — valida **P23**; `show`/`destroy` via `AtivoRepository::comCentroCusto()`/`porId()`; `deleted_by` + `ativo = false` no `destroy`).
+- Views `telas/ativos/{index,form}.blade.php` — **com `<select>` Ativo** e coluna Ativo no index (9.1c).
+- `public/assets/js/ativos-{list,form}.js` — com `ativo` no `coletarDados()` e `<td>` na lista.
+- `tests/Feature/AtivoApiTest.php` (6 testes, incluindo P23 e `ativo = false` no soft delete).
 
-### 3.8 OSI (2.8) — Bloco 9.1b
-- `OsiController` (Web: tela única `index` — config + histórico).
-- `OsiApiController` (API: `show` retorna `{config, historico}`; `update` faz `updateOrCreate` + registra em `auditorias` — **D69**).
+### 3.8 OSI (2.8) — Bloco 9.1b / 9.1c
+- `OsiController` (Web: tela única `index` — config + histórico; usa `ConfiguracaoHandoffRepository`).
+- `OsiApiController` (API: `show` retorna `{config, historico}`; `update` faz `updateOrCreate` + registra em `auditorias` — **D69**; usa `ConfiguracaoHandoffRepository`).
 - View `telas/osi/index.blade.php` (toggle + tabela explicativa + histórico).
 - `public/assets/js/osi-form.js` (toggle + justificativa + histórico).
 - `tests/Feature/OsiApiTest.php` (3 testes).
-- **`AuditoriaRepository`** (novo, Grupo C) — `porTabela($tabela, $idRegistro, $limite = 20)`.
+- **`AuditoriaRepository`** (Grupo C) — `porTabela($tabela, $idRegistro, $limite = 20)`.
 
 ### 3.9 Correções transversais (pós-9.1b)
 - **Filial:** `filial-list.js` com Editar + Excluir; `FilialApiController::show`/`update`/`destroy` com `findOrFail` explícito (**D71/D78**) + `deleted_by` no `destroy` (**D75**).
@@ -169,15 +171,31 @@ php artisan serve
 - **Usuário:** `usuarios-list.js` com Editar + Atores + Excluir; `UsuarioApiController` com filtro manual por `id_empresa` em `show`/`update`/`destroy` (**D77**) + `deleted_by`.
 - **CSS:** `.btn-danger` adicionado ao `geral.css` (2 linhas) — **D72**.
 - **Todos os `*-list.js`/`*-form.js`** com IIFE + `init()` + `})();` — **D80**.
+- **9.1c:** refatoração de repositórios (R2) — todos os `*ApiController`/`WebController` usam repositório. `Model::create()` no `store` permanece (**D93**); `Model::findOrFail`/`orderBy` sem `::query()` permanece (**D94**). Coluna `ativo` em `ativos`. OSI ≡ Handoff.
 
 ### 3.10 Rotas
 - **Web** (auth+tenant): `/`, `/tela-inicial`, `/empresa`, `/filial/*`, `/contexto/filial`, `/tela/{codigo}`, `/tarefas/*`, `/centros-custo/*`, `/usuarios/*`, `/produtos/*`, `/servicos/*`, `/ativos/*`, `/osi`.
 - **API** (`web`+`auth`+`tenant`, prefixo `api.`): `apiResource('empresas'|'filiais'|'centros-custo'|'usuarios'|'produtos'|'servicos'|'ativos')` + `GET/POST /api/usuarios/{id}/atores` + `DELETE /api/usuario-atores/{id}` + `GET/PUT /api/osi`.
 
-### 3.11 Testes (58 verdes)
+### 3.11 Testes (64 verdes)
 - `IsolamentoTest` (12), `TarefasTest` (4), `TelaInicialTest` (4), `TenantIsolationTest` (2), `ExampleTest` (3).
 - **9.1a:** `CentroCustoApiTest` (5), `UsuarioApiTest` (4), `UsuarioAtorApiTest` (2), `UsuarioIsolamentoTest` (2).
 - **9.1b:** `ProdutoApiTest` (6), `ServicoApiTest` (5), `AtivoApiTest` (6), `OsiApiTest` (3).
+- **9.1c:** `NcmRepositoryTest` (2), `ServicoLc116RepositoryTest` (2), `ConfiguracaoHandoffRepositoryTest` (2).
+
+### 3.12 Contador — 9.2a (4.2 Plano de Contas)
+- `PlanoContaController` (Web: `index`/`create`/`edit`).
+- `PlanoContaApiController` (API: `index`/`store`/`show`/`update`/`destroy` + `proximoCodigo`).
+- `PlanoContaRepository` estendido: `todasComHierarquia()`, `sinteticas()`, `porId()`, `paiValido()`, `proximoCodigo()`.
+- Views `telas/plano-contas/{index,form}.blade.php`.
+- `public/assets/js/plano-contas-{list,form}.js`.
+- `tests/Feature/PlanoContaApiTest.php` (5 testes).
+
+### 3.13 Contador — 9.2b (4.1 + 4.3 + 4.4)
+- 4.1: `ParametroFiscalController` (Web) + `ParametroFiscalApiController` + `TabelaAuxiliarApiController` (inss/irrf/encargos). Views `telas/tabelas-fiscais/{index,form,inss,irrf,encargos}.blade.php`. `ParametroFiscalRepository` estendido (`listar`, `porId`). 3 repositórios Grupo U novos.
+- 4.3: `ConfiguracaoContabilController` (Web) + `ConfiguracaoContabilApiController`. Views `telas/config-contabeis/{index,form}.blade.php`. `PlanoContaRepository::analiticasComMapeamento()`.
+- 4.4: `ConfiguracaoFiscalController` (Web) + `ConfiguracaoFiscalApiController`. View `telas/config-fiscais/index.blade.php`. `EmpresaRepository` criado com `atualizarFiscal()`.
+- **Sem migration.**
 
 ---
 
@@ -187,11 +205,12 @@ php artisan serve
 
 | # | O que é | Por quê | Ação |
 | :--- | :--- | :--- | :--- |
-| **D54** | `*ApiController` usam `Model::create()` direto (não repositório), **exceto** `AtivoApiController` (usa `AtivoRepository` para validar P23) | O lint de SQL cru **não pega** `::create()` em `app/Http/Controllers/Api/`. Padrão consistente com o legado. | Documentar. Se o lint for mais rigoroso, refatorar todos juntos. |
 | **D56** | `routes/api.php` precisa de `['web', 'auth', 'tenant']` (não só `web`) | Sem `auth`/`tenant`, o `SetTenantContext` **não roda** na API → `TenantContext` vazio → `BelongsToTenant` filtra por `null` → `[]`. | Documentar no `10`. **Já corrigido.** |
-| **D71** | `ApiController` de models com `BelongsToTenant`: usar `Model::query()->findOrFail($id)` em `show`/`update`/`destroy` (não binding implícito) | O `SubstituteBindings` roda **antes** do `SetTenantContext` (grupo `web`). O binding implícito filtra `id_empresa = null` → **404 "No query results"**. | Documentar no `10`. |
+| **D71** | `ApiController` de models com `BelongsToTenant`: usar `findOrFail($id)` explícito em `show`/`update`/`destroy` (não binding implícito) | O `SubstituteBindings` roda **antes** do `SetTenantContext` (grupo `web`). O binding implícito filtra `id_empresa = null` → **404 "No query results"**. | Documentar no `10`. |
 | **D75** | `deleted_by` **não** é preenchido automaticamente (a trait `BelongsToTenant` só preenche `id_empresa` no `creating`) | O `SoftDeletes` grava `deleted_at`; `deleted_by` precisa ser **manual** no `destroy` (`update(['deleted_by' => getUsuarioId()])`). | Documentar no `10`. |
 | **D79** | `produtos`/`servicos` (filhas 1:1) **não** têm `id_empresa`/`ativo`/`deleted_at`/`created_by`/`updated_by`/`deleted_by` próprios | Herdam do `ProdutoServico` pai (1:1). Adicionar seria redundância. `configuracoes_handoff` não tem auditoria própria (vai em `auditorias`, D69). `ativos` já tem tudo (Grupo F). | Documentar no `10`. **Nenhuma migration nova.** |
+| **D93** | `Model::create()` no `store` do `ApiController` permanece (não mover para repositório) | O lint de SQL cru só pega `::query\(\)`, não `::create()`. Mover aumentaria escopo sem ganho. | Documentar. Se o lint for endurecido, mover. |
+| **D94** | `Model::findOrFail()`/`Model::orderBy()` direto (sem `::query()`) em `*ApiController` **não** viola o lint | O lint só pega `::query\(\)`. Padrão herdado do 9.1a/b. | Documentar. Refatorar se o lint endurecer. |
 
 ### 4.2 Resolvidas que ainda confundem (manter 1 linha)
 
@@ -201,7 +220,7 @@ php artisan serve
 | **D31** | **Não há** troca de ator na UI | Ator é identidade (`usuario_atores`). Trocar de ator = logout/login. O `seletor-ator.js` do wireframe foi **removido** (era mock). |
 | **D71/D75** | `findOrFail` explícito + `deleted_by` manual | Quem for criar `ApiController` novo **precisa** saber. Ver §7.2. |
 
-**Resolvidas que o código já reflete (não precisam ficar):** D1–D26, D28–D30, D32–D53, **D55, D57–D70, D72–D74, D76–D78, D80, D81**. Tracking completo em `06_pendencias.md`.
+**Resolvidas que o código já reflete (não precisam ficar):** D1–D26, D28–D30, D32–D53, **D54, D55, D57–D70, D72–D74, D76–D78, D80, D81**. Tracking completo em `06_pendencias.md`.
 
 ---
 
@@ -220,12 +239,15 @@ php artisan serve
 - **P120** — Caixa de Entrada usa só o primeiro ator da filial — Bloco 8.3.
 
 ### 5.2 Dívidas técnicas menores
-- P11 (csts.descricao), P12 (CNAE 7 dígitos), P17 (empresa.js sem matriz), P25–P49 (CHECKs/FKs das tabelas de operação), P52 (menus_itens.fase), P53 (AtorFuncional.timestamps), P54 (created_at nas 10 tabelas), P55 (ncms hierarquia), P56 (app/Models/x 0 bytes), P57 (PlanoContaSeeder id_empresa=1), P59 (senha fraca em prod), P60 (PeriodoSeeder só empresa 1), P61 (Grupo U sem repositório), P63 (Pessoa::tags()), P64 (RegraClassificacaoRepository), P68 (NotaFiscalItemRepository), P69 (DocumentoEncadeadoRepository), P71 (RepositoryServiceProvider manual), P75 (views não filtram tenant), P78 (lint heurístico), P103 (MenuService::nomeUsuario sem escopo), P104 (badge mock), P105 (fallback /tela), P107 (CSS .ti-*), P108–P109 (placeholders), P115 (tarefas.id_documento sem FK), P133 (usuarios-atores.js carrega tudo), P135 (= D54).
+- P11 (csts.descricao), P12 (CNAE 7 dígitos), P17 (empresa.js sem matriz), P25–P49 (CHECKs/FKs das tabelas de operação), P52 (menus_itens.fase), P53 (AtorFuncional.timestamps), P54 (created_at nas 10 tabelas), P55 (ncms hierarquia), P56 (app/Models/x 0 bytes), P57 (PlanoContaSeeder id_empresa=1), P59 (senha fraca em prod), P60 (PeriodoSeeder só empresa 1), P61 (Grupo U sem repositório), P63 (Pessoa::tags()), P64 (RegraClassificacaoRepository), P68 (NotaFiscalItemRepository), P69 (DocumentoEncadeadoRepository), P71 (RepositoryServiceProvider manual), P75 (views não filtram tenant), P78 (lint heurístico), P103 (MenuService::nomeUsuario sem escopo), P104 (badge mock), P105 (fallback /tela), P107 (CSS .ti-*), P108–P109 (placeholders), P115 (tarefas.id_documento sem FK), P133 (usuarios-atores.js carrega tudo).
 
-### 5.3 Fechadas no 9.1b
-- **P136** — `UsuarioController` enxugado (sem `store`/`update`/`sincronizarAtores`). ✅
-- **P137** — `MenuItemSeeder` 1.0 → `/` (rodar `php artisan db:seed --class=MenuItemSeeder`). ✅
-
+### 5.3 Fechadas
+- **P135** — (= D54) — fechada no 9.1c. ✅
+- **P136** — `UsuarioController` enxugado (sem `store`/`update`/`sincronizarAtores`) — fechada no 9.1b. ✅
+- **P137** — `MenuItemSeeder` 1.0 → `/` — fechada no 9.1b. ✅
+- **P138** — `PlanoContaRepository::proximoCodigo()` usa `SUBSTRING_INDEX`/`CAST` (MariaDB). Sem teste em SQLite. — 9.2a.
+- **P139** — 4.4 não expõe UF (é da filial, não da empresa). Wireframe mostrava UF; banco não tem `empresas.uf`. — 9.2b.
+- **P140** — `ParametroFiscalApiController::destroy` não implementado (tabela sem `deleted_at`). Sem exclusão pela UI. — 9.2b.
 ---
 
 ## 6. Próximos passos
@@ -233,7 +255,12 @@ php artisan serve
 ### 6.1 Bloco 9.2 — Contador (4.1–4.11)
 - Tabelas Fiscais, Plano de Contas, Config. Contábeis, Config. Fiscais, Regras, Lançamento Manual, Revisão, Validação, Pendências, Preparar Fechamento, Fechar.
 - **Padrão:** §7 inteira (Blade casca + JS fetch + API `auth`/`tenant` + `->name('api.')` + `findOrFail` explícito + `deleted_by` no `destroy` + IIFE).
-- **Testes:** mesmo padrão de `ProdutoApiTest`/`AtivoApiTest` (incluindo isolamento via controller direto — **D81**).
+- **Testes:** mesmo padrão de `ProdutoApiTest`/`AtivoApiTest` (incluindo isolamento via controller direto — **D81**, com `app(XApiController::class)`).
+### 6.1 Bloco 9.2 — Contador (4.1–4.11)
+- **9.2a (concluído):** 4.2 Plano de Contas.
+- **9.2b (concluído):** 4.1 Tabelas Fiscais + 4.3 Config. Contábeis + 4.4 Config. Fiscais.
+- **9.2c (próximo):** 4.5 Regras de Classificação + 4.6 Lançamento Manual + 4.7 Revisão.
+- **9.2d:** 4.8 Validação + 4.9 Pendências + 4.10 Preparar + 4.11 Fechar.- **Padrão:** §7 inteira.
 
 ### 6.2 Blocos 10–13
 - Operação (5.x–8.x + 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
@@ -245,14 +272,14 @@ php artisan serve
 
 ## 7. Padrões consolidados (ler ANTES de codar tela nova)
 
-> Esta seção é a **fonte da verdade** para novas telas. Consolidada no 9.1a, revisada no 9.1b. **Se algo aqui conflitar com o que você acha que sabe, este documento ganha.**
+> Esta seção é a **fonte da verdade** para novas telas. Consolidada no 9.1a, revisada no 9.1b e 9.1c. **Se algo aqui conflitar com o que você acha que sabe, este documento ganha.**
 
 ### 7.1 Arquitetura Web vs API
 
 O projeto **não usa MVC clássico** (Blade POST/PUT). Usa **Blade casca + JS `fetch` + ApiController JSON**:
 
 ```
-Blade (casca, sem dados) ──fetch──► ApiController ──► Model ──► JSON
+Blade (casca, sem dados) ──fetch──► ApiController ──► Repository ──► Model ──► JSON
         ▲                                  │
         │                                  ▼
         └── JS preenche tbody / coleta form / trata erro / redireciona
@@ -267,9 +294,9 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 - **R2 (tenant) no store:** `$data['id_empresa'] = app(TenantContext::class)->getId();` (Grupo A) ou `$data['id_filial'] = app(TenantContext::class)->getFilialId();` (Grupo F) + early return `422` se nulo.
 - **R2 (tenant) no update:** `unset($data['id_empresa'])` / `unset($data['id_filial'])`.
 - **Retorno:** `store` → `response()->json($model, 201)`; `show`/`update` → `response()->json($model)`; `index` → `response()->json($collection)`; `destroy` → `response()->noContent()` (retorna **`Illuminate\Http\Response`**, não `JsonResponse` — **D71**).
-- **`destroy` = soft delete:** `DB::transaction` + `$model->update(['ativo' => false, 'deleted_by' => app(TenantContext::class)->getUsuarioId()]); $model->delete();`. Se a tabela **não** tem `deleted_at` (ex.: `usuario_atores`), só `update(['ativo' => false])`. Se a tabela **não** tem `ativo` (ex.: `ativos`), só `update(['deleted_by' => ...])` + `delete()`. — **D75**.
+- **`destroy` = soft delete:** `DB::transaction` + `$model->update(['ativo' => false, 'deleted_by' => app(TenantContext::class)->getUsuarioId()]); $model->delete();`. Se a tabela **não** tem `deleted_at` (ex.: `usuario_atores`), só `update(['ativo' => false])`. Se a tabela **não** tem `ativo` (ex.: legado), só `update(['deleted_by' => ...])` + `delete()`. — **D75**.
 - **Model binding no path:** ❌ **não usar** (`Model $model`). Usar `findOrFail($id)` explícito em `show`/`update`/`destroy` — **D71** (o `SubstituteBindings` roda antes do `SetTenantContext` → 404).
-- **Repository no ApiController:** ❌ **não usar** (D54), **exceto** quando o repository valida regra de negócio (ex.: `AtivoRepository` valida P23).
+- **Repository no ApiController:** ✅ **usar sempre** (R2). `Model::create()` direto **só** no `store` (**D93**). `Model::findOrFail`/`Model::orderBy` **sem** `::query()` **não viola** o lint (**D94**), mas é dívida — padronizar quando der.
 - **`UsuarioApiController`:** filtro manual por `id_empresa` em **todos** os métodos (`index`/`show`/`update`/`destroy`) — **D77** (D27: `Usuario` sem `BelongsToTenant`).
 
 ### 7.3 Contrato de `WebController`
@@ -277,11 +304,11 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 - **Só** `index`/`create`/`edit` (+ ações extras como `atores`, `index` de OSI). **Sem** `store`/`update`/`destroy`.
 - **Sem `return type`** explícito.
 - **`create()`** passa `view('...form', ['model' => null] + dados auxiliares)`.
-- **`edit(int $id)`** → `Model::query()->findOrFail($id)` + `view('...form', compact('model') + dados auxiliares)`.
+- **`edit(int $id)`** → `$this->repo->porId($id)` (ou equivalente do repositório) + `view('...form', compact('model') + dados auxiliares)`.
 - **`index()`** passa `view('...index')` **sem dados** (casca), exceto OSI (tela única que precisa de `config` + `historico`).
 - **`atores(int $id)`** (quando aplicável) busca dados auxiliares via repositório e passa `compact(...)`.
 - **`request()` helper global:** ❌ não usar. Usar `Request $request` injetado.
-- **`$this->repo->query()`:** ❌ não funciona (`query()` é `protected` no `BaseRepository`). Usar `Model::query()` direto (global scope filtra).
+- **`$this->repo->query()`:** ❌ não funciona (`query()` é `protected` no `BaseRepository`). Usar métodos públicos do repositório.
 
 ### 7.4 Contrato de view Blade (casca)
 
@@ -354,7 +381,6 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 | ❌ Não fazer | ✅ Fazer |
 |---|---|
 | `FormRequest` | `$request->validate([...])` inline |
-| `$this->repo->create()` no ApiController | `Model::create()` direto (D54), **exceto** `AtivoApiController` (valida P23) |
 | `store`/`update`/`destroy` no WebController | Só `index`/`create`/`edit` (+ `atores`, `index` de OSI) |
 | `request()` helper global | `Request $request` injetado |
 | `@forelse` no `<tbody>` | `<tbody></tbody>` vazio + JS preenche |
@@ -362,14 +388,13 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 | `with('sucesso')` / flash | `window.location.href` no JS |
 | `<h2>` como título de página | `<h1>` + `.page-header` (index) ou `<h1>` solto (form) |
 | `<table class="tabela-basica">` | `<table class="data" id="tabela-recurso">` |
-| `abort_if($x === null, 404)` | `Model::query()->findOrFail($id)` |
+| `abort_if($x === null, 404)` | `findOrFail($id)` (via repo) |
 | `Route::resource` em Web | Rotas explícitas (`Route::get/post/...`) |
 | Prefixo `cadastros.` | Rotas planas (`recurso.*`) |
 | `destroy` duplicado Web+Api | Só no ApiController (padrão `apiResource`) |
 | `delete()` físico | `delete()` soft (trait `SoftDeletes`) + `deleted_by` manual |
 | **`Model $model` no path do ApiController** | **`findOrFail($id)` explícito (D71)** |
-| **`update(['ativo' => false])` em tabela sem coluna `ativo`** | **`update(['deleted_by' => ...])` + `delete()` (ex.: `ativos`)** |
-| **`$this->repo->query()` no controller** | **`Model::query()` direto (global scope filtra)** |
+| **`$this->repo->query()` no controller** | **Método público do repositório (`query()` é `protected`)** |
 | **`.acoes-linha`** | **Botões direto no `<td>` (D72)** |
 | **`btn-sm` sozinho** | **`btn btn-secondary` / `btn btn-danger`** |
 | **`<button class="btn-sm">` para Editar** | **`<a class="btn btn-secondary">` para Editar; `<button class="btn btn-danger">` para Excluir** |
@@ -384,7 +409,7 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 | **`$this->atoresFuncionais->all()`** | **`$this->atoresFuncionais->todos()`** |
 | **`$model ? 'Editar' : 'Novo'`** | **`isset($model) ? 'Editar' : 'Novo'`** |
 | **`*-list.js` sem IIFE e sem `init()`** | **IIFE + `init()` + `})();` (D80)** |
-| **`TenantContext::set(...)` + `getJson` no teste de isolamento** | **Chamar o controller direto (D81)** |
+| **`new XApiController;` no teste de isolamento** | **`app(XApiController::class)` (D81, respeita o construtor)** |
 
 ### 7.8 Testes Pest
 
@@ -393,13 +418,13 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 - **Usuário:** `Usuario::withoutGlobalScopes()->where('email', 'admin@gestor.local')->firstOrFail();`.
 - **`TenantContext`:** `app(TenantContext::class)->set(1, 1, $usuario->id, null);`.
 - **`actingAs($this->usuario);`**.
-- **Isolamento (D81):** trocar o contexto (`app(TenantContext::class)->set(2, 2, ...)`) e **chamar o controller direto**:
+- **Isolamento (D81):** trocar o contexto (`app(TenantContext::class)->set(2, 2, ...)`) e **chamar o controller direto via container**:
   ```php
-  $controller = new \App\Http\Controllers\Api\XApiController();
+  $controller = app(\App\Http\Controllers\Api\XApiController::class);
   $request = \Illuminate\Http\Request::create('/api/x', 'GET');
   $response = $controller->index($request);
   ```
-  **Não** usar `getJson` (o middleware `SetTenantContext` reseta o contexto).
+  **Não** usar `getJson` (o middleware `SetTenantContext` reseta o contexto) nem `new XApiController` (quebra se o construtor tiver dependências).
 - **API (contexto normal):** `getJson`/`postJson`/`putJson`/`deleteJson`. **Não** `get`/`post` (que não setam `Accept: application/json`).
 - **Assertions:** `assertOk()`, `assertCreated()`, `assertNoContent()`, `assertJsonFragment([...])`, `assertJsonMissing([...])`, `assertStatus(422)`, `assertJsonValidationErrors(['campo'])`, `assertDatabaseHas('tabela', [...])`.
 - **`update`/`destroy`:** preferir `assertDatabaseHas` a `assertJsonFragment`.
@@ -414,10 +439,10 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 > 2. O model tem `SoftDeletes`? (Se sim, `delete()` é soft.)
 > 3. O model tem `BelongsToTenant`? (Se não — ex.: `Usuario` — filtrar manual por `id_empresa`.)
 > 4. Qual é a tabela? (`id_empresa` ou `id_filial`? Grupo A ou F?)
-> 5. A tabela tem coluna `ativo`? (Se não — ex.: `ativos` — o `destroy` não seta `ativo`.)
+> 5. A tabela tem coluna `ativo`? (Se não — ex.: legado — o `destroy` não seta `ativo`.)
 > 6. O padrão §7.2/7.3/7.4/7.5/7.6 cobre? (Se sim, copiar a estrutura.)
 > 7. Tem teste Pest do `ProdutoApiTest`/`AtivoApiTest` para copiar? (Sim.)
-> 8. Documentar divergências em **D82+** e pendências em **P138+**. **Não criar D/P novos** sem necessidade.
+> 8. Documentar divergências em **D95+** e pendências em **P138+**. **Não criar D/P novos** sem necessidade.
 > 9. Atualizar §1 (status), §3 (o que existe), §5 (pendências), §7 (se descobriu padrão novo) — **sem changelog**.
 
 ### 7.10 Observações específicas
@@ -429,8 +454,8 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Model ─�
 - **Filtros de listagem:** ficam no **`ApiController::index()`** (query string `?q=&ativo=`). O Blade casca **não tem** `<form>` de filtro.
 - **`descricao` vs `nome`:** `AtorFuncional`, `ProdutoServico`, `Ativo` têm `descricao`. `CentroCusto` tem `nome`. `Filial` tem `razao_social`/`nome_fantasia`. **Conferir o model** antes de montar a view.
 - **`deleted_by`:** só é setado no `destroy` (D75). `created_by`/`updated_by` **não** são preenchidos (a trait não faz; consistência com o legado). Documentar como dívida.
-- **OSI:** tela **única** (`index`), não é `apiResource`. O `show` da API retorna `{config, historico}`. O `update` grava em `auditorias` (D69). O `Auditoria` **não tem `timestamps`** (só `created_at`, nullable).
-- **`Ativo`:** tabela **não tem** coluna `ativo` (ciclo de vida via `status` + `deleted_at`). O form **não tem** `<select>` Ativo. O `destroy` **não** seta `ativo` — só `deleted_by` + `delete()`.
+- **OSI ≡ Handoff:** `OSI` é o nome canônico da UI (item 2.8). Nome técnico: `configuracoes_handoff` / `ConfiguracaoHandoff` / `ConfiguracaoHandoffRepository`. **Não criar** `HandoffController`/`HandoffRepository`.
+- **`Ativo`:** tabela **tem** coluna `ativo` (9.1c). O form **tem** `<select>` Ativo. O `destroy` seta `ativo = false` + `deleted_by` + `delete()`. O `status` (Em uso/Ocioso/Alienado) **continua** — são coisas diferentes (operacional vs lógico).
 - **`produtos`/`servicos`:** filhas 1:1, **sem** colunas de tenant/soft delete/auditoria próprias (D79). O `$fillable` **não** inclui `created_by`/`updated_by` (não setados).
 
 ---

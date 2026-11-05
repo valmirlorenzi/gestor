@@ -78,4 +78,28 @@ class ParametroFiscalRepository extends BaseRepository
 
         return $param;
     }
+
+    /**
+     * Lista todos os parâmetros (globais + da empresa), com filtro opcional.
+     * Usado pela tela 4.1.
+     */
+    public function listar(?string $tipoImposto = null, ?string $busca = null): Collection
+    {
+        $query = $this->query()->orderBy('tipo_imposto')->orderByDesc('data_inicio_validade');
+
+        if ($tipoImposto !== null && $tipoImposto !== '') {
+            $query->where('tipo_imposto', $tipoImposto);
+        }
+
+        if ($busca !== null && $busca !== '') {
+            $query->where('descricao', 'like', '%'.$busca.'%');
+        }
+
+        return $query->get();
+    }
+
+    public function porId(int $id): ParametroFiscal
+    {
+        return $this->query()->findOrFail($id);
+    }
 }

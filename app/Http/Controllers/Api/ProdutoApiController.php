@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Produto;
 use App\Models\ProdutoServico;
+use App\Repositories\GrupoA\ProdutoServicoRepository;
 use App\Services\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,17 +14,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProdutoApiController extends Controller
 {
+    public function __construct(
+        private ProdutoServicoRepository $produtos,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $query = ProdutoServico::query()
-            ->where('tipo', 'P')
-            ->with(['produto.ncm']);
-
-        if ($request->filled('q')) {
-            $query->where('descricao', 'like', '%'.$request->input('q').'%');
-        }
-
-        return response()->json($query->orderBy('descricao')->get());
+        return response()->json($this->produtos->produtosComNcm($request->input('q')));
     }
 
     public function store(Request $request): JsonResponse
@@ -64,19 +61,14 @@ class ProdutoApiController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $produto = ProdutoServico::query()
-            ->where('tipo', 'P')
-            ->with('produto.ncm')
-            ->findOrFail($id);
+        $produto = $this->produtos->produtoComNcm($id);
 
         return response()->json($produto);
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $produto = ProdutoServico::query()
-            ->where('tipo', 'P')
-            ->findOrFail($id);
+        $produto = $this->produtos->produto($id);
 
         $data = $request->validate([
             'descricao' => ['required', 'string', 'max:300'],
@@ -107,9 +99,7 @@ class ProdutoApiController extends Controller
 
     public function destroy(int $id): Response
     {
-        $produto = ProdutoServico::query()
-            ->where('tipo', 'P')
-            ->findOrFail($id);
+        $produto = $this->produtos->produto($id);
 
         DB::transaction(function () use ($produto) {
             $produto->update([

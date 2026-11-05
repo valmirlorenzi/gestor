@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ativo;
-use App\Models\CentroCusto;
+use App\Repositories\GrupoA\CentroCustoRepository;
+use App\Repositories\GrupoF\AtivoRepository;
 
 class AtivoController extends Controller
 {
+    public function __construct(
+        private CentroCustoRepository $centrosCusto,
+        private AtivoRepository $ativos,
+    ) {}
+
     public function index()
     {
         return view('telas.ativos.index');
@@ -15,10 +20,7 @@ class AtivoController extends Controller
 
     public function create()
     {
-        $centrosCusto = CentroCusto::query()
-            ->where('ativo', true)
-            ->orderBy('nome')
-            ->get(['id', 'nome']);
+        $centrosCusto = $this->centrosCusto->ativos();
 
         return view('telas.ativos.form', [
             'model' => null,
@@ -28,12 +30,9 @@ class AtivoController extends Controller
 
     public function edit(int $id)
     {
-        $model = Ativo::query()->findOrFail($id);
+        $model = $this->ativos->porId($id);
 
-        $centrosCusto = CentroCusto::query()
-            ->where('ativo', true)
-            ->orderBy('nome')
-            ->get(['id', 'nome']);
+        $centrosCusto = $this->centrosCusto->ativos();
 
         return view('telas.ativos.form', compact('model', 'centrosCusto'));
     }

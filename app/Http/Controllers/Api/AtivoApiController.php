@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ativo;
 use App\Repositories\GrupoF\AtivoRepository;
 use App\Services\TenantContext;
 use Illuminate\Http\JsonResponse;
@@ -19,13 +18,8 @@ class AtivoApiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Ativo::query()->with('centroCusto');
-
-        if ($request->filled('q')) {
-            $query->where('descricao', 'like', '%'.$request->input('q').'%');
-        }
-
-        return response()->json($query->orderBy('descricao')->get());
+        return response()
+            ->json($this->ativos->listarComCentroCusto($request->input('q')));
     }
 
     public function store(Request $request): JsonResponse
@@ -60,14 +54,14 @@ class AtivoApiController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $ativo = Ativo::query()->with('centroCusto')->findOrFail($id);
+        $ativo = $this->ativos->comCentroCusto($id);
 
         return response()->json($ativo);
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $ativo = Ativo::query()->findOrFail($id);
+        $ativo = $this->ativos->porId($id);
 
         $data = $request->validate([
             'descricao' => ['required', 'string', 'max:200'],
@@ -92,7 +86,7 @@ class AtivoApiController extends Controller
 
     public function destroy(int $id): Response
     {
-        $ativo = Ativo::query()->findOrFail($id);
+        $ativo = $this->ativos->porId($id);
 
         DB::transaction(function () use ($ativo) {
             $ativo->update([

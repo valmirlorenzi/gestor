@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ProdutoServico;
+use App\Models\ServicoLc116;
 use App\Models\Usuario;
 use App\Services\TenantContext;
 use Database\Seeders\AtorFuncionalSeeder;
@@ -62,7 +63,7 @@ it('cria servico com id_empresa do contexto', function () {
 });
 
 it('cria servico com LC116 valido', function () {
-    $lc116Id = \App\Models\ServicoLc116::query()->value('id');
+    $lc116Id = ServicoLc116::query()->value('id');
 
     $this->postJson('/api/servicos', [
         'descricao' => 'Serviço com LC116',
@@ -85,7 +86,7 @@ it('atualiza servico e seus dados de servico', function () {
 
     $id = $response->json('id');
 
-    $this->putJson('/api/servicos/' . $id, [
+    $this->putJson('/api/servicos/'.$id, [
         'descricao' => 'Depois',
         'codigo_interno' => 'DEP',
     ])->assertOk();
@@ -105,7 +106,7 @@ it('faz soft delete de servico', function () {
 
     $id = $response->json('id');
 
-    $this->deleteJson('/api/servicos/' . $id)->assertNoContent();
+    $this->deleteJson('/api/servicos/'.$id)->assertNoContent();
 
     $ps = ProdutoServico::withoutGlobalScopes()->find($id);
 

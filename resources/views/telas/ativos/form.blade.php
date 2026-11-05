@@ -66,6 +66,13 @@
         <input type="text" id="ativo-status" maxlength="20"
                value="{{ $model->status ?? 'Em uso' }}">
       </div>
+      <div class="form-row">
+        <label>Ativo</label>
+        <select id="ativo-ativo">
+          <option value="1" {{ (! isset($model) || $model->ativo) ? 'selected' : '' }}>Sim</option>
+          <option value="0" {{ (isset($model) && !$model->ativo) ? 'selected' : '' }}>Não</option>
+        </select>
+      </div>
     </div>
   </div>
 

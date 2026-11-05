@@ -96,4 +96,9 @@ class FilialRepository extends BaseRepository
             ->orderBy('nome_fantasia')
             ->get();
     }
+
+    public function porId(int $id): Filial
+    {
+        return $this->query()->findOrFail($id);
+    }
 }

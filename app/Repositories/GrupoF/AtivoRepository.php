@@ -91,4 +91,25 @@ class AtivoRepository extends BaseRepository
             ]);
         }
     }
+
+    public function listarComCentroCusto(?string $busca = null): Collection
+    {
+        $query = $this->query()->with('centroCusto');
+
+        if ($busca !== null && $busca !== '') {
+            $query->where('descricao', 'like', '%'.$busca.'%');
+        }
+
+        return $query->orderBy('descricao')->get();
+    }
+
+    public function comCentroCusto(int $id): Ativo
+    {
+        return $this->query()->with('centroCusto')->findOrFail($id);
+    }
+
+    public function porId(int $id): Ativo
+    {
+        return $this->query()->findOrFail($id);
+    }
 }

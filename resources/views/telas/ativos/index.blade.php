@@ -19,6 +19,7 @@
           <th>Valor original</th>
           <th>Centro de custo</th>
           <th>Status</th>
+          <th>Ativo</th>
           <th>Ações</th>
         </tr>
       </thead>

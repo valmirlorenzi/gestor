@@ -6,7 +6,9 @@ use App\Repositories\GrupoA\AtorFuncionalRepository;
 use App\Repositories\GrupoA\CenarioSimulacaoRepository;
 use App\Repositories\GrupoA\CentroCustoRepository;
 use App\Repositories\GrupoA\CondicaoPagamentoRepository;
+use App\Repositories\GrupoA\ConfiguracaoHandoffRepository;
 use App\Repositories\GrupoA\DashboardRepository;
+use App\Repositories\GrupoA\EmpresaRepository;
 use App\Repositories\GrupoA\FormaPagamentoRepository;
 use App\Repositories\GrupoA\MenuItemRepository;
 use App\Repositories\GrupoA\PessoaRepository;
@@ -37,6 +39,11 @@ use App\Repositories\GrupoF\RazaoImpostoRepository;
 use App\Repositories\GrupoF\TarefaRepository;
 use App\Repositories\GrupoF\UsuarioAtorRepository;
 use App\Repositories\GrupoH\ParametroFiscalRepository;
+use App\Repositories\GrupoU\NcmRepository;
+use App\Repositories\GrupoU\ServicoLc116Repository;
+use App\Repositories\GrupoU\TabelaEncargosRepository;
+use App\Repositories\GrupoU\TabelaInssRepository;
+use App\Repositories\GrupoU\TabelaIrrfRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -57,6 +64,7 @@ class RepositoryServiceProvider extends ServiceProvider
         CenarioSimulacaoRepository::class,
         AtorFuncionalRepository::class,
         MenuItemRepository::class,
+        ConfiguracaoHandoffRepository::class,
         // Grupo F
         FilialRepository::class,
         PeriodoRepository::class,
@@ -82,6 +90,14 @@ class RepositoryServiceProvider extends ServiceProvider
         DocumentoEncadeadoRepository::class,
         // Grupo H
         ParametroFiscalRepository::class,
+        // Grupo U (universais)
+        NcmRepository::class,
+        ServicoLc116Repository::class,
+        // ...
+        EmpresaRepository::class,
+        TabelaInssRepository::class,
+        TabelaIrrfRepository::class,
+        TabelaEncargosRepository::class,
     ];
 
     public function register(): void

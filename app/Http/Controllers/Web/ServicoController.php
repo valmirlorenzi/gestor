@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Servico;
-use App\Models\ServicoLc116;
+use App\Repositories\GrupoA\ProdutoServicoRepository;
+use App\Repositories\GrupoU\ServicoLc116Repository;
 
 class ServicoController extends Controller
 {
+    public function __construct(
+        private ServicoLc116Repository $lc116,
+        private ProdutoServicoRepository $servicos,
+    ) {}
+
     public function index()
     {
         return view('telas.servicos.index');
@@ -15,7 +20,7 @@ class ServicoController extends Controller
 
     public function create()
     {
-        $lc116 = ServicoLc116::query()->orderBy('codigo')->get(['id', 'codigo', 'descricao']);
+        $lc116 = $this->lc116->todosOrdenadosPorCodigo();
 
         return view('telas.servicos.form', [
             'model' => null,
@@ -25,12 +30,8 @@ class ServicoController extends Controller
 
     public function edit(int $id)
     {
-        $model = \App\Models\ProdutoServico::query()
-            ->where('tipo', 'S')
-            ->with('servico')
-            ->findOrFail($id);
-
-        $lc116 = ServicoLc116::query()->orderBy('codigo')->get(['id', 'codigo', 'descricao']);
+        $model = $this->servicos->servicoComServico($id);
+        $lc116 = $this->lc116->todosOrdenadosPorCodigo();
 
         return view('telas.servicos.form', compact('model', 'lc116'));
     }
