@@ -6,6 +6,8 @@ use App\Http\Controllers\Web\CentroCustoController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\ConfiguracaoContabilController;
 use App\Http\Controllers\Web\ConfiguracaoFiscalController;
+use App\Http\Controllers\Web\ContaPagarController;
+use App\Http\Controllers\Web\ContaReceberController;
 use App\Http\Controllers\Web\EmpresaWebController;
 use App\Http\Controllers\Web\FecharPeriodoController;
 use App\Http\Controllers\Web\FilialContextController;
@@ -160,11 +162,18 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::get('/{id}/edit', [ClienteController::class, 'edit'])->name('edit');
     });
 
-    // 6.3 Digitar Notas de Saída
     Route::prefix('faturista/nota-saida')->name('faturista.nota-saida.')->group(function () {
         Route::get('/', [NotaFiscalSaidaController::class, 'index'])->name('index');
         Route::get('/create', [NotaFiscalSaidaController::class, 'create'])->name('create');
         Route::get('/{id}/edit', [NotaFiscalSaidaController::class, 'edit'])->name('edit');
+    });
+
+    Route::prefix('financeiro1/contas-pagar')->name('financeiro1.contas-pagar.')->group(function () {
+        Route::get('/', [ContaPagarController::class, 'index'])->name('index');
+    });
+
+    Route::prefix('financeiro2/contas-receber')->name('financeiro2.contas-receber.')->group(function () {
+        Route::get('/', [ContaReceberController::class, 'index'])->name('index');
     });
 
 });

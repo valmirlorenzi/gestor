@@ -31,12 +31,14 @@ depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_
 | **9.2** | Contador (4.1–4.11) | ⏳ **Próximo** |
 | **10a-1** | Tabelas basais Compras/Vendas (5.1/6.1) | ✅ **Concluído** |
 | **10a-2** | Fornecedores (5.2) + Clientes (6.2) | ✅ **Concluído** |
+| **10b** | 5.3 Digitar Notas de Entrada | ✅ **Concluído** (5.4 adiado) |
 | **10b** | 6.3 Digitar Notas de Saída | ✅ **Concluído** |
+| **10b** | 7.2 Contas a Pagar + 8.2 Contas a Receber | ✅ **Concluído** |
 | **11** | Administrador (3.x) | ⏳ Pendente |
 | **12** | Auditor (11.x) + Administração (12.x) | ⏳ Pendente |
 | **13** | Handoff + serviços de negócio | ⏳ Pendente |
 
-**Números atuais:** 63 tabelas, 63 models, **42 repositórios** (`PessoaRepository` ganhou 4 métodos no 10a-2), 6 services, **12 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas, tabelas-fiscais, config-contabeis, regras, fornecedores, clientes) + 3 de tarefas + Tela Inicial, **139 testes verdes**, lint de SQL cru zerado.
+**Números atuais:** 63 tabelas, 63 models, **42 repositórios** (`PessoaRepository` ganhou 4 métodos no 10a-2), 6 services, **12 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas, tabelas-fiscais, config-contabeis, regras, fornecedores, clientes) + 3 de tarefas + Tela Inicial, **153 testes verdes**, lint de SQL cru zerado.
 
 **Decisão de fatiamento (histórica):** o antigo "Bloco 7 — Auth + API + telas" foi fatiado em 7–13 (escopo real: 71 telas). Cada sub-bloco é testável isoladamente.
 
@@ -225,6 +227,18 @@ php artisan serve
 - **`dados_extras.categoria`** (D98) — categoria em `pessoas.dados_extras`; `pessoas_fisicas`/`pessoas_juridicas` também têm `dados_extras` (uso futuro, não preenchido aqui).
 - **Rotas API:** `apiResource('fornecedores')`/`apiResource('clientes')` — **sem** `api.api.` (nome do grupo respeitado; confirmado no `route:list`).
 
+### 3.17 Notas de Entrada (5.3) — Bloco 10b
+
+- `NotaFiscalController` (Web: `index`/`create`/`edit`; passa `periodoAberto`, `tiposDocumento`, `fornecedores` via `paraSelect`).
+- `NotaFiscalApiController` (API: `index`/`store`/`show`/`update`/`destroy`/`salvarRascunho`/`confirmar`).
+- `NotaFiscalRepository` estendido: `porId`, `porIdComItensEImpostos`, `criarComItens`, `atualizarComItens` (transação no repositório).
+- Views `telas/notas-entrada/{index,form}.blade.php`.
+- `public/assets/js/notas-entrada-{list,form}.js` (IIFE D80; wizard 4 etapas montado no JS; envia `{cabecalho, itens[], itens[].impostos[]}` para a API).
+- `tests/Feature/NotaFiscalApiTest.php` (7 testes: store com itens+impostos, chave duplicada, período fechado, período inexistente, isolamento D81, soft delete, rascunho/confirmar).
+- **Escopo:** só `NotaFiscal` + `NotaFiscalItem` + `NotaFiscalImposto`. **NÃO** cria `ContaPagar`, `DocumentoEncadeado`, `Lancamento`, `RazaoImposto`, `Tarefa` (Bloco 13, P66). **NÃO** cria vínculo (`NotaFiscalVinculo` — fica no 5.4).
+- **Status:** `status_importacao='Importado'` sempre. Rascunho = `dados_extras.rascunho=true`; `confirmar()` só troca para `false`. Sem coluna nova.
+- **Período:** resolvido por `PeriodoRepository::porFilialEMesAno($filialId, 'MM/AAAA')`. Se não existir ou não estiver `Aberto` → 422 (não cria período).
+
 ### 3.18 Notas de Saída (6.3) — Bloco 10b
 
 - `NotaFiscalSaidaController` (Web: `index`/`create`/`edit`; passa `periodoAberto`, `tiposDocumento`, `clientes` via `paraSelect('Cliente')`).
@@ -235,6 +249,30 @@ php artisan serve
 - `tests/Feature/NotaFiscalSaidaApiTest.php` (7 testes espelhados).
 - **Escopo:** idêntico ao 5.3 — só `NotaFiscal` + itens + impostos. Sem `ContaReceber`, `DocumentoEncadeado`, `Lancamento`, `Tarefa`, `NotaFiscalVinculo`.
 - **Status/rascunho/período:** idênticos ao 5.3 (`Importado`, `dados_extras.rascunho`, `PeriodoRepository::porFilialEMesAno`).
+
+### 3.19 Contas a Pagar (7.2) — Bloco 10b
+
+- `ContaPagarController` (Web: `index`).
+- `ContaPagarApiController` (API: `index`/`show`/`opcoes`/`baixar`/`estornar`). **Sem `store`/`update`/`destroy`** — criação vem do Bloco 13 (handoff da NF).
+- `ContaPagarRepository` estendido: `porIdComRelacoes`, `listarComKpis` (retorna `{contas, kpis}`), `baixar` (acumula `valor_pago`, calcula juros/multa auto, aceita parcial), `estornar`.
+- View `telas/contas-pagar/index.blade.php` (lista + KPIs + filtros + modal de baixa).
+- `public/assets/js/contas-pagar-list.js` (IIFE D80; modal de baixa via `fetch`; filtros no JS).
+- `tests/Feature/ContaPagarApiTest.php` (7 testes).
+- **Escopo:** lista + baixa (total/parcial) + estorno. **Sem** `Lancamento`, `DocumentoEncadeado`, `AuditoriaRepository::registrar` (P151), `ContaPagarBaixa` (tabela não existe — o acúmulo é no `valor_pago`).
+- **Juros/multa (P150):** hardcoded no repo (`JUROS_AO_DIA = 0.033`, `MULTA = 2.00`), calculados no `baixar()` se `data_pagamento > data_vencimento`. Parametrizar por empresa em fase 2.
+- **`status_fluxo`:** atualizado no `baixar` (`Pago`/`Parcialmente pago`) e no `estornar` (`Aguardando pagamento`).
+- **Data:** `data_pagamento <= today()` (validação).
+
+### 3.20 Contas a Receber (8.2) — Bloco 10b
+
+- `ContaReceberController` (Web: `index`).
+- `ContaReceberApiController` (API: `index`/`show`/`opcoes`/`receber`/`estornar`). **Sem `store`/`update`/`destroy`** — idem.
+- `ContaReceberRepository` estendido: `porIdComRelacoes`, `listarComKpis` (`{contas, kpis}` com KPI "inadimplência"), `receber` (acumula `valor_recebido`, juros/multa auto, parcial), `estornar`.
+- View `telas/contas-receber/index.blade.php` (espelho; KPI "Inadimplência"; badge "Inadimplente" com dias de atraso).
+- `public/assets/js/contas-receber-list.js` (espelho).
+- `tests/Feature/ContaReceberApiTest.php` (7 testes).
+- **Escopo:** idêntico ao 7.2. **Sem** lançamento/documento encadeado/auditoria.
+- **`data_recebimento <= today()`** (validação).
 
 ---
 
@@ -281,7 +319,7 @@ php artisan serve
 - P11 (csts.descricao), P12 (CNAE 7 dígitos), P17 (empresa.js sem matriz), P25–P49 (CHECKs/FKs das tabelas de operação), P52 (menus_itens.fase), P53 (AtorFuncional.timestamps), P54 (created_at nas 10 tabelas), P55 (ncms hierarquia), P56 (app/Models/x 0 bytes), P57 (PlanoContaSeeder id_empresa=1), P59 (senha fraca em prod), P60 (PeriodoSeeder só empresa 1), P61 (Grupo U sem repositório), P63 (Pessoa::tags()), P64 (RegraClassificacaoRepository), P68 (NotaFiscalItemRepository), P69 (DocumentoEncadeadoRepository), P71 (RepositoryServiceProvider manual), P75 (views não filtram tenant), P78 (lint heurístico), P103 (MenuService::nomeUsuario sem escopo), P104 (badge mock), P105 (fallback /tela), P107 (CSS .ti-*), P108–P109 (placeholders), P115 (tarefas.id_documento sem FK), P133 (usuarios-atores.js carrega tudo).
 - **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
 - **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
-- **P148** — `api.api.tabelas-inss/irrf/encargos` (nome dobrado no `routes/api.php` do 9.2b) — corrigir no próximo bloco. — 9.2b.
+- **P149** — `public/assets/js/{nota-entrada,nota-saida,importar-xml,caixa-entrada,contas-pagar,contas-receber}.js` são wireframes órfãos (usam `screens[]`, não referenciados por Blade). Remover quando o 5.4/6.4 substituir. — 10b.
 
 ### 5.3 Fechadas
 - **P135** — (= D54) — fechada no 9.1c. ✅
@@ -298,6 +336,9 @@ php artisan serve
 - **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
 - **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
 - **P148** — `api.api.tabelas-inss/irrf/encargos` (nome dobrado no `routes/api.php` do 9.2b) — corrigir no próximo bloco. — 9.2b.
+- **P150** — Juros/multa de contas a pagar/receber hardcoded no repositório (`JUROS_AO_DIA = 0.033`, `MULTA = 2.00`). Parametrizar por empresa (`empresas.dados_extras.parametros_juros`) em fase 2. — 10b.
+- **P151** — `AuditoriaRepository` não tem `registrar()`. Baixa/estorno de contas **não grava auditoria** (só atualiza a tabela). Implementar `AuditoriaService::registrar()` (ou método no repo) quando o Bloco 13 fizer o lançamento contábil. — 10b.
+- **P152** — `ContaPagar`/`ContaReceber` **não têm** tabela de baixas parciais (`contas_pagar_baixas`). O acúmulo é feito em `valor_pago`/`valor_recebido`. Se precisar de histórico de baixas (quem, quando, valor), criar tabela filha no Bloco 13. — 10b.
 ---
 
 ## 6. Próximos passos
@@ -314,12 +355,11 @@ php artisan serve
 - 9.2d: 4.8 Validação + 4.9 Pendências + 4.10 Preparar + 4.11 Fechar.**Padrão:** §7 inteira.
 
 ### 6.2 Blocos 10–13
-- Operação (5.x–8.x + 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
-### 6.2 Blocos 10–13
 
-- **10b (concluído):** 5.3 Digitar Notas de Entrada, 6.3 Digitar Notas de Saída. ✅
+- **10b (concluído):** 5.3 Digitar Notas de Entrada, 6.3 Digitar Notas de Saída, 7.2 Contas a Pagar, 8.2 Contas a Receber. ✅
 - **10b (pendente):** 5.4 Importar Notas de Entrada + 6.4 Importar Notas de Saída (adiados — retomar ao final do bloco).
-- Operação (5.5, 7.x, 8.x, 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
+- Operação (5.5, 7.3 Pagamentos, 8.3 Recebimentos, 9.x Gerente, 10.x RH) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços (Bloco 13).
+
 
 ### 6.3 Bloco 8.3 (opcional, quando der)
 - P120 (todos os atores na Caixa de Entrada), P50 (data_criacao), P104 (badge real).
@@ -354,6 +394,13 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Repository
 - **Model binding no path:** ❌ **não usar** (`Model $model`). Usar `findOrFail($id)` explícito em `show`/`update`/`destroy` — **D71** (o `SubstituteBindings` roda antes do `SetTenantContext` → 404).
 - **Repository no ApiController:** ✅ **usar sempre** (R2). `Model::create()` direto **só** no `store` (**D93**). `Model::findOrFail`/`Model::orderBy` **sem** `::query()` **não viola** o lint (**D94**), mas é dívida — padronizar quando der.
 - **`UsuarioApiController`:** filtro manual por `id_empresa` em **todos** os métodos (`index`/`show`/`update`/`destroy`) — **D77** (D27: `Usuario` sem `BelongsToTenant`).
+- **Baixa financeira (contas a pagar/receber):** o `ApiController` só valida e delega ao repositório (`baixar()`/`receber()`/`estornar()`). O repositório:
+  - valida `status ∈ {Aberta, Parcialmente baixada}` (senão `\DomainException` → 422 no controller);
+  - calcula juros/multa se `data_pagamento > data_vencimento` (P150);
+  - **acumula** `valor_pago`/`valor_recebido` (não sobrescreve — P152);
+  - atualiza `status` (`Baixada` quando acumulado ≥ `valor`, senão `Parcialmente baixada`) e `status_fluxo`.
+  - **Não grava auditoria** ainda (P151) e **não cria lançamento contábil** (Bloco 13).
+- **`index` com KPIs:** quando a tela tem KPIs (Em aberto/Vencidas/Pago/Contas abertas), o `ApiController::index()` retorna `{contas, kpis}` e o JS só exibe. Cálculo no backend (usa `today()` e evita divergência).
 
 ### 7.3 Contrato de `WebController`
 

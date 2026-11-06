@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\CentroCustoApiController;
 use App\Http\Controllers\Api\ClienteApiController;
 use App\Http\Controllers\Api\ConfiguracaoContabilApiController;
 use App\Http\Controllers\Api\ConfiguracaoFiscalApiController;
+use App\Http\Controllers\Api\ContaPagarApiController;
+use App\Http\Controllers\Api\ContaReceberApiController;
 use App\Http\Controllers\Api\EmpresaApiController;
 use App\Http\Controllers\Api\FecharPeriodoApiController;
 use App\Http\Controllers\Api\FilialApiController;
@@ -98,4 +100,16 @@ Route::middleware(['web', 'auth', 'tenant'])->name('api.')->group(function () {
     Route::apiResource('notas-saida', NotaFiscalSaidaApiController::class)->parameters(['notas-saida' => 'id']);
     Route::post('notas-saida/rascunho', [NotaFiscalSaidaApiController::class, 'salvarRascunho'])->name('api.notas-saida.rascunho');
     Route::post('notas-saida/{id}/confirmar', [NotaFiscalSaidaApiController::class, 'confirmar'])->name('api.notas-saida.confirmar');
+
+    Route::get('contas-pagar', [ContaPagarApiController::class, 'index'])->name('api.contas-pagar.index');
+    Route::get('contas-pagar/{id}', [ContaPagarApiController::class, 'show'])->name('api.contas-pagar.show');
+    Route::post('contas-pagar/{id}/baixar', [ContaPagarApiController::class, 'baixar'])->name('api.contas-pagar.baixar');
+    Route::post('contas-pagar/{id}/estornar', [ContaPagarApiController::class, 'estornar'])->name('api.contas-pagar.estornar');
+    Route::get('contas-pagar/opcoes', [ContaPagarApiController::class, 'opcoes'])->name('api.contas-pagar.opcoes');
+
+    Route::get('contas-receber', [ContaReceberApiController::class, 'index'])->name('api.contas-receber.index');
+    Route::get('contas-receber/opcoes', [ContaReceberApiController::class, 'opcoes'])->name('api.contas-receber.opcoes');
+    Route::get('contas-receber/{id}', [ContaReceberApiController::class, 'show'])->name('api.contas-receber.show');
+    Route::post('contas-receber/{id}/receber', [ContaReceberApiController::class, 'receber'])->name('api.contas-receber.receber');
+    Route::post('contas-receber/{id}/estornar', [ContaReceberApiController::class, 'estornar'])->name('api.contas-receber.estornar');
 });
