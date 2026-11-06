@@ -2,18 +2,32 @@
 
 use App\Http\Controllers\Api\AtivoApiController;
 use App\Http\Controllers\Api\CentroCustoApiController;
+use App\Http\Controllers\Api\ClienteApiController;
 use App\Http\Controllers\Api\ConfiguracaoContabilApiController;
 use App\Http\Controllers\Api\ConfiguracaoFiscalApiController;
 use App\Http\Controllers\Api\EmpresaApiController;
+use App\Http\Controllers\Api\FecharPeriodoApiController;
 use App\Http\Controllers\Api\FilialApiController;
+use App\Http\Controllers\Api\FornecedorApiController;
+use App\Http\Controllers\Api\LancamentoManualApiController;
+use App\Http\Controllers\Api\NotaFiscalApiController;
+use App\Http\Controllers\Api\NotaFiscalSaidaApiController;
 use App\Http\Controllers\Api\OsiApiController;
 use App\Http\Controllers\Api\ParametroFiscalApiController;
+use App\Http\Controllers\Api\PendenciaApiController;
 use App\Http\Controllers\Api\PlanoContaApiController;
+use App\Http\Controllers\Api\PrazoPadraoApiController;
+use App\Http\Controllers\Api\PrepararFechamentoApiController;
 use App\Http\Controllers\Api\ProdutoApiController;
+use App\Http\Controllers\Api\RegraClassificacaoApiController;
+use App\Http\Controllers\Api\RevisaoLancamentoApiController;
 use App\Http\Controllers\Api\ServicoApiController;
 use App\Http\Controllers\Api\TabelaAuxiliarApiController;
+use App\Http\Controllers\Api\TipoClienteApiController;
+use App\Http\Controllers\Api\TipoFornecedorApiController;
 use App\Http\Controllers\Api\UsuarioApiController;
 use App\Http\Controllers\Api\UsuarioAtorApiController;
+use App\Http\Controllers\Api\ValidacaoCalculoApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'tenant'])->name('api.')->group(function () {
@@ -45,4 +59,43 @@ Route::middleware(['web', 'auth', 'tenant'])->name('api.')->group(function () {
     Route::get('config-fiscais', [ConfiguracaoFiscalApiController::class, 'show'])->name('api.config-fiscais.show');
     Route::put('config-fiscais', [ConfiguracaoFiscalApiController::class, 'update'])->name('api.config-fiscais.update');
 
+    Route::post('regras-classificacao/testar', [RegraClassificacaoApiController::class, 'testar'])
+        ->name('api.regras-classificacao.testar');
+    Route::post('regras-classificacao/{id}/reativar', [RegraClassificacaoApiController::class, 'reativar'])
+        ->name('api.regras-classificacao.reativar');
+    Route::apiResource('regras-classificacao', RegraClassificacaoApiController::class);
+
+    Route::post('lancamentos-manuais', [LancamentoManualApiController::class, 'store'])->name('api.lancamentos-manuais.store');
+
+    Route::get('revisao-lancamentos', [RevisaoLancamentoApiController::class, 'index'])->name('api.revisao-lancamentos.index');
+    Route::put('revisao-lancamentos/{id}/reclassificar', [RevisaoLancamentoApiController::class, 'reclassificar'])->name('api.revisao-lancamentos.reclassificar');
+    Route::put('revisao-lancamentos/{id}/validar', [RevisaoLancamentoApiController::class, 'validar'])->name('api.revisao-lancamentos.validar');
+
+    Route::get('validacao/razoes-impostos', [ValidacaoCalculoApiController::class, 'razoesImpostos'])->name('api.validacao.razoes-impostos');
+    Route::put('validacao/razoes-impostos/{id}/validar', [ValidacaoCalculoApiController::class, 'validarRazao'])->name('api.validacao.validar-razao');
+    Route::put('validacao/razoes-impostos/{id}/override', [ValidacaoCalculoApiController::class, 'overrideRazao'])->name('api.validacao.override-razao');
+
+    Route::get('pendencias', [PendenciaApiController::class, 'index'])->name('api.pendencias.index');
+    Route::put('pendencias/{id}/resolver', [PendenciaApiController::class, 'resolver'])->name('api.pendencias.resolver');
+
+    Route::get('preparar-fechamento', [PrepararFechamentoApiController::class, 'show'])->name('api.preparar-fechamento.show');
+    Route::post('preparar-fechamento/enviar-auditor', [PrepararFechamentoApiController::class, 'enviarAuditor'])->name('api.preparar-fechamento.enviar-auditor');
+
+    Route::get('fechar-periodo', [FecharPeriodoApiController::class, 'index'])->name('api.fechar-periodo.index');
+    Route::put('fechar-periodo/{id}', [FecharPeriodoApiController::class, 'fechar'])->name('api.fechar-periodo.fechar');
+
+    Route::apiResource('tipos-fornecedor', TipoFornecedorApiController::class);
+    Route::apiResource('tipos-cliente', TipoClienteApiController::class);
+    Route::apiResource('prazos-padrao', PrazoPadraoApiController::class);
+
+    Route::apiResource('fornecedores', FornecedorApiController::class);
+    Route::apiResource('clientes', ClienteApiController::class);
+
+    Route::apiResource('notas-entrada', NotaFiscalApiController::class)->parameters(['notas-entrada' => 'id']);
+    Route::post('notas-entrada/rascunho', [NotaFiscalApiController::class, 'salvarRascunho'])->name('api.notas-entrada.rascunho');
+    Route::post('notas-entrada/{id}/confirmar', [NotaFiscalApiController::class, 'confirmar'])->name('api.notas-entrada.confirmar');
+
+    Route::apiResource('notas-saida', NotaFiscalSaidaApiController::class)->parameters(['notas-saida' => 'id']);
+    Route::post('notas-saida/rascunho', [NotaFiscalSaidaApiController::class, 'salvarRascunho'])->name('api.notas-saida.rascunho');
+    Route::post('notas-saida/{id}/confirmar', [NotaFiscalSaidaApiController::class, 'confirmar'])->name('api.notas-saida.confirmar');
 });

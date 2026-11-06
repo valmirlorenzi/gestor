@@ -914,6 +914,9 @@ depende_de: [01_visao_geral, 03_casos_de_uso, 05_apendices, 07_atores_fluxo, 08_
 | 41 | Permissões por área no Conselheiro | Pendente | Fase 2 |
 | 42 | Filtro de empresa nas views | Pendente | Fase 1 (arquitetura) |
 | 43 | Contador externo e multi-empresa | Pendente | Fase 2 |
+| 44 | `id_municipio` sem autocomplete (input numérico) | Pendente | Fase 2 |
+| 45 | `tipo` PF↔PJ bloqueado no update | Pendente | Fase 2 |
+| 46 | `api.api.tabelas-*` (nome dobrado) | Pendente | Próximo bloco |
 
 **Total efetivo: 42 pendências** (a #26 foi removida por duplicidade com a #19; a #43 é detalhamento da #15).
 

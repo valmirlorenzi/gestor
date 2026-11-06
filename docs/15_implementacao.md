@@ -29,12 +29,14 @@ depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_
 | **9.1c** | Refatoração de repositórios (R2) + coluna `ativo` em `ativos` + OSI ≡ handoff | ✅ **Concluído** |
 | **9.2a** | Plano de Contas (4.2) — CRUD com árvore | ✅ **Concluído** |
 | **9.2** | Contador (4.1–4.11) | ⏳ **Próximo** |
-| **10** | Operação (5.x–8.x + 10.x) | ⏳ Pendente |
+| **10a-1** | Tabelas basais Compras/Vendas (5.1/6.1) | ✅ **Concluído** |
+| **10a-2** | Fornecedores (5.2) + Clientes (6.2) | ✅ **Concluído** |
+| **10b** | 6.3 Digitar Notas de Saída | ✅ **Concluído** |
 | **11** | Administrador (3.x) | ⏳ Pendente |
 | **12** | Auditor (11.x) + Administração (12.x) | ⏳ Pendente |
 | **13** | Handoff + serviços de negócio | ⏳ Pendente |
 
-**Números atuais:** 63 tabelas, 63 models, **40 repositórios**, 6 services, **10 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas) + 3 de tarefas + Tela Inicial, **69 testes verdes**, lint de SQL cru zerado.
+**Números atuais:** 63 tabelas, 63 models, **42 repositórios** (`PessoaRepository` ganhou 4 métodos no 10a-2), 6 services, **12 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas, tabelas-fiscais, config-contabeis, regras, fornecedores, clientes) + 3 de tarefas + Tela Inicial, **139 testes verdes**, lint de SQL cru zerado.
 
 **Decisão de fatiamento (histórica):** o antigo "Bloco 7 — Auth + API + telas" foi fatiado em 7–13 (escopo real: 71 telas). Cada sub-bloco é testável isoladamente.
 
@@ -197,6 +199,43 @@ php artisan serve
 - 4.4: `ConfiguracaoFiscalController` (Web) + `ConfiguracaoFiscalApiController`. View `telas/config-fiscais/index.blade.php`. `EmpresaRepository` criado com `atualizarFiscal()`.
 - **Sem migration.**
 
+### 3.14 Contador — 9.2c (4.5 + 4.6 + 4.7)
+- 4.5: `RegraClassificacaoController` (Web) + `RegraClassificacaoApiController` (com `testar` e `reativar`). `RegraClassificacaoLogRepository` (novo). Views `telas/regras-classificacao/{index,form}.blade.php`. 4 repos Grupo U novos (`TipoDocumento`, `Cfop`, `Cst`) + `PessoaRepository::paraSelectFornecedores()` + `ServicoLc116Repository::paraSelect()`.
+- 4.6: `LancamentoManualController` (Web) + `LancamentoManualApiController`. View `telas/lancamento-manual/form.blade.php`. Valida período aberto da filial.
+- 4.7: `RevisaoLancamentoController` (Web) + `RevisaoLancamentoApiController` (reclassificar/validar com auditoria). View `telas/revisao-lancamentos/index.blade.php` (com modal). `LancamentoRepository::paraRevisao()`.
+
+### 3.15 Contador — 9.2d (4.8 + 4.9 + 4.10 + 4.11)
+- 4.8: `ValidacaoCalculoController` (Web) + `ValidacaoCalculoApiController` (valida/override em `razoes_impostos`). View `telas/validacao/index.blade.php`. `RazaoImpostoRepository::porId()`.
+- 4.9: `PendenciaController` (Web) + `PendenciaApiController` (resolver). View `telas/pendencias/index.blade.php` (com modal). `PendenciaRepository::porId()`, `listarComFiltros()`, `errosAbertosDoPeriodo()`.
+- 4.10: `PrepararFechamentoController` (Web) + `PrepararFechamentoApiController` (checklist + enviar auditor). View `telas/preparar-fechamento/index.blade.php`. `TarefaRepository::criarOrdem()`, `porDocumentoETipo()`. `PeriodoRepository::porId()`, `fechar()`. `AtorFuncionalRepository::porCodigo()`.
+- 4.11: `FecharPeriodoController` (Web) + `FecharPeriodoApiController` (lista + fechar). View `telas/fechar-periodo/index.blade.php`.
+
+### 3.16 Comprador/Vendas — 10a-1 + 10a-2
+
+- **10a-1:** `TabelaBasalComprasController` + `TabelaBasalVendasController` (views casca). Views `telas/tabelas-basais-{compras,vendas}/index.blade.php`.
+- **10a-2 Fornecedores (5.2):**
+  - `Web\FornecedorController` (`index`/`create`/`edit`; `edit` valida tag `'Fornecedor'` via `PessoaRepository::pertenceATag()`).
+  - `Api\FornecedorApiController` (`apiResource`; `store` transacional cria `Pessoa` + `PessoaFisica`/`PessoaJuridica` + `PessoaTag('Fornecedor')`; `index` filtra por tag; `show`/`update`/`destroy` com `findOrFail` explícito — D71; `destroy` soft + `deleted_by` via `forceFill`).
+  - Views `telas/fornecedores/{index,form}.blade.php` + JS `fornecedores-{list,form}.js`.
+  - `tests/Feature/FornecedorApiTest.php` (7 testes).
+- **10a-2 Clientes (6.2):** espelho de Fornecedores com tag `'Cliente'`. Views `telas/clientes/{index,form}.blade.php` + JS `clientes-{list,form}.js`. `tests/Feature/ClienteApiTest.php` (7 testes).
+- **`PessoaRepository`:** `paraSelect(string $tag)` (`paraSelectFornecedores()` como alias), `listarPorTag()`, `porIdComFilhas()`, `pertenceATag()`.
+- **`Pessoa::$fillable`:** inclui `dados_extras` (cast `array` já existia). `deleted_by` **não** está no fillable — `destroy` usa `forceFill`.
+- **`tipo` = `'PF'`/`'PJ'`** (D99 — é `CHAR(2)` no DDL). **PF↔PJ bloqueado no `update`** (P147).
+- **`dados_extras.categoria`** (D98) — categoria em `pessoas.dados_extras`; `pessoas_fisicas`/`pessoas_juridicas` também têm `dados_extras` (uso futuro, não preenchido aqui).
+- **Rotas API:** `apiResource('fornecedores')`/`apiResource('clientes')` — **sem** `api.api.` (nome do grupo respeitado; confirmado no `route:list`).
+
+### 3.18 Notas de Saída (6.3) — Bloco 10b
+
+- `NotaFiscalSaidaController` (Web: `index`/`create`/`edit`; passa `periodoAberto`, `tiposDocumento`, `clientes` via `paraSelect('Cliente')`).
+- `NotaFiscalSaidaApiController` (API: `index`/`store`/`show`/`update`/`destroy`/`salvarRascunho`/`confirmar`) — **espelho** do `NotaFiscalApiController` (5.3), com `direcao='Saida'` e `id_pessoa_destinatario` obrigatório.
+- Reusa `NotaFiscalRepository` (`criarComItens`/`atualizarComItens`) — **sem** métodos novos.
+- Views `telas/notas-saida/{index,form}.blade.php`.
+- `public/assets/js/notas-saida-{list,form}.js` (IIFE D80; wizard 4 etapas espelhado).
+- `tests/Feature/NotaFiscalSaidaApiTest.php` (7 testes espelhados).
+- **Escopo:** idêntico ao 5.3 — só `NotaFiscal` + itens + impostos. Sem `ContaReceber`, `DocumentoEncadeado`, `Lancamento`, `Tarefa`, `NotaFiscalVinculo`.
+- **Status/rascunho/período:** idênticos ao 5.3 (`Importado`, `dados_extras.rascunho`, `PeriodoRepository::porFilialEMesAno`).
+
 ---
 
 ## 4. Divergências e decisões de arquitetura
@@ -240,6 +279,9 @@ php artisan serve
 
 ### 5.2 Dívidas técnicas menores
 - P11 (csts.descricao), P12 (CNAE 7 dígitos), P17 (empresa.js sem matriz), P25–P49 (CHECKs/FKs das tabelas de operação), P52 (menus_itens.fase), P53 (AtorFuncional.timestamps), P54 (created_at nas 10 tabelas), P55 (ncms hierarquia), P56 (app/Models/x 0 bytes), P57 (PlanoContaSeeder id_empresa=1), P59 (senha fraca em prod), P60 (PeriodoSeeder só empresa 1), P61 (Grupo U sem repositório), P63 (Pessoa::tags()), P64 (RegraClassificacaoRepository), P68 (NotaFiscalItemRepository), P69 (DocumentoEncadeadoRepository), P71 (RepositoryServiceProvider manual), P75 (views não filtram tenant), P78 (lint heurístico), P103 (MenuService::nomeUsuario sem escopo), P104 (badge mock), P105 (fallback /tela), P107 (CSS .ti-*), P108–P109 (placeholders), P115 (tarefas.id_documento sem FK), P133 (usuarios-atores.js carrega tudo).
+- **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
+- **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
+- **P148** — `api.api.tabelas-inss/irrf/encargos` (nome dobrado no `routes/api.php` do 9.2b) — corrigir no próximo bloco. — 9.2b.
 
 ### 5.3 Fechadas
 - **P135** — (= D54) — fechada no 9.1c. ✅
@@ -248,6 +290,14 @@ php artisan serve
 - **P138** — `PlanoContaRepository::proximoCodigo()` usa `SUBSTRING_INDEX`/`CAST` (MariaDB). Sem teste em SQLite. — 9.2a.
 - **P139** — 4.4 não expõe UF (é da filial, não da empresa). Wireframe mostrava UF; banco não tem `empresas.uf`. — 9.2b.
 - **P140** — `ParametroFiscalApiController::destroy` não implementado (tabela sem `deleted_at`). Sem exclusão pela UI. — 9.2b.
+- **P141** — 4.5 não tem NCM no form (tabela 15k+ linhas; select travaria). Aceita via API; form fica para fase 2 com autocomplete. — 9.2c.
+- **P142** — 4.7 `abrirReclassificacao()` usa `window.__lancamentosCache` que não é preenchido (modal abre sem valores pré-selecionados). — 9.2c.
+- **P143** — 4.10 `enviarAuditor` exige `AtorFuncionalSeeder` ter o ator `auditor` cadastrado. Sem ele, retorna 422. — 9.2d.
+- **P144** — 4.11 fecha direto `Aberto → Fechado` (pula `Em fechamento`). — 9.2d.
+- **P145** — 4.8 só valida `razoes_impostos` (impostos). Folha/depreciação/provisão ficam para o Bloco 10.x. — 9.2d.
+- **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
+- **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
+- **P148** — `api.api.tabelas-inss/irrf/encargos` (nome dobrado no `routes/api.php` do 9.2b) — corrigir no próximo bloco. — 9.2b.
 ---
 
 ## 6. Próximos passos
@@ -256,14 +306,20 @@ php artisan serve
 - Tabelas Fiscais, Plano de Contas, Config. Contábeis, Config. Fiscais, Regras, Lançamento Manual, Revisão, Validação, Pendências, Preparar Fechamento, Fechar.
 - **Padrão:** §7 inteira (Blade casca + JS fetch + API `auth`/`tenant` + `->name('api.')` + `findOrFail` explícito + `deleted_by` no `destroy` + IIFE).
 - **Testes:** mesmo padrão de `ProdutoApiTest`/`AtivoApiTest` (incluindo isolamento via controller direto — **D81**, com `app(XApiController::class)`).
-### 6.1 Bloco 9.2 — Contador (4.1–4.11)
-- **9.2a (concluído):** 4.2 Plano de Contas.
-- **9.2b (concluído):** 4.1 Tabelas Fiscais + 4.3 Config. Contábeis + 4.4 Config. Fiscais.
-- **9.2c (próximo):** 4.5 Regras de Classificação + 4.6 Lançamento Manual + 4.7 Revisão.
-- **9.2d:** 4.8 Validação + 4.9 Pendências + 4.10 Preparar + 4.11 Fechar.- **Padrão:** §7 inteira.
+
+### 6.1 Bloco 9.2 — Contador (4.1–4.11) — ✅ Concluído
+- 9.2a: 4.2 Plano de Contas.
+- 9.2b: 4.1 Tabelas Fiscais + 4.3 Config. Contábeis + 4.4 Config. Fiscais.
+- 9.2c: 4.5 Regras + 4.6 Lançamento Manual + 4.7 Revisão.
+- 9.2d: 4.8 Validação + 4.9 Pendências + 4.10 Preparar + 4.11 Fechar.**Padrão:** §7 inteira.
 
 ### 6.2 Blocos 10–13
 - Operação (5.x–8.x + 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
+### 6.2 Blocos 10–13
+
+- **10b (concluído):** 5.3 Digitar Notas de Entrada, 6.3 Digitar Notas de Saída. ✅
+- **10b (pendente):** 5.4 Importar Notas de Entrada + 6.4 Importar Notas de Saída (adiados — retomar ao final do bloco).
+- Operação (5.5, 7.x, 8.x, 10.x) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços.
 
 ### 6.3 Bloco 8.3 (opcional, quando der)
 - P120 (todos os atores na Caixa de Entrada), P50 (data_criacao), P104 (badge real).
@@ -457,6 +513,7 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Repository
 - **OSI ≡ Handoff:** `OSI` é o nome canônico da UI (item 2.8). Nome técnico: `configuracoes_handoff` / `ConfiguracaoHandoff` / `ConfiguracaoHandoffRepository`. **Não criar** `HandoffController`/`HandoffRepository`.
 - **`Ativo`:** tabela **tem** coluna `ativo` (9.1c). O form **tem** `<select>` Ativo. O `destroy` seta `ativo = false` + `deleted_by` + `delete()`. O `status` (Em uso/Ocioso/Alienado) **continua** — são coisas diferentes (operacional vs lógico).
 - **`produtos`/`servicos`:** filhas 1:1, **sem** colunas de tenant/soft delete/auditoria próprias (D79). O `$fillable` **não** inclui `created_by`/`updated_by` (não setados).
+- **`Pessoa`:** tem `BelongsToTenant` (`hasTenantColumn(): true`) — o global scope cobre o filtro por empresa. `PessoaFisica`/`PessoaJuridica`/`PessoaTag` **não** têm a trait (filhas). `deleted_by` **não** está no `$fillable` — usar `forceFill` no `destroy`. `tags` não têm `ativo`/timestamps (`$timestamps = false`); no soft delete da `Pessoa`, as tags **ficam** (não apagar).
 
 ---
 

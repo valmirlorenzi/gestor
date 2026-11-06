@@ -95,4 +95,30 @@ class LancamentoRepository extends BaseRepository
             ]);
         }
     }
+
+    /**
+     * Lista lançamentos para a tela 4.7 (revisão).
+     * Status revisáveis: Nao classificado, Conflito, Classificado automaticamente.
+     */
+    public function paraRevisao(?string $status = null, ?string $busca = null): Collection
+    {
+        $query = $this->query()
+            ->with(['contaDebito', 'contaCredito', 'centroCusto'])
+            ->whereIn('status_classificacao', [
+                'Nao classificado',
+                'Conflito',
+                'Classificado automaticamente',
+            ])
+            ->orderBy('data_competencia');
+
+        if ($status !== null && $status !== '') {
+            $query->where('status_classificacao', $status);
+        }
+
+        if ($busca !== null && $busca !== '') {
+            $query->where('historico', 'like', '%'.$busca.'%');
+        }
+
+        return $query->get();
+    }
 }

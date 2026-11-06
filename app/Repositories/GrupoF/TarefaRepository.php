@@ -114,4 +114,24 @@ class TarefaRepository extends BaseRepository
             ->limit($limite)
             ->get();
     }
+
+    public function criarOrdem(array $data): Tarefa
+    {
+        if (! isset($data['data_criacao'])) {
+            $data['data_criacao'] = now();
+        }
+
+        return $this->create($data);
+    }
+
+    public function porDocumentoETipo(int $idFilial, int $idDocumento, string $tipoDocumento, string $tipoOrdem): ?Tarefa
+    {
+        return $this->query()
+            ->where('id_filial', $idFilial)
+            ->where('id_documento', $idDocumento)
+            ->where('tipo_documento', $tipoDocumento)
+            ->where('tipo_ordem', $tipoOrdem)
+            ->orderByDesc('id')
+            ->first();
+    }
 }

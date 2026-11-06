@@ -48,4 +48,22 @@ class PeriodoRepository extends BaseRepository
             ->orderByDesc('mes_ano')
             ->value('mes_ano');
     }
+
+    public function porId(int $id): Periodo
+    {
+        return $this->query()->findOrFail($id);
+    }
+
+    public function fechar(int $id, int $idUsuario): Periodo
+    {
+        $periodo = $this->porId($id);
+
+        $periodo->update([
+            'status' => 'Fechado',
+            'data_fechamento' => now(),
+            'id_usuario_fechamento' => $idUsuario,
+        ]);
+
+        return $periodo->refresh();
+    }
 }

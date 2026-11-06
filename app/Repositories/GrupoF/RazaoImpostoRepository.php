@@ -13,6 +13,11 @@ class RazaoImpostoRepository extends BaseRepository
         parent::__construct($model);
     }
 
+    public function porId(int $id): RazaoImposto
+    {
+        return $this->query()->findOrFail($id);
+    }
+
     public function porPeriodo(int $idPeriodo): Collection
     {
         return $this->query()

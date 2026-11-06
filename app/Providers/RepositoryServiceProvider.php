@@ -13,14 +13,18 @@ use App\Repositories\GrupoA\FormaPagamentoRepository;
 use App\Repositories\GrupoA\MenuItemRepository;
 use App\Repositories\GrupoA\PessoaRepository;
 use App\Repositories\GrupoA\PlanoContaRepository;
+use App\Repositories\GrupoA\PrazoPadraoRepository;
 use App\Repositories\GrupoA\ProdutoServicoRepository;
 use App\Repositories\GrupoA\ProventoDescontoRepository;
 use App\Repositories\GrupoA\RegraClassificacaoRepository;
+use App\Repositories\GrupoA\TipoClienteRepository;
+use App\Repositories\GrupoA\TipoFornecedorRepository;
 use App\Repositories\GrupoA\UsuarioRepository;
 use App\Repositories\GrupoC\DocumentoEncadeadoRepository;
 use App\Repositories\GrupoC\NotaFiscalImpostoRepository;
 use App\Repositories\GrupoC\NotaFiscalItemRepository;
 use App\Repositories\GrupoC\NotaFiscalVinculoRepository;
+use App\Repositories\GrupoC\RegraClassificacaoLogRepository;
 use App\Repositories\GrupoF\AtivoRepository;
 use App\Repositories\GrupoF\ContaBancariaRepository;
 use App\Repositories\GrupoF\ContaPagarRepository;
@@ -39,11 +43,14 @@ use App\Repositories\GrupoF\RazaoImpostoRepository;
 use App\Repositories\GrupoF\TarefaRepository;
 use App\Repositories\GrupoF\UsuarioAtorRepository;
 use App\Repositories\GrupoH\ParametroFiscalRepository;
+use App\Repositories\GrupoU\CfopRepository;
+use App\Repositories\GrupoU\CstRepository;
 use App\Repositories\GrupoU\NcmRepository;
 use App\Repositories\GrupoU\ServicoLc116Repository;
 use App\Repositories\GrupoU\TabelaEncargosRepository;
 use App\Repositories\GrupoU\TabelaInssRepository;
 use App\Repositories\GrupoU\TabelaIrrfRepository;
+use App\Repositories\GrupoU\TipoDocumentoRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -65,6 +72,9 @@ class RepositoryServiceProvider extends ServiceProvider
         AtorFuncionalRepository::class,
         MenuItemRepository::class,
         ConfiguracaoHandoffRepository::class,
+        TipoFornecedorRepository::class,
+        TipoClienteRepository::class,
+        PrazoPadraoRepository::class,
         // Grupo F
         FilialRepository::class,
         PeriodoRepository::class,
@@ -93,11 +103,15 @@ class RepositoryServiceProvider extends ServiceProvider
         // Grupo U (universais)
         NcmRepository::class,
         ServicoLc116Repository::class,
+        CfopRepository::class,
+        CstRepository::class,
+        TipoDocumentoRepository::class,
         // ...
         EmpresaRepository::class,
         TabelaInssRepository::class,
         TabelaIrrfRepository::class,
         TabelaEncargosRepository::class,
+        RegraClassificacaoLogRepository::class,
     ];
 
     public function register(): void

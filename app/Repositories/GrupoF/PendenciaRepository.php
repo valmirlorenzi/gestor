@@ -13,6 +13,30 @@ class PendenciaRepository extends BaseRepository
         parent::__construct($model);
     }
 
+    public function porId(int $id): Pendencia
+    {
+        return $this->query()->findOrFail($id);
+    }
+
+    public function listarComFiltros(?string $categoria = null, ?string $status = null, ?string $busca = null): Collection
+    {
+        $query = $this->query()->orderByDesc('created_at');
+
+        if ($categoria !== null && $categoria !== '') {
+            $query->where('categoria', $categoria);
+        }
+
+        if ($status !== null && $status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($busca !== null && $busca !== '') {
+            $query->where('descricao', 'like', '%'.$busca.'%');
+        }
+
+        return $query->get();
+    }
+
     public function abertas(): Collection
     {
         return $this->query()
@@ -57,5 +81,14 @@ class PendenciaRepository extends BaseRepository
         ]);
 
         return $pendencia->refresh();
+    }
+
+    public function errosAbertosDoPeriodo(int $idPeriodo): Collection
+    {
+        return $this->query()
+            ->where('id_periodo', $idPeriodo)
+            ->where('categoria', 'Erro')
+            ->where('status', 'Aberta')
+            ->get();
     }
 }

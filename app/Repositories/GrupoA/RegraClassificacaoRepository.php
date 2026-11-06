@@ -65,4 +65,31 @@ class RegraClassificacaoRepository extends BaseRepository
             ->orderBy('prioridade')
             ->get();
     }
+
+    /**
+     * Lista regras para a tela 4.5 (com filtros opcionais).
+     */
+    public function listar(?string $busca = null, ?string $origem = null, ?string $ativo = null): Collection
+    {
+        $query = $this->query()->orderBy('prioridade')->orderBy('descricao');
+
+        if ($busca !== null && $busca !== '') {
+            $query->where('descricao', 'like', '%'.$busca.'%');
+        }
+
+        if ($origem !== null && $origem !== '') {
+            $query->where('origem', $origem);
+        }
+
+        if ($ativo !== null && $ativo !== '') {
+            $query->where('ativo', $ativo === 'true' || $ativo === '1');
+        }
+
+        return $query->get();
+    }
+
+    public function porId(int $id): RegraClassificacao
+    {
+        return $this->query()->findOrFail($id);
+    }
 }

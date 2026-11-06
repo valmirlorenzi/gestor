@@ -27,7 +27,7 @@ class LoginController extends Controller
             'email' => $credentials['email'],
             'password' => $credentials['password'],
             'ativo' => true,
-        ], $request->boolean('remember'))) {
+        ], )) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('tela-inicial'));

@@ -19,4 +19,11 @@ class ServicoLc116Repository extends BaseRepository
             ->orderBy('codigo')
             ->get(['id', 'codigo', 'descricao']);
     }
+
+    public function paraSelect(): Collection
+    {
+        return $this->query()
+            ->orderBy('codigo')
+            ->get(['id', 'codigo', 'descricao']);
+    }
 }

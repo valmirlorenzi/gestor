@@ -12,6 +12,11 @@ class AtorFuncionalRepository
         return AtorFuncional::query()->whereKey($id)->first();
     }
 
+    public function porCodigo(string $codigo): ?AtorFuncional
+    {
+        return AtorFuncional::query()->where('codigo', $codigo)->first();
+    }
+
     /**
      * Todos os atores ativos (para o select da tela 2.4).
      *

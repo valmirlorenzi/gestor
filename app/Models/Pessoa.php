@@ -15,7 +15,7 @@ class Pessoa extends Model
 
     protected $table = 'pessoas';
 
-    protected $fillable = ['id_empresa', 'tipo', 'documento', 'nome', 'email', 'telefone', 'ativo'];
+    protected $fillable = ['id_empresa', 'tipo', 'documento', 'nome', 'email', 'telefone', 'ativo', 'dados_extras'];
 
     protected $casts = [
         'ativo' => 'boolean',
