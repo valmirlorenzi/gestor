@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Importacoes\ImportadorCadastro;
+use App\Importacoes\ImportadorCadastroGenerico;
+use App\Importacoes\ImportadorDocumento;
+use App\Importacoes\ImportadorDocumentoGenerico;
 use App\Repositories\GrupoF\FilialRepository;
 use App\Services\MenuService;
 use App\Services\TenantContext;
@@ -12,6 +16,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(ImportadorCadastro::class, ImportadorCadastroGenerico::class);
+        $this->app->bind(ImportadorDocumento::class, ImportadorDocumentoGenerico::class);
         // P114: TenantContext PRECISA ser singleton. Sem isso, o middleware
         // SetTenantContext seta uma instância e o TelaInicialService (injetado
         // no controller) recebe outra vazia -> variante = universal.

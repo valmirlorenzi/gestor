@@ -1,9 +1,9 @@
 ---
 documento: menu_numeracao
-versao: 1.3
-data: 2026-10-26
-proposito: Numeração dos itens do menu (blocos 1–12), campo "Ir para" e tabela menu_item + nota de multi-empresa (tenant)
-depende_de: [07_atores_fluxo, 12_tela_inicial, 13_relatorios_administrador, 14_conselheiro]
+versao: 1.4
+data: 2026-11-06
+proposito: Numeração dos itens do menu (blocos 1–12), campo "Ir para" e tabela menu_item + nota de multi-empresa (tenant) + item 12.6 (Importações)
+depende_de: [07_atores_fluxo, 12_tela_inicial, 13_relatorios_administrador, 14_conselheiro, 16_modulo_importacoes]
 ---
 
 > **Multi-empresa (tenant):** a regra R1–R3 (`01_visao_geral.md`, seção 8; `04_modelo_de_dados.md`, seção "Multi-empresa (tenant)") se aplica a este documento. As tabelas `menu_item` e `menu_item_ator` são **universais** (grupo U) — catálogo do produto, sem `id_empresa`. A **renderização** do menu é por empresa (contexto de autenticação), mas o catálogo é global. O filtro de empresa é aplicado pelo repositório ao renderizar o menu (R2), não pela tabela `menu_item`.
@@ -229,6 +229,9 @@ O número aparece em **fonte menor/cinza** ao lado do nome. Não é clicável (o
 
 ### Bloco 12 — Administração (transversal)
 
+> **Nota:** o item **12.6 — Importações** é **transversal**: cada usuário vê apenas os recursos que pode importar (definidos em `config/importacoes.php`). O `configurador` vê todos; o `administrador` não importa (só consulta). Ver `16_modulo_importacoes.md`.
+
+
 | Número | Item | Fase |
 | :--- | :--- | :--- |
 | 12.1 | Período — Abertura e Fechamento | 1 |
@@ -236,6 +239,7 @@ O número aparece em **fonte menor/cinza** ao lado do nome. Não é clicável (o
 | 12.3 | Ordem de Serviço Interna — Ativar/Desativar | 1 |
 | 12.4 | Auditoria (I3) | 1 |
 | 12.5 | Usuários e Atores | 1 |
+| 12.6 | Importações | 1 |
 
 ---
 
@@ -415,6 +419,7 @@ Para implementar, o modelo de dados ganha uma tabela `menu_item`:
    12.3 Ordem de Serviço Interna — Ativar/Desativar
    12.4 Auditoria (I3)
    12.5 Usuários e Atores
+   12.6 Importações
 ```
 
 **Usuário:** Maria Souza
@@ -486,7 +491,7 @@ Para implementar, o modelo de dados ganha uma tabela `menu_item`:
 | **O campo "Ir para" é obrigatório?** | **Não.** É opcional. O usuário pode navegar pelo menu sem usá-lo. |
 | **O campo "Ir para" aceita o nome?** | **Não** (para não competir com a busca global, que é fase 2). |
 | **Qual o formato do número?** | `bloco.item` (ex: `4.10`). |
-| **Quais são os blocos?** | 1 = Meu Trabalho, 2 = Configurador, 3 = Administrador, 4 = Contador, 5 = Comprador, 6 = Faturista, 7 = Financeiro1, 8 = Financeiro2, 9 = Gerente Financeiro, 10 = RH, 11 = Auditor, 12 = Administração. |
+| **Quais são os blocos?** | 1 = Meu Trabalho, 2 = Configurador, 3 = Administrador, 4 = Contador, 5 = Comprador, 6 = Faturista, 7 = Financeiro1, 8 = Financeiro2, 9 = Gerente Financeiro, 10 = RH, 11 = Auditor, 12 = Administração  (inclui 12.6 — Importações, transversal). |
 | **O que acontece com itens de fase 2?** | Mantêm o número, mas aparecem desabilitados com rótulo "(fase 2)". |
 | **O que acontece se o usuário não tiver permissão?** | O item **não aparece** no menu; a rota direta **bloqueia** o acesso. |
 | **O que acontece se o usuário digitar um número que não existe?** | Exibe "Código não encontrado". |
@@ -497,3 +502,4 @@ Para implementar, o modelo de dados ganha uma tabela `menu_item`:
 # Versões
 
 | 1.3 | 2026-10-28 | Adoção da regra empresa = tenant (R1–R3). Nota de multi-empresa: `menu_item` e `menu_item_ator` são universais (grupo U); renderização por empresa via contexto. Nenhuma alteração estrutural. |
+| 1.4 | 2026-11-06 | Adoção do item **12.6 — Importações** (transversal). Nova linha na tabela do Bloco 12; exemplos renderizados atualizados; nota de transversalidade (`config/importacoes.php`; cada ator vê o que pode importar; `configurador` vê tudo; `administrador` não importa). Referência ao `16_modulo_importacoes.md`. |

@@ -13,6 +13,11 @@ class NcmRepository extends BaseRepository
         parent::__construct($model);
     }
 
+    public function porCodigo(string $codigo): ?Ncm
+    {
+        return $this->query()->where('codigo', $codigo)->first();
+    }
+
     public function todosOrdenadosPorCodigo(): Collection
     {
         return $this->query()

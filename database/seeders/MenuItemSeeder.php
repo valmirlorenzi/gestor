@@ -142,7 +142,7 @@ class MenuItemSeeder extends Seeder
         ['12.3', 'OSI — Ativar/Desativar',          '/admin/osi',                    1, ['configurador']],
         ['12.4', 'Auditoria (I3)',                  '/admin/auditoria',              1, ['configurador', 'auditor']],
         ['12.5', 'Usuários e Atores',               '/admin/usuarios',               1, ['configurador']],
-    ];
+        ['12.6', 'Importações',                     '/importacoes',                  1, ['configurador', 'comprador', 'faturista', 'rh', 'contador', 'financeiro1', 'financeiro2']],    ];
 
     public function run(): void
     {

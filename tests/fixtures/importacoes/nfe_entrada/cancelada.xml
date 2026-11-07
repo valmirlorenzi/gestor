@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc versao="4.00" xmlns="http://www.portalfiscal.inf.br/nfe">
+  <NFe>
+    <infNFe Id="NFe35240612345678000199550010000000011000000010" versao="4.00">
+      <ide>
+        <cUF>35</cUF>
+        <nNF>1</nNF>
+        <serie>1</serie>
+        <dhEmi>2026-11-01T10:00:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>12345678000199</CNPJ>
+        <xNome>Fornecedor Exemplo</xNome>
+        <enderEmit><cMun>3550308</cMun></enderEmit>
+      </emit>
+      <dest>
+        <CNPJ>11111111111111</CNPJ>
+        <xNome>Empresa Exemplo Ltda.</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>PROD1</cProd>
+          <xProd>Produto Teste</xProd>
+          <NCM>12345678</NCM>
+          <CFOP>1102</CFOP>
+          <uCom>UN</uCom>
+          <qCom>2.0000</qCom>
+          <vUnCom>50.0000</vUnCom>
+          <vProd>100.00</vProd>
+        </prod>
+        <imposto>
+          <ICMS>
+            <ICMS00>
+              <CST>00</CST>
+              <vBC>100.00</vBC>
+              <pICMS>18.00</pICMS>
+              <vICMS>18.00</vICMS>
+            </ICMS00>
+          </ICMS>
+        </imposto>
+      </det>
+      <total>
+        <ICMSTot>
+          <vProd>100.00</vProd>
+          <vNF>100.00</vNF>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt>
+      <cStat>101</cStat>
+      <xMotivo>Cancelamento de NF-e homologado</xMotivo>
+    </infProt>
+  </protNFe>
+</nfeProc>

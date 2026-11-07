@@ -1,9 +1,9 @@
 ---
 documento: casos_de_uso
-versao: 2.5
-data: 2026-10-26
+versao: 2.6
+data: 2026-11-06
 proposito: Atores, fluxos, exceções e regras de negócio por caso de uso (completo) + referência às ordens, ao menu e à tela inicial
-depende_de: [01_visao_geral, 02_regras_transversais, 04_modelo_de_dados, 05_apendices, 07_atores_fluxo, 08_ordens, 09_menu_numeracao, 12_tela_inicial, 13_relatorios_administrador, 14_conselheiro]
+depende_de: [01_visao_geral, 02_regras_transversais, 04_modelo_de_dados, 05_apendices, 07_atores_fluxo, 08_ordens, 09_menu_numeracao, 12_tela_inicial, 13_relatorios_administrador, 14_conselheiro, 16_modulo_importacoes]
 ---
 
 # Casos de Uso
@@ -1338,6 +1338,227 @@ Template fixo por caso: **Nome, Ator, Pré-condições, Fluxo principal, Fluxos 
 - Relatório de importação (detalhamento por RPA: bruto, retenções, líquido).
 - Tela de revisão (D3) — se pendente.
 - Tela de pendências `[T6]`.
+
+
+### C9 — Importar cadastros em massa (CSV)
+
+**Nome:** Importar cadastros em massa (CSV).
+**Objetivo:** Popular o sistema com registros de cadastro (centros de custo, pessoas, produtos, serviços, ativos, funcionários, etc.) a partir de um arquivo CSV, na fase de **carga inicial**, com pré-validação em memória e relatório linha a linha.
+
+**Ator principal:** Configurador (ou quem tem permissão de importar o recurso).
+**Atores secundários:** Sistema (valida, grava, relata).
+
+**Pré-condições:**
+- Empresa cadastrada (A1).
+- O usuário tem permissão de importar o recurso (via `config/importacoes.php`).
+- O arquivo CSV está no formato do template do recurso (colunas obrigatórias + opcionais).
+
+**Quando usar:**
+- Carga inicial (implantação).
+- Reimportação pontual (correção de carga).
+- Migração de dados de sistema legado (quando o dado é cadastro).
+
+**Fluxo principal:**
+1. Usuário acessa **12.6 Importações** e escolhe a aba **"Importar cadastros"**.
+2. Sistema exibe a **lista de recursos** que o usuário pode importar.
+3. Usuário seleciona o recurso (ex: `centros_custo`).
+4. Sistema oferece **"Baixar template"** (CSV do recurso).
+5. Usuário faz upload do CSV e escolhe o **modo**: `inserir` (default), `atualizar` ou `upsert`.
+6. Sistema faz **pré-validação em memória**:
+   - Detecta encoding e separador.
+   - Confere cabeçalho contra `colunasObrigatorias` + `colunasOpcionais`.
+   - Valida cada linha (obrigatórios, tipos, unique, FK, regras específicas do recurso).
+7. Sistema exibe o **`RelatorioCarga`** (pré-validação): aceitas, avisos, rejeitadas, com motivo por linha.
+8. Usuário revisa e clica em **"Confirmar importação"**.
+9. Sistema grava em **transação por linha**:
+   - `inserir` — cria; se já existe, rejeita.
+   - `atualizar` — atualiza; se não existe, rejeita.
+   - `upsert` — insere ou atualiza por chave natural.
+10. Sistema exibe o **`RelatorioCarga` pós-carga** (IDs criados/atualizados; rejeitadas com motivo).
+11. Sistema registra em `auditorias` (`acao = 'importacao'`, `tabela = 'importacoes'`, `dados_anteriores` = resumo, `dados_novos` = IDs, `justificativa = 'Carga inicial: <recurso> (<modo>)'`).
+
+**Fluxos alternativos:**
+- **FA1 — Recurso composto:** para `pessoas`, `funcionarios`, `produtos`, `servicos` (criam 2–3 tabelas por linha), o importador faz o encadeamento (Pessoa + filha + tag; ProdutoServico + Produto; etc.) em **transação por linha**.
+- **FA2 — Resolução de FK por código:** para `contas_bancarias` (template usa `codigo_banco`) e `ativos` (template usa `cnpj_filial`), o importador resolve `codigo/cnpj → id` antes de gravar.
+- **FA3 — `filiais` sem período:** importar filial **cria a filial, mas NÃO abre período** (decisão 10.4 do `16`). Se a filial já tem período, o importador **falha na linha** com aviso claro.
+- **FA4 — Modo `upsert`:** para reimportação (correção de carga), usa chave natural para atualizar em vez de duplicar.
+
+**Exceções:**
+- **EX1 — Nenhum recurso disponível:** informa que o usuário não tem permissão para importar nenhum recurso.
+- **EX2 — Cabeçalho inválido** (coluna faltando): **rejeita o arquivo inteiro** (antes de processar qualquer linha).
+- **EX3 — Encoding não detectado:** tenta UTF-8; se falhar, avisa e pede para salvar como UTF-8.
+- **EX4 — Linha com erro:** a linha é rejeitada; as demais continuam. O `RelatorioCarga` mostra o motivo.
+- **EX5 — Falha na transação de uma linha:** rollback **só daquela linha**; as demais continuam.
+- **EX6 — Arquivo vazio:** informa e encerra.
+- **EX7 — Recurso não autorizado:** o recurso não aparece na lista.
+- **EX8 — Template desatualizado:** se o template do recurso mudou, o importador avisa (colunas extras/ faltando).
+
+**Pós-condições:**
+- Registros criados/atualizados nas tabelas de cadastro.
+- `RelatorioCarga` disponível (pré e pós-carga).
+- `auditorias` registrada.
+- Nenhum lançamento, ordem, pendência ou handoff gerado (motor A não passa por T5–T8).
+
+**Regras de negócio:**
+- **RN1** Importação de cadastro é **carga inicial** (T9.1); não substitui a operação normal.
+- **RN2** Motor A **não** gera lançamento (T7), ordem (T8) ou pendência (T6) — T9.2.
+- **RN3** Pré-validação em memória obrigatória (T9.5).
+- **RN4** Transação por linha (T9.6).
+- **RN5** Modos: `inserir` (default), `atualizar`, `upsert` (T9.7).
+- **RN6** Cada recurso tem template CSV (T9.13).
+- **RN7** `pessoas` é Pessoa unificada (decisão 10.5).
+- **RN8** `funcionarios` reaproveita `pessoas` (PF) + tag `'Funcionário'` + `funcionarios` (decisão 10.5/10.11).
+- **RN9** `filiais` não cria período (decisão 10.4).
+- **RN10** `ativos` e `contas_bancarias` resolvem FK por código/cnpj (decisões 10.7/10.8).
+- **RN11** Auditoria em `auditorias` (`acao = 'importacao'`); sem tabela nova (T9.8).
+- **RN12** Síncrono (T9.9).
+
+**Telas envolvidas:**
+- Tela 12.6 — aba "Importar cadastros" (lista de recursos; template; upload; pré-validação; confirmação; relatório).
+
+---
+
+### C10 — Importar contas a pagar/receber do legado (CSV)
+
+**Nome:** Importar contas a pagar/receber do legado (CSV).
+**Objetivo:** Popular o sistema com contas a pagar/receber **sem nota fiscal de origem** (dados de sistema legado), na fase de **carga inicial**, com pré-validação em memória e relatório linha a linha.
+
+**Ator principal:** Configurador (ou Contador/Financeiro1/Financeiro2, se autorizado).
+**Atores secundários:** Sistema (valida, grava, relata, gera lançamento avulso).
+
+**Pré-condições:**
+- Empresa cadastrada (A1).
+- Filial cadastrada (A8).
+- Pessoa (fornecedor/cliente) cadastrada (B2/B1) — ou o importador **não** cria automaticamente (legado tem `id_pessoa` obrigatório).
+- O usuário tem permissão de importar o recurso.
+
+**Quando usar:**
+- Carga inicial (implantação), quando o sistema legado tem contas em aberto.
+- Migração de dados.
+
+**Fluxo principal:**
+1. Usuário acessa **12.6 Importações** → aba **"Importar cadastros"** (motor C fica dentro do A).
+2. Sistema exibe os recursos `contas_pagar_legado` e `contas_receber_legado`.
+3. Usuário seleciona o recurso, baixa o template e faz upload.
+4. Sistema faz **pré-validação em memória** (igual ao C9):
+   - Obrigatórios (`id_filial`/`cnpj_filial`, `id_pessoa`/`documento_pessoa`, `numero_parcela`, `total_parcelas`, `valor`, `data_emissao`, `data_vencimento`, `status`).
+   - Tipos (data, decimal, int).
+   - FK (`id_filial`, `id_pessoa`).
+   - Regras específicas: `id_nota_fiscal = NULL`, `dados_extras.origem = 'legado'`.
+5. Sistema exibe o **`RelatorioCarga`** (pré-validação).
+6. Usuário confirma.
+7. Sistema grava em **transação por linha**:
+   - Cria `contas_pagar`/`contas_receber` com `id_nota_fiscal = NULL`, `dados_extras.origem = 'legado'`.
+   - **`DocumentoService`** cria `lancamentos` avulsos (`id_nota_fiscal = NULL`, `id_nota_fiscal_item = NULL`) e, se aplicável, `razoes_impostos` (`id_nota_fiscal = NULL`).
+   - **Ator de origem do handoff = quem importou** (o `id_usuario` da sessão).
+8. Sistema exibe o **`RelatorioCarga` pós-carga**.
+9. Sistema registra em `auditorias`.
+
+**Fluxos alternativos:**
+- **FA1 — Modo `upsert`:** reimportação (correção de carga) usa chave natural `(id_filial, id_pessoa, numero_parcela, total_parcelas, data_vencimento)` para atualizar em vez de duplicar.
+- **FA2 — Pessoa não cadastrada:** o importador **não cria** a pessoa automaticamente (legado tem `id_pessoa` obrigatório); a linha é rejeitada com aviso.
+- **FA3 — Sem nota fiscal:** sempre (`id_nota_fiscal = NULL`); a conta é legada por definição.
+
+**Exceções:**
+- **EX1 — Pessoa não existe:** rejeita a linha (legado tem `id_pessoa` obrigatório).
+- **EX2 — Filial não existe:** rejeita a linha.
+- **EX3 — Soma das parcelas ≠ valor total:** avisa (não bloqueia; carga inicial pode ter divergência).
+- **EX4 — Data de vencimento retroativa ao período fechado:** avisa (T5).
+- **EX5 — Lançamento avulso falha:** rollback **só daquela linha**.
+- **EX6 — Recurso não autorizado:** não aparece na lista.
+- **EX7 — Sem migration:** `contas_pagar`/`contas_receber` aceitam `id_nota_fiscal = NULL`; `lancamentos` aceitam `id_nota_fiscal`/`id_nota_fiscal_item = NULL` (confirmado no `SHOW COLUMNS`).
+
+**Pós-condições:**
+- Contas a pagar/receber criadas com `id_nota_fiscal = NULL` e `dados_extras.origem = 'legado'`.
+- Lançamentos avulsos criados (`id_nota_fiscal = NULL`, `id_nota_fiscal_item = NULL`).
+- `razoes_impostos` (se aplicável) com `id_nota_fiscal = NULL`.
+- `RelatorioCarga` disponível.
+- `auditorias` registrada.
+- **Sem migration.**
+
+**Regras de negócio:**
+- **RN1** Conta legada tem `id_nota_fiscal = NULL` e `dados_extras.origem = 'legado'` (decisão 10.9).
+- **RN2** Ator de origem do handoff = **quem importou** (decisão 10.9).
+- **RN3** `id_pessoa` obrigatório; o importador **não** cria pessoa automaticamente (legado tem a FK).
+- **RN4** Lançamento avulso (`id_nota_fiscal = NULL`, `id_nota_fiscal_item = NULL`) — sem migration (T9.11).
+- **RN5** `razoes_impostos` com `id_nota_fiscal = NULL` (se aplicável).
+- **RN6** Pré-validação em memória (T9.5).
+- **RN7** Transação por linha (T9.6).
+- **RN8** Modo `upsert` por chave natural (T9.7).
+- **RN9** Auditoria em `auditorias` (T9.8).
+- **RN10** Síncrono (T9.9).
+- **RN11** Motor C é motor A com regra própria (T9.4).
+
+**Telas envolvidas:**
+- Tela 12.6 — aba "Importar cadastros" (lista de recursos; template; upload; pré-validação; confirmação; relatório).
+
+---
+
+### I6 — UI do módulo Importações (12.6)
+
+**Nome:** Operar a UI do módulo Importações (12.6).
+**Objetivo:** Oferecer ao usuário autorizado a **tela única** do módulo Importações, com as 2 abas (cadastro/documento), a lista de recursos que ele pode importar, download de template, upload, pré-validação, confirmação e relatório.
+
+**Ator principal:** Qualquer usuário com permissão de importar (via `config/importacoes.php`).
+**Atores secundários:** Sistema (filtra recursos por ator; valida; grava; relata).
+
+**Pré-condições:**
+- Usuário logado.
+- Filial selecionada.
+- Período aberto (para motor B; motor A não exige).
+
+**Quando usar:**
+- Carga inicial (C9, C10, C1–C8).
+- Reimportação pontual.
+
+**Fluxo principal:**
+1. Usuário acessa **12.6 Importações**.
+2. Sistema exibe **2 abas**: **"Importar cadastros"** (motor A/C) e **"Importar documentos"** (motor B).
+3. Em cada aba, o sistema exibe a **lista de recursos** que o usuário pode importar (filtrada por `atores` no `config/importacoes.php`).
+4. Usuário seleciona um recurso → sistema oferece:
+   - **"Baixar template"** (CSV).
+   - **Upload** do arquivo (CSV para cadastro; XML/CSV para documento).
+   - **Modo** (só motor A: `inserir`/`atualizar`/`upsert`).
+5. Sistema faz **pré-validação em memória** e exibe o **`RelatorioCarga`** (aceitas/avisos/rejeitadas, com motivo por linha/documento).
+6. Usuário revisa e clica em **"Confirmar importação"**.
+7. Sistema grava em **transação por linha/documento**.
+8. Sistema exibe o **`RelatorioCarga` pós-carga** (IDs criados/atualizados; rejeitadas com motivo).
+9. Sistema registra em `auditorias`.
+
+**Fluxos alternativos:**
+- **FA1 — Ator sem permissão:** a aba mostra "Nenhum recurso disponível para você" (ou a aba não aparece).
+- **FA2 — Motor B com documento `aguardando_confirmacao`** (data fora do período): o `RelatorioCarga` mostra o status e o operador confirma (T5.3).
+- **FA3 — Motor B com `aviso + escolha manual de filial`:** o `RelatorioCarga` mostra o aviso e o operador escolhe a filial (C1 FA3).
+- **FA4 — Link para revisão (D3):** no `RelatorioCarga` pós-carga do motor B, cada documento aceito tem link para a revisão (D3) — o operador é direcionado.
+
+**Exceções:**
+- **EX1 — Nenhum recurso disponível:** informa.
+- **EX2 — Upload falha:** informa.
+- **EX3 — Arquivo vazio:** informa.
+- **EX4 — Encoding não detectado:** avisa.
+- **EX5 — Pré-validação falha:** mostra o erro.
+
+**Pós-condições:**
+- Arquivo processado (pré-validação).
+- Gravação (se confirmado).
+- `RelatorioCarga` exibido (pré e pós).
+- `auditorias` registrada.
+- Nada é alterado se o operador não confirmar.
+
+**Regras de negócio:**
+- **RN1** A UI é **transversal** (12.6), não por ator (T9.10).
+- **RN2** Cada ator vê **só os recursos que pode importar**.
+- **RN3** 2 abas: cadastro (motor A/C) e documento (motor B).
+- **RN4** Template para download em cada recurso.
+- **RN5** Pré-validação em memória obrigatória (T9.5).
+- **RN6** Confirmação explícita (nada é gravado sem confirmar).
+- **RN7** `RelatorioCarga` pré e pós.
+- **RN8** Auditoria em `auditorias`.
+- **RN9** Motor A não exige período aberto; motor B sim (T5).
+- **RN10** Motor A não gera lançamento/ordem/pendência (T9.2).
+
+**Telas envolvidas:**
+- Tela 12.6 — Importações (2 abas).
 
 ---
 
@@ -4360,6 +4581,8 @@ Template fixo por caso: **Nome, Ator, Pré-condições, Fluxo principal, Fluxos 
 
 ## MÓDULO I — ADMINISTRAÇÃO
 
+> **Nota (v2.6):** o módulo Importações (12.6) tem casos de uso no **Módulo C** (C9, C10) e no **Módulo I** (I6). O motor B (documento) reaproveita C1–C8; o motor A (cadastro) e o motor C (legado) são C9/C10.
+
 ### I1 — Usuários e permissões
 
 **Nome:** Gerenciar usuários e permissões.
@@ -4830,6 +5053,9 @@ Cada caso de uso tem um **número de menu** (para acesso rápido) e gera/recebe 
 | C6 (Importar folha) | 10.6 | O6 | — |
 | C7 (Digitar folha) | 10.6 | O6 | — |
 | C8 (Importar RPA) | 5.4 | O3 | — |
+| **C9** (Importar cadastros em massa) | 12.6 | — | — |
+| **C10** (Importar contas legadas) | 12.6 | — | — |
+| **I6** (UI do módulo Importações) | 12.6 | — | — |
 | D1 (Sugestão) | — | O7, O8 | — |
 | D2 (Porquê) | — | — | — |
 | D3 (Revisão) | 4.7, 5.5, 6.5 | O7, O27 | O7, O10 |
@@ -4879,4 +5105,5 @@ Cada caso de uso tem um **número de menu** (para acesso rápido) e gera/recebe 
 | 2.3 | 2026-10-24 | Versão anterior (referência). |
 | 2.4 | 2026-10-25 | **Merge do `13` (v1.1).** Inclusão de G8–G15 (Balanço, Painel Executivo, Aging, Posição de Impostos, Posição de Pessoal, Posição de Ativos, Ponto de Equilíbrio, Resumo Executivo). Atualização da tabela 2.6 (menu × ordens) com os novos números 3.10–3.17. |
 | 2.5 | 2026-10-26 | Adição do caso de uso F7 (Conselheiro); inclusão de G8–G15 e F7 na tabela 2.6. |
+| 2.6 | 2026-11-06 | Adoção do módulo **Importações (12.6)**: **C9** (importar cadastros em massa), **C10** (importar contas a pagar/receber do legado), **I6** (UI 12.6). Referência ao `16_modulo_importacoes.md`. Tabela 2.6 atualizada (C9/C10/I6 sem ordens). |
 

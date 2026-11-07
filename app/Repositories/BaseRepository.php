@@ -58,6 +58,16 @@ abstract class BaseRepository
         return $model->refresh();
     }
 
+    public function existsByChaveNatural(array $chave): bool
+    {
+        return $this->query()->where($chave)->exists();
+    }
+
+    public function updateOrCreateByChaveNatural(array $chave, array $dados): Model
+    {
+        return $this->query()->updateOrCreate($chave, $dados)->refresh();
+    }
+
     public function delete(int $id): bool
     {
         return (bool) $this->findOrFail($id)->delete();

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\EmpresaApiController;
 use App\Http\Controllers\Api\FecharPeriodoApiController;
 use App\Http\Controllers\Api\FilialApiController;
 use App\Http\Controllers\Api\FornecedorApiController;
+use App\Http\Controllers\Api\ImportacaoApiController;
 use App\Http\Controllers\Api\LancamentoManualApiController;
 use App\Http\Controllers\Api\NotaFiscalApiController;
 use App\Http\Controllers\Api\NotaFiscalSaidaApiController;
@@ -112,4 +113,9 @@ Route::middleware(['web', 'auth', 'tenant'])->name('api.')->group(function () {
     Route::get('contas-receber/{id}', [ContaReceberApiController::class, 'show'])->name('api.contas-receber.show');
     Route::post('contas-receber/{id}/receber', [ContaReceberApiController::class, 'receber'])->name('api.contas-receber.receber');
     Route::post('contas-receber/{id}/estornar', [ContaReceberApiController::class, 'estornar'])->name('api.contas-receber.estornar');
+
+    Route::post('importacoes/pre-validar', [ImportacaoApiController::class, 'preValidar'])->name('importacoes.pre-validar');
+    Route::post('importacoes/confirmar', [ImportacaoApiController::class, 'confirmar'])->name('importacoes.confirmar');
+    Route::get('importacoes/template/{chave}', [ImportacaoApiController::class, 'template'])->name('importacoes.template');
+
 });

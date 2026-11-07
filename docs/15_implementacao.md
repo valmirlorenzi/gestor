@@ -31,14 +31,21 @@ depende_de: [00_indice, 01_visao_geral, 04_modelo_de_dados, 07_atores_fluxo, 09_
 | **9.2** | Contador (4.1–4.11) | ⏳ **Próximo** |
 | **10a-1** | Tabelas basais Compras/Vendas (5.1/6.1) | ✅ **Concluído** |
 | **10a-2** | Fornecedores (5.2) + Clientes (6.2) | ✅ **Concluído** |
+**Concluído** |
+ | **10b** | 5.3 Digitar Notas de Entrada | ✅ **Concluído** (5.4 adiado) |
 | **10b** | 5.3 Digitar Notas de Entrada | ✅ **Concluído** (5.4 adiado) |
-| **10b** | 6.3 Digitar Notas de Saída | ✅ **Concluído** |
+| **10b-1** | Importações — motor A (cadastro) + piloto `centros_custo` | ✅ **Concluído** |
+| **10b-2** | Importações — motor B (documento) + piloto `nfe_entrada` | ✅ **Concluído** |
+| **10b-3** | Importações — UI 12.6 (2 abas: cadastro + documento) | ✅ **Concluído** |
+| **10b-4** | Importações — NF-e saída (reaproveita motor B) | ✅ **Concluído** | 
+| **10b-5** | Importações — NFS-e (tomada + prestada) | ✅ **Concluído** |
+**10b** | 6.3 Digitar Notas de Saída | ✅ **Concluído** |
 | **10b** | 7.2 Contas a Pagar + 8.2 Contas a Receber | ✅ **Concluído** |
 | **11** | Administrador (3.x) | ⏳ Pendente |
 | **12** | Auditor (11.x) + Administração (12.x) | ⏳ Pendente |
 | **13** | Handoff + serviços de negócio | ⏳ Pendente |
 
-**Números atuais:** 63 tabelas, 63 models, **42 repositórios** (`PessoaRepository` ganhou 4 métodos no 10a-2), 6 services, **12 views de cadastro** (centros-custo, usuários, produtos, serviços, ativos, OSI, plano-contas, tabelas-fiscais, config-contabeis, regras, fornecedores, clientes) + 3 de tarefas + Tela Inicial, **153 testes verdes**, lint de SQL cru zerado.
++**Números atuais:** 63 tabelas, 63 models, **42 repositórios**, **7 services** (`ImportacaoService` novo), **13 views de cadastro** (importações), ..., **195 testes verdes**, lint de SQL cru zerado.
 
 **Decisão de fatiamento (histórica):** o antigo "Bloco 7 — Auth + API + telas" foi fatiado em 7–13 (escopo real: 71 telas). Cada sub-bloco é testável isoladamente.
 
@@ -274,6 +281,60 @@ php artisan serve
 - **Escopo:** idêntico ao 7.2. **Sem** lançamento/documento encadeado/auditoria.
 - **`data_recebimento <= today()`** (validação).
 
+### 3.21 Importações — motor A (10b-1)
+
+- **`config/importacoes.php`** — mapa dos recursos de cadastro (piloto `centros_custo` + esqueleto dos 12 recursos do 10b-9). Hardcoded (T9.10).
+- **`app/Importacoes/ImportadorCadastro.php`** — interface do motor A.
+- **`app/Importacoes/ImportadorCadastroGenerico.php`** — implementação única (lê o config, injeta `repository`/`model` do recurso).
+- **`app/Importacoes/LeitorCsv.php`** — encoding (UTF-8 / Windows-1252 / ISO-8859-1) + separador (`;` / `,` / tab) + `#` comentário + linha vazia.
+- **`app/Importacoes/ValidadorLinha.php`** — obrigatórios, casts, unique por chave natural, `ativo` bool, `tenant` (empresa/filial).
+- **`app/Importacoes/GravadorLinha.php`** — transação por linha (T9.6), modos `inserir`/`atualizar`/`upsert`, `id_empresa`/`id_filial` do `TenantContext`. **Não** seta `created_by`/`updated_by` (consistência 10a-2).
+- **`app/Importacoes/AuditoriaImportacao.php`** — registra em `auditorias` (`acao='importacao'`, `tabela='importacoes'`, `dados_anteriores`=resumo, `dados_novos`=IDs, `justificativa="Carga inicial: <recurso> (<modo>)"`). **P154.** Sem tabela nova.
+- **`app/Importacoes/RelatorioCarga.php`** + **`LinhaCarga.php`** — VOs (pré e pós-carga; persistido em `auditorias`).
+- **`app/Services/ImportacaoService.php`** — fachada fina para a UI (10b-3).
+- **`BaseRepository`** ganhou `existsByChaveNatural()` + `updateOrCreateByChaveNatural()` (serve os 13 recursos sem 13 cópias).
+- **Piloto:** `centros_custo` (chave natural `nome`; colunas `nome;responsavel;ativo`; modos `inserir`/`atualizar`/`upsert`).
+- **Testes:** `LeitorCsvTest` (6), `ValidadorLinhaTest` (6), `ImportadorCadastroTest` (12), `ImportadorCentroCustoTest` (2). Total: **+26 testes**.
+- **`logs_importacao` NÃO é usada no 10b-1** — reservada ao motor B (10b-2; `caminho_arquivo`/`status`/`mensagem` por documento). `RelatorioCarga` fica em `auditorias` (P154).
+
+### 3.22 Importações — motor B (10b-2)
+
+- **`config/importacoes.php`** — entrada `nfe_entrada` (piloto do motor B) + esqueleto dos 7 restantes (10b-4..10b-8). Mesmo arquivo do motor A; `motor => 'documento'`.
+- **`app/Importacoes/ImportadorDocumento.php`** — interface do motor B.
+- **`app/Importacoes/ImportadorDocumentoGenerico.php`** — implementação única (lê config, injeta `parser`/`validador`/`documentoService`/`log`). Resolve filial pelo `TenantContext` (ou por `cnpj_empresa` se ausente).
+- **`app/Importacoes/Parsers/NfeParser.php`** — `simplexml` + `xpath` (namespace `nfe`). Sem dependência externa. Extrai chave, data, emitente/destinatário, itens, impostos, totais; detecta cancelamento (`cStat` 101/135/155).
+- **`app/Importacoes/Parsers/Exceptions/ParseException.php`** — estrutura inválida (vira `rejeitada` no `ImportadorDocumentoGenerico`).
+- **`app/Importacoes/ValidadorDocumento.php`** — estrutura mínima, cancelamento, duplicidade (`porChave`), empresa no XML, filial resolvida, período aberto. Retorna `LinhaCarga` (aceita/aviso/rejeitada).
+- **`app/Importacoes/DocumentoService.php`** — resolve FKs (CNPJ→pessoa, código→cfop/ncm/cst, tipo_documento) e chama **`NotaFiscalApiController::store()` reaproveitado** (não reescreve); grava `logs_importacao` (1 linha por documento); dispara hooks `// TODO(Bloco 13)` (`classificar`/`calcularImpostos`/`gerarContaPagar`/`gerarTarefa`/`gerarPendencia`/`gerarRazaoImposto`).
+- **5 métodos novos nos repositórios:** `TipoDocumentoRepository::porCodigo`, `CfopRepository::porCodigo`, `NcmRepository::porCodigo`, `CstRepository::porCodigo`, `FilialRepository::porCnpj` (este já existia). `PessoaRepository::porDocumento` já existia. `LogImportacaoRepository` já existia.
+- **`ImportacaoService`** — fachada do motor B (`preValidarDocumento`/`confirmarDocumento`/`recursosDocumentoParaAtor`); motor A mantém `preValidar`/`confirmar`/`recursosDisponiveisParaAtor`/`template`.
+- **`AppServiceProvider`** — binding `ImportadorDocumento → ImportadorDocumentoGenerico` (além do `ImportadorCadastro → ImportadorCadastroGenerico` do 10b-1).
+- **Piloto:** `nfe_entrada` (`tipo_documento='NF-e'`, `direcao='Entrada'`, parser `NfeParser`, validador `ValidadorDocumento`, ordem O1).
+- **Testes:** `NfeParserTest` (4), `ImportadorDocumentoTest` (4). **+8 testes**.
+- **Hooks do `DocumentoService` são stubs** — D1/E1/E2/F1/F2/T6/T8/O30 são do **Bloco 13**. Não no 10b-2.
+- **`logs_importacao`** agora é usada (motor B), com `status` ∈ {`Importado`, `Rejeitado`, `Cancelado`, `Duplicado`} e `mensagem` = motivo.
+- **Cancelada** → `rejeitada` (não grava nota; só log).
+- **Pessoa/filial ausente** → `aceita_com_aviso` no `preValidar`; `rejeitada` no `confirmar` se filial não resolvida.
+- **`xml_origem`** = XML bruto (RN9).
+- **Sem migration** (T9.11).
+- **10b-4 (NF-e saída):** mesma infraestrutura do 10b-2. `nfe_saida` no config com `direcao='Saida'`, `controller => NotaFiscalSaidaApiController::class`, `ordem='O2'`, atores `[configurador, faturista]`. `NfeParser` inalterado (agnóstico). `DocumentoService` lê `meta['controller']` (default `NotaFiscalApiController::class`) e escolhe `id_pessoa_emitente`/`id_pessoa_destinatario` conforme `direcao` (Saída: emitente=null, destinatário obrigatório). `ImportadorDocumentoGenerico` e `ValidadorDocumento` escolhem `cnpj_empresa` via `$meta['direcao']` (Saída: emitente; Entrada: destinatário). Testes `ImportadorNfeSaidaTest` (4). **Reaproveita `NotaFiscalSaidaApiController` sem tocar nele.**
+- **10b-5 (NFS-e):** `NfseParser` (novo) — simplexml + xpath `local-name()` (ABRASF + fallback municipal). Extrai chave, data, prestador/tomador, `ItemListaServico` (LC 116), `CodigoTributacaoMunicipio`, discriminação, valores, ISS e retenções (INSS/IRRF/PIS/COFINS/CSLL) como `itens.*.impostos[]`. Detecta cancelamento (`cStat` 101/135/155). `config/importacoes.php` ganhou `nfse_tomada` (Entrada, O3) e `nfse_prestada` (Saída, O4). `ServicoLc116Repository::porCodigo()` (novo). `DocumentoService` injeta `ServicoLc116Repository` e resolve `id_servico_lc116` (nullable) via `_codigo_servico_lc116`. `ValidadorDocumento` e `ImportadorDocumentoGenerico` **sem mudança** (já escolhem `cnpj_empresa` por `meta['direcao']`; controllers de entrada/saída já aceitam `itens.*.id_servico_lc116`). Testes: `NfseParserTest` (3), `ImportadorNfseTest` (4). **+7 testes** (195 → 202).
+
+### 3.23 Importações — UI 12.6 (10b-3)
+
+- **`app/Http/Controllers/Web/ImportacaoController.php`** — `index` passa `recursosCadastro` e `recursosDocumento` para a view (filtrados por `TenantContext::getAtorFuncionalId()`).
+- **`app/Http/Controllers/Api/ImportacaoApiController.php`** — `preValidar`, `confirmar`, `template`. Decide o motor lendo `config('importacoes')[$recurso]['motor']` (não confia no cliente). `template` força `Content-Type: text/csv; charset=UTF-8` (Laravel detecta `text/plain` por padrão).
+- **`resources/views/telas/importacoes/index.blade.php`** — 2 cards ("Importar cadastros (CSV)" / "Importar documentos (XML)"). Cada card: `<select>` de recurso, `<select>` de modo (só cadastro), `<input type="file">`, botões (Baixar template / Pré-validar / Confirmar), `<table class="data">` do relatório. JS preenche o `<tbody>`.
+- **`public/assets/js/importacoes.js`** — IIFE (D80). `FileReader.readAsText` (texto plano no JSON — CSV/XML são texto), fetch `POST /api/importacoes/pre-validar` + `/confirmar`, `window.location.href` para o template. Sem dependência externa.
+- **Rotas:**
+  - `web.php`: `GET /importacoes` (casca).
+  - `api.php` (dentro do grupo `auth+tenant`): `POST /api/importacoes/pre-validar`, `POST /api/importacoes/confirmar`, `GET /api/importacoes/template/{chave}`.
+- **Menu:** `12.6` (`/importacoes`) adicionado ao `MenuItemSeeder`, visível para `configurador`, `comprador`, `faturista`, `rh`, `contador`, `financeiro1`, `financeiro2`. Ícone `📥` no `MenuService::ICONES`.
+- **Testes:** `ImportacaoUiTest` (4): index lista recursos, template baixa `text/csv`, pre-validar retorna relatório, confirmar cria centros. **+4 testes** (187 → 191).
+- **`ImportacaoService`** — **não toca** (já tem `preValidar`/`confirmar`/`recursosDisponiveisParaAtor`/`template` do motor A + `preValidarDocumento`/`confirmarDocumento`/`recursosDocumentoParaAtor` do motor B).
+- **`AppServiceProvider`** — **não toca** (`ImportadorCadastro` + `ImportadorDocumento` já bindados; `ImportacaoService` é auto-wireable via reflexão).
+- **Sem migration. Sem Blade complexo. Sem JS de wizard.** O 10b-3 é uma tela só com 2 abas.
+
 ---
 
 ## 4. Divergências e decisões de arquitetura
@@ -320,7 +381,23 @@ php artisan serve
 - **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
 - **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
 - **P149** — `public/assets/js/{nota-entrada,nota-saida,importar-xml,caixa-entrada,contas-pagar,contas-receber}.js` são wireframes órfãos (usam `screens[]`, não referenciados por Blade). Remover quando o 5.4/6.4 substituir. — 10b.
-
+- **P150** — Conta a pagar/receber avulsa (sem nota) fora do escopo da fase 1. O `07 §2.4` só prevê geração automática a partir de NF (Comprador/Faturista disparam via `store`/`confirmar` da nota). Se entrar (fase 2), exige tela de criação manual + justificativa obrigatória + auditoria. — Financeiro (10c/10d).
+- **P151** — Formas de pagamento, condições de pagamento, bancos e contas bancárias **não têm CRUD** (só seeders). O `07 §6` atribui ao Configurador (bloco 11, 3.x). Até lá, o sistema usa o que está no seed. **Não bloqueia** o 10a-2/10b. — Bloco 11.
+si
+- **P152** — `pessoas_tags.tag` do funcionário = `'Funcionário'` (o `07 §1.1` usa essa string; o `10a-2` usa `'Cliente'`/`'Fornecedor'`). Confirmar valor no `07` antes da implementação do motor A de importação. — 10b-9 (recurso `funcionarios`).
+- **P153** — `funcionarios.natureza` ∈ `{'Custo','Despesa Fixa'}` (o DDL do `07 §8.1` usa; o `SHOW COLUMNS` não mostra CHECK). Confirmar valor no `07` antes da implementação do motor A. — 10b-9 (recurso `funcionarios`).
+- **P154** — `RelatorioCarga` persistido em `auditorias` (`acao='importacao'`, `tabela='importacoes'`, `dados_anteriores`=resumo, `dados_novos`=IDs criados, `justificativa`="Carga inicial: <recurso> (<modo>)"). **Sem tabela nova.** — 10b-1/10b-2.
+- **P155** — Fila (queue) para lote grande — síncrono na fase 1 (T9.9). Se aparecer gargalo (XMLs em lote muito grande, muitas linhas de CSV), avaliar fila. — Fase 2.
+- **P156** — Excel (.xlsx) como formato de cadastro — CSV na fase 1 (T9.12). Se o operador precisar de fórmula/formatação, avaliar `phpoffice/phpspreadsheet`. — Fase 2.
+- **P157** — Parser de NFS-e com layouts municipais específicos — ABRASF + fallback genérico na fase 1. Se algum município não for coberto, avaliar parser específico. — Fase 2.
+- **P158** — Parser de CT-e com redespacho/subcontratação — fase 1 cobre CT-e simples (CIF/FOB + vínculo NF-e); redespacho fica para fase 2. — Fase 2.
+- **P159** — Mapeamento de colunas CSV — o template é fixo na fase 1; se o operador tiver colunas em ordem diferente, ele reordena no Excel. Avaliar mapeamento visual na fase 2. — Fase 2.
+- **P160** — Importação de XML > 1.000 itens — fatiar o XML na fase 1 (limite de payload). Se necessário, avaliar processamento em partes. — Fase 2.
+- **P161** — Tabela `importacao_log` (persistir o relatório em tabela própria) — `auditorias` cobre na fase 1 (P154). Se precisar reprocessar importações, avaliar tabela própria. — Fase 2.
+- **P162** — Configurável sem deploy — `config/importacoes.php` é hardcoded na fase 1 (T9.10). Se precisar mudar atores autorizados sem deploy, avaliar tabela `importacao_recurso` + `importacao_recurso_ator`. — Fase 2.
+- **P163** — Rateio de funcionário no template — fase 1 só tem `id_centro_custo` principal em `funcionarios` (decisão 10.6). Se precisar rateio em massa, avaliar coluna JSON no template (`funcionarios_centros_custo`). — Fase 2.
+- **P164** — `centros_custo` **não tem `UNIQUE` em `(id_empresa, nome)`** no DDL (confirmado no `SHOW INDEX` do 10b-1). O `16 §4.1` diz que a chave natural é `(id_empresa, nome)`. O motor A (`ValidadorLinha`) **já checa** via `existsByChaveNatural`, mas o DB não impede race condition entre a pré-validação e o `insert`. **Não é 10b-1** (T9.11: sem migration). Corrigir em migration no **10b-9** (ou antes, se o 10b-9 começar por ele). — 10a (dívida), 10b-9 (quando criar o próximo recurso com UNIQUE).
+- **P165** — `logs_importacao` não tem FK para `notas_fiscais` (o vínculo é por `id_filial + created_at`). A UI 10b-3 mostra o relatório da carga sem link direto para a nota. Se precisar do link, adicionar `id_nota_fiscal` na `logs_importacao` (migration) — fase 2. — 10b-3 (avaliar).
 ### 5.3 Fechadas
 - **P135** — (= D54) — fechada no 9.1c. ✅
 - **P136** — `UsuarioController` enxugado (sem `store`/`update`/`sincronizarAtores`) — fechada no 9.1b. ✅
@@ -336,6 +413,7 @@ php artisan serve
 - **P146** — `id_municipio` no form de PJ é `<input type="number">` (sem autocomplete; `MunicipioRepository`/select fica para fase 2). — 10a-2.
 - **P147** — `tipo` PF↔PJ não pode mudar no `update` (retorna `422`); trocar exigiria apagar a filha e recriar. — 10a-2.
 - **P148** — `api.api.tabelas-inss/irrf/encargos` (nome dobrado no `routes/api.php` do 9.2b) — corrigir no próximo bloco. — 9.2b.
+- **P149** — Conta a pagar/receber avulsa (sem nota) fora do escopo da fase 1. O `07 §2.4` só prevê geração automática a partir de NF (Comprador/Faturista disparam via `store`/`confirmar` da nota). Se entrar (fase 2), exige tela de criação manual + justificativa obrigatória + auditoria. — Financeiro (10c/10d).
 - **P150** — Juros/multa de contas a pagar/receber hardcoded no repositório (`JUROS_AO_DIA = 0.033`, `MULTA = 2.00`). Parametrizar por empresa (`empresas.dados_extras.parametros_juros`) em fase 2. — 10b.
 - **P151** — `AuditoriaRepository` não tem `registrar()`. Baixa/estorno de contas **não grava auditoria** (só atualiza a tabela). Implementar `AuditoriaService::registrar()` (ou método no repo) quando o Bloco 13 fizer o lançamento contábil. — 10b.
 - **P152** — `ContaPagar`/`ContaReceber` **não têm** tabela de baixas parciais (`contas_pagar_baixas`). O acúmulo é feito em `valor_pago`/`valor_recebido`. Se precisar de histórico de baixas (quem, quando, valor), criar tabela filha no Bloco 13. — 10b.
@@ -358,6 +436,10 @@ php artisan serve
 
 - **10b (concluído):** 5.3 Digitar Notas de Entrada, 6.3 Digitar Notas de Saída, 7.2 Contas a Pagar, 8.2 Contas a Receber. ✅
 - **10b (pendente):** 5.4 Importar Notas de Entrada + 6.4 Importar Notas de Saída (adiados — retomar ao final do bloco).
+- **10b (concluído):** 10b-1 (motor A + piloto `centros_custo`) + 10b-2 (motor B + piloto `nfe_entrada`).
+- **10b (pendente):** 10b-2 (motor B + piloto NF-e entrada) → 10b-3 (UI 12.6) → 10b-4..10 (NF-e saída, NFS-e, CT-e, RPA, folha, 12 cadastros, legado). 5.4/6.4 (Importar Notas) adiados.
+- **10b (concluído):** 10b-1 (motor A + piloto `centros_custo`) + 10b-2 (motor B + piloto `nfe_entrada`) + 10b-3 (UI 12.6).
+- **10b (concluído):** 10b-1 + 10b-2 + 10b-3 (UI 12.6) + 10b-4 (NF-e saída).
 - Operação (5.5, 7.3 Pagamentos, 8.3 Recebimentos, 9.x Gerente, 10.x RH) → Administrador (3.x) → Auditor (11.x) + Administração (12.x) → Handoff + serviços (Bloco 13).
 
 
@@ -558,10 +640,14 @@ Blade (casca, sem dados) ──fetch──► ApiController ──► Repository
 - **`descricao` vs `nome`:** `AtorFuncional`, `ProdutoServico`, `Ativo` têm `descricao`. `CentroCusto` tem `nome`. `Filial` tem `razao_social`/`nome_fantasia`. **Conferir o model** antes de montar a view.
 - **`deleted_by`:** só é setado no `destroy` (D75). `created_by`/`updated_by` **não** são preenchidos (a trait não faz; consistência com o legado). Documentar como dívida.
 - **OSI ≡ Handoff:** `OSI` é o nome canônico da UI (item 2.8). Nome técnico: `configuracoes_handoff` / `ConfiguracaoHandoff` / `ConfiguracaoHandoffRepository`. **Não criar** `HandoffController`/`HandoffRepository`.
+- **Importações (motor A):** todo importador de cadastro lê `config/importacoes.php` + `ImportadorCadastroGenerico`. O piloto é só config. `created_by`/`updated_by` **não** são setados (consistência 10a-2). `id_empresa`/`id_filial` sempre do `TenantContext` (R2). Auditoria em `auditorias` (P154). `logs_importacao` é do motor B (10b-2), **não** do motor A.
+- **Importações (motor B):** motor B **reaproveita** `NotaFiscalApiController::store()` (não reescreve a validação de chave/período/filial). O `DocumentoService` só resolve FKs (CNPJ→pessoa, código→cfop/ncm/cst) + grava `logs_importacao` + chama hooks do Bloco 13 (vazios). `xml_origem` = XML bruto (RN9). Cancelamento (`cStat` 101/135/155) → `rejeitada`. Duplicidade (`porChave`) → `rejeitada`. Pessoa/filial ausente → `aceita_com_aviso` no `preValidar`, `rejeitada` no `confirmar`. `logs_importacao` é a tabela operacional do motor B (1 linha por documento). Parser NF-e usa `simplexml` + `xpath` com namespace `nfe` (sem dependência externa).
+- **Importações (UI 12.6):** tela única com 2 cards (cadastro/documento). O `Web\ImportacaoController::index` injeta `recursosCadastro`/`recursosDocumento` (filtrados por ator via `TenantContext::getAtorFuncionalId()`). O `Api\ImportacaoApiController` decide o motor por `config('importacoes')[$recurso]['motor']` (não confia no cliente). Upload via `FileReader.readAsText` (texto plano no JSON). Template força `Content-Type: text/csv; charset=UTF-8`. JS IIFE (D80) sem dependência externa.
+- **Importações (reaproveitamento):** cada recurso do motor B declara `controller` no config (`NotaFiscalApiController::class` para entrada, `NotaFiscalSaidaApiController::class` para saída). O `DocumentoService` resolve `meta['controller']` e escolhe `id_pessoa_emitente`/`id_pessoa_destinatario` conforme `direcao` (Saída: emitente=null, destinatário obrigatório; Entrada: emitente obrigatório, destinatário nullable). O `NfeParser` **não** conhece `meta` — devolve os dois CNPJs e quem orquestra decide. Parser novo (`NfseParser`, `CteParser`, `RpaParser`, `FolhaParser`) segue o mesmo padrão.
 - **`Ativo`:** tabela **tem** coluna `ativo` (9.1c). O form **tem** `<select>` Ativo. O `destroy` seta `ativo = false` + `deleted_by` + `delete()`. O `status` (Em uso/Ocioso/Alienado) **continua** — são coisas diferentes (operacional vs lógico).
 - **`produtos`/`servicos`:** filhas 1:1, **sem** colunas de tenant/soft delete/auditoria próprias (D79). O `$fillable` **não** inclui `created_by`/`updated_by` (não setados).
 - **`Pessoa`:** tem `BelongsToTenant` (`hasTenantColumn(): true`) — o global scope cobre o filtro por empresa. `PessoaFisica`/`PessoaJuridica`/`PessoaTag` **não** têm a trait (filhas). `deleted_by` **não** está no `$fillable` — usar `forceFill` no `destroy`. `tags` não têm `ativo`/timestamps (`$timestamps = false`); no soft delete da `Pessoa`, as tags **ficam** (não apagar).
-
+- **Importações (NFS-e):** `NfseParser` segue o contrato do `NfeParser` (`payload` + `cancelada` + `motivo_cancelamento` + `cnpj_emitente`/`cnpj_destinatario`; `cnpj_empresa = null` — decidido por `meta['direcao']`). NFS-e não tem CFOP/NCM/CST: o "item" único carrega `_codigo_servico_lc116` (resolvido por `ServicoLc116Repository::porCodigo()`, nullable) e `_codigo_servico_municipal` (não persistido — sem coluna). Impostos são ISS + retenções, cada um em `itens.*.impostos[]`. Tomada = Entrada (empresa = tomador); prestada = Saída (empresa = prestador) — mesma escolha por `meta['direcao']` do 10b-4. Parser usa `local-name()` puro (sem `registerXPathNamespace`) porque `SimpleXMLElement::xpath` exige namespace registrado no próprio nó — e o layout municipal varia.
 ---
 
 ## 8. Como contribuir com este documento

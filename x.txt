@@ -1,47 +1,10 @@
 
-   FAIL  Tests\Feature\ContaPagarApiTest
-  ⨯ lista contas com kpis                                                0.24s  
-  ✓ baixa total                                                          0.03s  
-  ✓ baixa parcial acumula                                                0.03s  
-  ⨯ juros e multa automáticos em conta vencida                           0.03s  
-  ✓ rejeita data futura                                                  0.03s  
-  ✓ estorna baixa                                                        0.03s  
-  ✓ isolamento por empresa (D81)                                         0.02s  
-  ────────────────────────────────────────────────────────────────────────────  
-   FAILED  Tests\Feature\ContaPagarApiTest > lista contas com kpis              
-  Failed asserting that 100 is identical to 100.0.
+   PASS  Tests\Feature\ImportadorNfseTest
+  ✓ it importa NFS-e tomada como Entrada                                 0.24s  
+  ✓ it importa NFS-e prestada como Saida                                 0.03s  
+  ✓ it rejeita NFS-e duplicada                                           0.03s  
+  ✓ it aceita LC116 desconhecido (id_servico_lc116 = null)               0.03s  
 
-  at tests/Feature/ContaPagarApiTest.php:55
-     51▕     $resp = $this->getJson('/api/contas-pagar');
-     52▕ 
-     53▕     $resp->assertOk();
-     54▕     expect($resp->json('contas'))->toBeArray()->toHaveCount(1);
-  ➜  55▕     expect($resp->json('kpis.em_aberto'))->toBe(100.0);
-     56▕     expect($resp->json('kpis.contas_abertas'))->toBe(1);
-     57▕ });
-     58▕ 
-     59▕ test('baixa total', function () {
-
-  1   tests/Feature/ContaPagarApiTest.php:55
-
-  ────────────────────────────────────────────────────────────────────────────  
-   FAILED  Tests\Feature\ContaPagarApiTest > juros e multa automáticos em co…   
-  Failed asserting that 0.0 is greater than 0.
-
-  at tests/Feature/ContaPagarApiTest.php:104
-    100▕     ]);
-    101▕ 
-    102▕     $resp->assertOk();
-    103▕     $conta = ContaPagar::withoutGlobalScopes()->find($this->conta->id);
-  ➜ 104▕     expect((float) $conta->juros)->toBeGreaterThan(0);
-    105▕     expect((float) $conta->multa)->toBeGreaterThan(0);
-    106▕ });
-    107▕ 
-    108▕ test('rejeita data futura', function () {
-
-  1   tests/Feature/ContaPagarApiTest.php:104
-
-
-  Tests:    2 failed, 5 passed (24 assertions)
-  Duration: 0.48s
+  Tests:    4 passed (16 assertions)
+  Duration: 0.42s
 

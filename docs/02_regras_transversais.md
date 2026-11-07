@@ -1,8 +1,8 @@
 ---
 documento: regras_transversais
-versao: 1.1
-data: 2026-10-22
-proposito: Regras que atravessam módulos (T5, T6, T7, T8)
+versao: 1.2
+data: 2026-11-06
+proposito: Regras que atravessam módulos (T5, T6, T7, T8, T9)
 depende_de: []
 ---
 
@@ -115,3 +115,36 @@ Relatório consolidado, agrupando tudo que precisa ser resolvido antes do fecham
 > **T8.11 — Documentos gerados pelo sistema.** Conta a pagar, conta a receber, razão de imposto, depreciação, provisão e pendência têm como **ator de origem** quem gerou a NF (Comprador ou Faturista). O sistema é processador, não autor.
 >
 > **T8.12 — Sem perfil de acesso.** Não existe "perfil de acesso" separado. A tag do ator funcional define o que o usuário pode fazer. O `configurador` tem acesso total.
+
+## T9 — Importação (carga inicial)
+
+> **T9.1 — Importação é carga inicial.** O módulo Importações (12.6) existe para **popular o sistema** com dados de fora (CSV, XML, legado) **antes** de a operação normal começar. É **one-shot**, não operação contínua. Não substitui o fluxo normal (C1–C8).
+>
+> **T9.2 — Motor A (cadastro) não passa por T5–T8.** Importar cadastro (centros de custo, pessoas, produtos, serviços, etc.) grava direto nas tabelas de cadastro, respeitando o tenant (R1–R3), **sem** gerar lançamento (T7), ordem (T8) ou pendência (T6). O motor A **não** dispara handoff.
+>
+> **T9.3 — Motor B (documento) passa por T5–T8.** Importar documento (NF-e, NFS-e, CT-e, RPA, folha) **reaproveita** o `store`/`confirmar` do `NotaFiscalApiController` (que já valida T5, chave, período) e **acrescenta** o `DocumentoService`, que dispara D1 (classificação), E1/E2 (impostos), F1/F2 (contas), T6 (pendências), T7 (razão) e T8 (handoff).
+>
+> **T9.4 — Motor C (legado) é motor A com regra própria.** Contas a pagar/receber legadas são importadas como cadastro (CSV, uma linha = uma conta), com `id_nota_fiscal = NULL` e `dados_extras.origem = 'legado'`. O ator de origem do handoff é **quem importou**. Gera lançamento avulso (T7) sem nota.
+>
+> **T9.5 — Pré-validação em memória.** Toda importação faz **pré-validação em memória** antes de gravar. O operador só confirma depois de ver o `RelatorioCarga` (aceitas/avisos/rejeitadas por linha/documento). Nada é gravado na pré-validação.
+>
+> **T9.6 — Transação por linha/documento.** A gravação é em transação **por linha** (motor A) ou **por documento** (motor B). Uma linha/documento que falha **não** derruba as demais. A carga inicial precisa do relatório completo.
+>
+> **T9.7 — Modos.** Motor A: `inserir` (default; falha se existe), `atualizar` (falha se não existe), `upsert` (insere/atualiza por chave natural). Motor B: sem modo (o `store` já valida chave única).
+>
+> **T9.8 — Auditoria.** Toda importação registra em `auditorias` (`acao = 'importacao'`, `tabela = 'importacoes'`, `dados_anteriores` = resumo da carga, `dados_novos` = IDs criados, `justificativa` = "Carga inicial: <recurso> (<modo>)"). **Sem tabela nova.**
+>
+> **T9.9 — Síncrono na fase 1.** Importação é síncrona (o operador espera). Fila (queue) fica para fase 2, se aparecer gargalo.
+>
+> **T9.10 — Transversal.** O módulo 12.6 é transversal (bloco 12). Cada ator vê os recursos que pode importar, via `config/importacoes.php` (hardcoded na fase 1). O `configurador` vê tudo. O `administrador` **não** importa (só consulta).
+>
+> **T9.11 — Sem migration.** O módulo Importações usa as tabelas existentes. Não há DDL novo. `contas_pagar`/`contas_receber` aceitam `id_nota_fiscal = NULL`; `lancamentos` aceitam `id_nota_fiscal`/`id_nota_fiscal_item = NULL` (confirmado no `SHOW COLUMNS`). **Nenhuma migration.**
+>
+> **T9.12 — Formato.** Motor A: **CSV** (UTF-8 com detecção; separador `;` padrão). Motor B: **XML** para NF-e/NFS-e/CT-e (formato nativo) e **CSV** para RPA/folha. Excel (.xlsx) fica para fase 2.
+>
+> **T9.13 — Template.** Cada recurso tem um **template CSV** para download na UI 12.6. O operador preenche no Excel e salva como CSV. Sem template, a carga vira adivinhação.
+
+
+## Tabela de versões:
+
+| 1.2 | 2026-11-06 | Adoção da **T9 — Importação (carga inicial)**. Motor A (cadastro) não passa por T5–T8; motor B (documento) passa; motor C (legado) é motor A com regra própria (`id_nota_fiscal = NULL` + `dados_extras.origem = 'legado'`). Transversal (12.6); CSV (A) + XML/CSV (B); template por recurso; pré-validação em memória; transação por linha/documento; síncrono; sem migration; auditoria em `auditorias`. |

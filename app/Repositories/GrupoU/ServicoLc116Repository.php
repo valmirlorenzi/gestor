@@ -26,4 +26,9 @@ class ServicoLc116Repository extends BaseRepository
             ->orderBy('codigo')
             ->get(['id', 'codigo', 'descricao']);
     }
+
+    public function porCodigo(string $codigo): ?ServicoLc116
+    {
+        return $this->query()->where('codigo', $codigo)->first();
+    }
 }

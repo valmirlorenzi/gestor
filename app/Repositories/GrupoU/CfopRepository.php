@@ -13,6 +13,11 @@ class CfopRepository extends BaseRepository
         parent::__construct($model);
     }
 
+    public function porCodigo(string $codigo): ?Cfop
+    {
+        return $this->query()->where('codigo', $codigo)->first();
+    }
+
     public function paraSelect(): Collection
     {
         return $this->query()

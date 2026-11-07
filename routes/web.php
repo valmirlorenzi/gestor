@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\FecharPeriodoController;
 use App\Http\Controllers\Web\FilialContextController;
 use App\Http\Controllers\Web\FilialWebController;
 use App\Http\Controllers\Web\FornecedorController;
+use App\Http\Controllers\Web\ImportacaoController;
 use App\Http\Controllers\Web\LancamentoManualController;
 use App\Http\Controllers\Web\NotaFiscalController;
 use App\Http\Controllers\Web\NotaFiscalSaidaController;
@@ -174,6 +175,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::prefix('financeiro2/contas-receber')->name('financeiro2.contas-receber.')->group(function () {
         Route::get('/', [ContaReceberController::class, 'index'])->name('index');
+    });
+
+    Route::prefix('importacoes')->name('importacoes.')->group(function () {
+        Route::get('/', [ImportacaoController::class, 'index'])->name('index');
     });
 
 });

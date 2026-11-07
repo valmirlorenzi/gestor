@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse versao="2.04">
+    <InfNfse Id="NFS35240611111111000199000000000000000000000010">
+      <Numero>10</Numero>
+      <Serie>1</Serie>
+      <DataEmissao>2026-11-01T10:00:00</DataEmissao>
+      <PrestadorServico>
+        <CpfCnpj><Cnpj>11111111111111</Cnpj></CpfCnpj>
+        <Endereco><CodigoMunicipio>3550308</CodigoMunicipio></Endereco>
+      </PrestadorServico>
+      <TomadorServico>
+        <CpfCnpj><Cnpj>12345678000199</Cnpj></CpfCnpj>
+      </TomadorServico>
+      <Servico>
+        <ItemListaServico>01.01</ItemListaServico>
+        <CodigoTributacaoMunicipio>101</CodigoTributacaoMunicipio>
+        <Discriminacao>Análise e desenvolvimento de sistemas</Discriminacao>
+      </Servico>
+      <Valores>
+        <ValorServicos>500.00</ValorServicos>
+        <ValorDeducoes>0.00</ValorDeducoes>
+        <BaseCalculo>500.00</BaseCalculo>
+        <Aliquota>2.00</Aliquota>
+        <ValorIss>10.00</ValorIss>
+      </Valores>
+    </InfNfse>
+  </Nfse>
+</CompNfse>
